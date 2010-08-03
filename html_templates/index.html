@@ -1,0 +1,17 @@
+$def with (arg, profile_form)
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <title>Steamodd</title>
+  </head>
+  <body>
+$if arg == "about":
+    About goes here
+$else:
+    <form name="pform" method="post" action="/">
+      $if not profile_form.valid:
+          <p>Bad profile given</p>
+      $:profile_form.render()
+    </form>
+  </body>
+</html>
