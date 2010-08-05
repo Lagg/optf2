@@ -3,30 +3,62 @@ $ usern = user.get_persona()
 $ qualitydict = {"unique": "The ", "community": "Community ",
 $                "developer": "Legendary ", "normal": "",
 $                "selfmade": "My "}
+<?xml version="1.0" encoding="iso-8859-1"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+               "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <title>Steamodd - $usern's backpack</title>
+    <link rel="stylesheet" type="text/css" href="/style.css"/>
+    <meta name="generator" content="Steamodd"/>    
   </head>
   <body>
-    <div class="header">
-      <div class="avatar">
+    <div id="header">
+      <div id="avatar">
         <img src="$user.get_avatar_url(user.AVATAR_LARGE)" alt="$usern"/>
       </div>
-      <h2>$usern's Backpack</h2>
-    </div>
-    <div class="content">
       $ items = pack.get_items()
+      <h2><a href="$user.get_profile_url()">$usern's</a>
+      Backpack
       $if len(items) <= 0:
-          <p>$usern's backpack appears to be empty. This is amazing.</p>
-      $for item in pack.get_items():
+          &nbsp;is empty!
+      </h2>
+    </div>
+    <div id="content">
+      $for item in items:
           $ qitem = pack.get_item_quality(item)["str"]
-          <div class="item_cell">
-            <div class="name">$qualitydict[qitem] $pack.get_item_name(item)</div>
-            <img src="$pack.get_item_image(item, pack.ITEM_IMAGE_SMALL)" alt=""/>
-            <div class="attribs"></div>
+          $ pos = pack.get_item_position(item)
+          $if pos <= -1:
+              <!-- Eww, style attribute. -->
+              <div id="item_cell" style="border-color: red;">
+          $else:
+              <div id="item_cell">
+            <div class="${qitem}_name">$qualitydict[qitem] $pack.get_item_name(item)</div>
+            <div class="item_level">Level $pack.get_item_level(item) $pack.get_item_type(item)</div>
+            <img src="$pack.get_item_image(item, pack.ITEM_IMAGE_SMALL)" alt="Item image"/>
+            <div id="item_attribs">
+              $for attr in pack.get_item_attributes(item):
+                  $ desc = pack.format_attribute_description(attr)
+                  $if desc.find("Attrib_") == -1:
+                      <div class="item_${pack.get_attribute_type(attr)}_attr">
+                        $if desc.find("\n") != -1:
+                            $:desc.replace("\n", "<br/>")
+                        $else:
+                            $desc
+                      </div>
+              <div class="item_neutral_attr">
+                Serial Number: $pack.get_item_id(item)
+              </div>
+              <div class="item_neutral_attr">
+                $if pos <= -1:
+                    Not in backpack yet!
+                $else:
+                    Pack cell: $pos
+              </div>
+            </div>
           </div>
     </div>
-    <div class="footer">
+    <div id="footer">
       Valve says I should link to <a href="http://steampowered.com"/>this</a>.
     </div>
   </body>

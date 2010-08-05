@@ -1,0 +1,92 @@
+body {
+    background: #303030;
+    color: white;
+}
+
+.item_negative_attr {
+    font-weight: bold;
+    color: #ff0000;
+}
+.item_positive_attr {
+    font-weight: bold;
+    color: #00ff00;
+}
+.item_neutral_attr {
+    font-weight: bold;
+    color: white;
+}
+
+.unique_name {
+    color: #ffd12f;
+    font-weight: bold;
+}
+.community_name {
+    color: #2fb3ff;
+    font-weight: bold;
+}
+.developer_name {
+    color: #ff00fc;
+    font-weight: bold;
+}
+.normal_name {
+    color: white;
+    font-weight: bold;
+}
+.selfmade_name {
+    color: #00e4ff;
+    font-weight: bold;
+}
+
+#item_cell, #item_cell_undropped {
+    margin: 8px;
+    border: 2px solid black;
+    width: 180px;
+    height: 180px;
+    padding: 10px;
+    text-align: center;
+    overflow: auto;
+    float: left;
+    position: relative;
+}
+
+#footer {
+    text-align: center;
+    background: #202020;
+    max-width: 100%;
+    padding: 8px;
+    clear: both;
+}
+
+#item_attribs {
+    display: none;
+}
+#item_attribs div {
+    padding: 4px;
+    text-align: left;
+}
+#item_cell:hover #item_attribs {
+    display: inline;
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: #303030;
+}
+
+#header {
+    text-align: center;
+    clear: both;
+}
+
+#content {
+    margin-left: 90px;
+    height: 100%;
+}
+
+#userform {
+    text-align: center;
+    margin-top: 200px;
+    margin-left: 40%;
+    margin-bottom: 50px;
+}

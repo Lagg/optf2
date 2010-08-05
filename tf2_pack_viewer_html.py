@@ -28,11 +28,17 @@ template_dir = "html_templates/"
 
 urls = (
     "/user/([A-Za-z0-9]+)", "pack_fetch",
+    "/style.css", "style",
     "/(.*)", "index"
     )
 app = web.application(urls, globals())
 templates = web.template.render(template_dir)
 
+class style:
+    def GET(self):
+        web.header("Content-type", "text/css")
+        return file(template_dir + "style.css").read()
+    
 class pack_fetch:
     def GET(self, sid):
         if not sid:
@@ -41,7 +47,7 @@ class pack_fetch:
             user = steam.user.profile(sid)
             pack = steam.tf2.backpack(user)
         except Exception as E:
-            return templates.profile_error(E)
+            return templates.error(E)
         return templates.inventory(user, pack)
 
 class index:
@@ -53,7 +59,7 @@ class index:
             inputdata = web.input()
             raise web.seeother("/user/" + inputdata["User"])
         except steam.user.ProfileError as E:
-            return templates.profile_error(E)
+            return templates.error(E)
 
     def __init__(self):
         self.profile_form = form.Form(
