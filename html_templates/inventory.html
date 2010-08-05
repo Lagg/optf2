@@ -1,5 +1,7 @@
 $def with (user, pack)
+$ items = pack.get_items()
 $ usern = user.get_persona()
+$ realn = user.get_real_name()
 $ qualitydict = {"unique": "The ", "community": "Community ",
 $                "developer": "Legendary ", "normal": "",
 $                "selfmade": "My "}
@@ -14,10 +16,24 @@ $                "selfmade": "My "}
   </head>
   <body>
     <div id="header">
+      $ cgame = user.get_current_game()
+      $ cstatus = user.get_status()
       <div id="avatar">
-        <img src="$user.get_avatar_url(user.AVATAR_LARGE)" alt="$usern"/>
+        <img src="$user.get_avatar_url(user.AVATAR_LARGE)" alt="$realn" title="$realn"/><br/>
+        <b>$realn</b>
       </div>
-      $ items = pack.get_items()
+      <div id="status_$cstatus">
+        $if cgame:
+            Playing \
+            $if cgame.has_key("id"):
+                <a href="http://store.steampowered.com/app/$cgame['id']">$cgame["extra"]</a>
+            $else:
+                $cgame["extra"]
+            $if cgame.has_key("server") and cgame["server"] != "0.0.0.0:0":
+                <a href="steam://connect/$cgame['server']">(Connect)</a>
+        $else:
+            $cstatus
+      </div>
       <h2><a href="$user.get_profile_url()">$usern's</a>
       Backpack
       $if len(items) <= 0:

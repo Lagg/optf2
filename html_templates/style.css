@@ -1,41 +1,14 @@
-body {
-    background: #303030;
-    color: white;
-}
+body { background: #303030; color: white; }
 
-.item_negative_attr {
-    font-weight: bold;
-    color: #ff0000;
-}
-.item_positive_attr {
-    font-weight: bold;
-    color: #00ff00;
-}
-.item_neutral_attr {
-    font-weight: bold;
-    color: white;
-}
+.item_negative_attr { font-weight: bold; color: #ff0000; }
+.item_positive_attr { font-weight: bold; color: #00ff00; }
+.item_neutral_attr { font-weight: bold; color: white; }
 
-.unique_name {
-    color: #ffd12f;
-    font-weight: bold;
-}
-.community_name {
-    color: #2fb3ff;
-    font-weight: bold;
-}
-.developer_name {
-    color: #ff00fc;
-    font-weight: bold;
-}
-.normal_name {
-    color: white;
-    font-weight: bold;
-}
-.selfmade_name {
-    color: #00e4ff;
-    font-weight: bold;
-}
+.unique_name { color: #ffd12f; font-weight: bold; }
+.community_name { color: #2fb3ff; font-weight: bold; }
+.developer_name { color: #ff00fc; font-weight: bold; }
+.normal_name { color: white; font-weight: bold; }
+.selfmade_name { color: #00e4ff; font-weight: bold; }
 
 #item_cell, #item_cell_undropped {
     margin: 8px;
@@ -57,13 +30,8 @@ body {
     clear: both;
 }
 
-#item_attribs {
-    display: none;
-}
-#item_attribs div {
-    padding: 4px;
-    text-align: left;
-}
+#item_attribs { display: none; }
+#item_attribs div { padding: 4px; text-align: left; }
 #item_cell:hover #item_attribs {
     display: inline;
     position: absolute;
@@ -74,15 +42,9 @@ body {
     background: #303030;
 }
 
-#header {
-    text-align: center;
-    clear: both;
-}
+#header { text-align: center; clear: both; }
 
-#content {
-    margin-left: 90px;
-    height: 100%;
-}
+#content { margin-left: 90px; height: 100%; }
 
 #userform {
     text-align: center;
@@ -91,12 +53,15 @@ body {
     margin-bottom: 50px;
 }
 
-.class_equipped {
-    display: inline;
-    color: white;
-}
+.class_equipped { display: inline; color: white; }
 
-.class_unequipped {
-    display: inline;
-    color: #202020;
-}
+.class_unequipped { display: inline; color: #202020; }
+
+#avatar { font-size: 9px; }
+
+a { color: white; }
+a:visited { text-decoration: none; color: #a9a9a9; }
+
+#status_online { color: #00ff00; }
+#status_offline { color: #808080; }
+#status_snooze, #status_away, #status_busy { color: #2fb3ff; }
