@@ -90,3 +90,13 @@ body {
     margin-left: 40%;
     margin-bottom: 50px;
 }
+
+.class_equipped {
+    display: inline;
+    color: white;
+}
+
+.class_unequipped {
+    display: inline;
+    color: #202020;
+}

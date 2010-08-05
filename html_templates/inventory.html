@@ -55,6 +55,17 @@ $                "selfmade": "My "}
                 $else:
                     Pack cell: $pos
               </div>
+              <div class="item_neutral_attr">
+                $ equipped = pack.get_item_equipped_classes(item)
+                $ equipable = pack.get_item_equipable_classes(item)
+
+                In use by:<br/>
+                $for ec in equipable:
+                    $if ec in equipped:
+                        <div class="class_equipped">$ec</div>
+                    $else:
+                        <div class="class_unequipped">$ec</div>
+              </div>
             </div>
           </div>
     </div>
