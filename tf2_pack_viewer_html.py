@@ -59,7 +59,7 @@ class index:
         try:
             inputdata = web.input()
             raise web.seeother("/user/" + inputdata["User"])
-        except steam.user.ProfileError as E:
+        except Exception as E:
             return templates.error(E)
 
     def __init__(self):
