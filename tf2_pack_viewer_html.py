@@ -42,14 +42,18 @@ class style:
     
 class pack_fetch:
     def GET(self, sid):
+        sortby = "default"
         if not sid:
             return "Need an ID"
         try:
             user = steam.user.profile(sid)
             pack = steam.tf2.backpack(user)
+            inputs = web.input()
+            if inputs.has_key("sort"):
+                sortby = inputs["sort"]
         except Exception as E:
             return templates.error(E)
-        return templates.inventory(user, pack)
+        return templates.inventory(user, pack, sortby)
 
 class index:
     def GET(self, arg):
