@@ -25,9 +25,10 @@ except:
     raise SystemExit("I want web.py.")
 
 template_dir = "html_templates/"
+stylesheet = template_dir + "style.css"
 
 urls = (
-    "/user/([A-Za-z0-9]+)", "pack_fetch",
+    "/user/(.+)", "pack_fetch",
     "/style.css", "style",
     "/(.*)", "index"
     )
@@ -37,7 +38,7 @@ templates = web.template.render(template_dir)
 class style:
     def GET(self):
         web.header("Content-type", "text/css")
-        return file(template_dir + "style.css").read()
+        return file(stylesheet).read()
     
 class pack_fetch:
     def GET(self, sid):
