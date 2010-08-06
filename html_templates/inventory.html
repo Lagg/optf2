@@ -39,8 +39,15 @@ $                "selfmade": "My "}
       $if len(items) <= 0:
           &nbsp;is empty!
       </h2>
+        <a href="?sort=serial">Serial</a>
+      | <a href="?sort=cell">Position</a>
+      | <a href="?sort=level">Level</a>
+      | <a href="?sort=name">Name</a>
+      | <a href="?sort=slot">Type</a>
+      | <a href="?sort=class">Class</a>
     </div>
     $code:
+        itemcmp = None
         def defcmp(x, y):
             if x < y:
                 return -1
@@ -69,8 +76,25 @@ $                "selfmade": "My "}
             def itemcmp(x, y):
                 return defcmp(pack.get_item_quality(x)["str"] + " " + pack.get_item_name(x),
                               pack.get_item_quality(y)["str"] + " " + pack.get_item_name(y))
-    $if sortby != "default":
+    $elif sortby == "slot":
         $code:
+            def itemcmp(x, y):
+                return defcmp(pack.get_item_slot(x), pack.get_item_slot(y))
+    $elif sortby == "class":
+        $code:
+            def itemcmp(x, y):
+                cx = pack.get_item_equipable_classes(x)
+                cy = pack.get_item_equipable_classes(y)
+                lenx = len(cx)
+                leny = len(cy)
+
+                if lenx == 1 and leny == 1:
+                    return defcmp(cx[0], cy[0])
+                else:
+                    return defcmp(lenx, leny)
+                    
+    $code:
+        if itemcmp:
             items.sort(cmp = itemcmp)
     <div id="content">
       $for item in items:
