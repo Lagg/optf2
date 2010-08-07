@@ -60,6 +60,7 @@ body { background: #303030; color: white; }
 #avatar { font-size: 9px; }
 
 a { color: white; }
+a:hover { text-decoration: none; }
 a:visited { text-decoration: none; color: #a9a9a9; }
 
 #status_online { color: #00ff00; }
