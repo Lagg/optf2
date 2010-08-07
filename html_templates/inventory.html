@@ -39,12 +39,13 @@ $                "selfmade": "My "}
       $if len(items) <= 0:
           &nbsp;is empty!
       </h2>
-        <a href="?sort=serial">Serial</a>
-      | <a href="?sort=cell">Position</a>
-      | <a href="?sort=level">Level</a>
-      | <a href="?sort=name">Name</a>
-      | <a href="?sort=slot">Type</a>
-      | <a href="?sort=class">Class</a>
+      $if len(items) > 0:
+            <a href="?sort=serial">Serial</a>
+          | <a href="?sort=cell">Position</a>
+          | <a href="?sort=level">Level</a>
+          | <a href="?sort=name">Name</a>
+          | <a href="?sort=slot">Type</a>
+          | <a href="?sort=class">Class</a>
     </div>
     $code:
         itemcmp = None
