@@ -16,13 +16,13 @@ ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
 OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 """
 
-import steam.user, steam.tf2
-
 try:
+    import steam.user, steam.tf2
     import web
     from web import form
-except:
-    raise SystemExit("I want web.py.")
+except ImportError as E:
+    print(str(E))
+    raise SystemExit
 
 template_dir = "html_templates/"
 stylesheet = template_dir + "style.css"
