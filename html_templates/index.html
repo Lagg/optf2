@@ -1,22 +1,8 @@
 $def with (arg, profile_form)
-<?xml version="1.0" encoding="iso-8859-1"?>
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
-               "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml">
-  <head>
-    <title>Steamodd</title>
-    <link rel="stylesheet" type="text/css" href="/style.css"/>
-    <meta name="generator" content="Steamodd"/>    
-  </head>
-  <body>
-$if arg == "about":
-    About goes here
-$else:
+$var title: Steamodd
+
     <form id="userform" name="pform" method="post" action="/">
       $if not profile_form.valid:
           <p>Bad profile given</p>
       $:profile_form.render()
     </form>
-    <div id="footer">Copyright (C) 2010 Anthony Garcia</div>
-  </body>
-</html>

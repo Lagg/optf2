@@ -33,7 +33,7 @@ urls = (
     "/(.*)", "index"
     )
 app = web.application(urls, globals())
-templates = web.template.render(template_dir)
+templates = web.template.render(template_dir, base = "base")
 
 class style:
     def GET(self):
