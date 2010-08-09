@@ -52,7 +52,7 @@ class pack_fetch:
             if inputs.has_key("sort"):
                 sortby = inputs["sort"]
         except Exception as E:
-            return templates.error(E)
+            return templates.error(str(E))
         return templates.inventory(user, pack, sortby)
 
 class index:
@@ -64,7 +64,7 @@ class index:
             inputdata = web.input()
             raise web.seeother("/user/" + inputdata["User"])
         except Exception as E:
-            return templates.error(E)
+            return templates.error(str(E))
 
     def __init__(self):
         self.profile_form = form.Form(
