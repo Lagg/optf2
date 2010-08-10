@@ -24,8 +24,20 @@ except ImportError as E:
     print(str(E))
     raise SystemExit
 
+# Configuration stuff
+
+# You probably want this to be
+# an absolute path if you're not running the built-in server
 template_dir = "html_templates/"
 stylesheet = template_dir + "style.css"
+
+# Most links to other viewer pages will
+# be prefixed with this.
+virtual_root = "/"
+
+css_url = "/style.css"
+
+# End of configuration stuff
 
 urls = (
     "/user/(.+)", "pack_fetch",
@@ -33,7 +45,9 @@ urls = (
     "/(.*)", "index"
     )
 app = web.application(urls, globals())
-templates = web.template.render(template_dir, base = "base")
+templates = web.template.render(template_dir, base = "base",
+                                globals = {"css_url": css_url,
+                                           "virtual_root": virtual_root})
 
 class style:
     def GET(self):
@@ -62,7 +76,7 @@ class index:
     def POST(self, arg):
         try:
             inputdata = web.input()
-            raise web.seeother("/user/" + inputdata["User"])
+            raise web.seeother(virtual_root + "user/" + inputdata["User"])
         except Exception as E:
             return templates.error(str(E))
 
