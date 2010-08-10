@@ -1,7 +1,7 @@
 $def with (arg, profile_form)
 $var title: Steamodd
 
-<form id="userform" name="pform" method="post" action="/">
+<form id="userform" name="pform" method="post" action="$virtual_root">
   $if not profile_form.valid:
       <p>Bad profile given</p>
   $:profile_form.render()
