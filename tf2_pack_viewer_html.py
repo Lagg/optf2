@@ -57,13 +57,10 @@ steam.set_language(language)
 
 class pack_fetch:
     def GET(self, sid):
-        sortby = "default"
         try:
             user = steam.user.profile(sid)
             pack = steam.tf2.backpack(user)
-            inputs = web.input()
-            if inputs.has_key("sort"):
-                sortby = inputs["sort"]
+            sortby = web.input().get("sort", "default")
         except Exception as E:
             return templates.error(str(E))
         return templates.inventory(user, pack, sortby)
