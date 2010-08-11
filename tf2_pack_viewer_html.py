@@ -17,7 +17,7 @@ OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 """
 
 try:
-    import steam.user, steam.tf2
+    import steam.user, steam.tf2, steam
     import web
     from web import form
 except ImportError as E:
@@ -29,36 +29,35 @@ except ImportError as E:
 # You probably want this to be
 # an absolute path if you're not running the built-in server
 template_dir = "html_templates/"
-stylesheet = template_dir + "style.css"
 
 # Most links to other viewer pages will
 # be prefixed with this.
 virtual_root = "/"
 
-css_url = "/style.css"
+css_url = "style.css"
+
+api_key = None
+
+language = "en"
 
 # End of configuration stuff
 
 urls = (
-    "/user/(.+)", "pack_fetch",
-    "/style.css", "style",
-    "/(.*)", "index"
+    virtual_root + "user/(.+)", "pack_fetch",
+    virtual_root, "index"
     )
+
 app = web.application(urls, globals())
 templates = web.template.render(template_dir, base = "base",
                                 globals = {"css_url": css_url,
                                            "virtual_root": virtual_root})
 
-class style:
-    def GET(self):
-        web.header("Content-type", "text/css")
-        return file(stylesheet).read()
-    
+steam.set_api_key(api_key)
+steam.set_language(language)
+
 class pack_fetch:
     def GET(self, sid):
         sortby = "default"
-        if not sid:
-            return "Need an ID"
         try:
             user = steam.user.profile(sid)
             pack = steam.tf2.backpack(user)
@@ -70,21 +69,18 @@ class pack_fetch:
         return templates.inventory(user, pack, sortby)
 
 class index:
-    def GET(self, arg):
-        return templates.index(arg, self.profile_form())
-
-    def POST(self, arg):
-        try:
-            inputdata = web.input()
-            raise web.seeother(virtual_root + "user/" + inputdata["User"])
-        except Exception as E:
-            return templates.error(str(E))
-
-    def __init__(self):
-        self.profile_form = form.Form(
+    def GET(self):
+        profile_form = form.Form(
             form.Textbox("User"),
             form.Button("View")
             )
+        return templates.index(profile_form())
+
+    def POST(self):
+        sid = web.input().get("User")
+        if not sid:
+            return templates.error("Need an ID")
+        raise web.seeother(virtual_root + "user/" + sid)
         
 if __name__ == "__main__":
     app.run()
