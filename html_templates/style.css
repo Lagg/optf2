@@ -66,3 +66,5 @@ a:visited { text-decoration: none; color: #a9a9a9; }
 #status_online { color: #00ff00; }
 #status_offline { color: #808080; }
 #status_snooze, #status_away, #status_busy { color: #2fb3ff; }
+
+#navbar { background: #212121; text-align: center; max-width: 100%; padding: 8px; margin-bottom: 15px; }
