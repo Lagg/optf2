@@ -43,7 +43,7 @@ language = "en"
 # End of configuration stuff
 
 urls = (
-    virtual_root + "user/(.+)", "pack_fetch",
+    virtual_root + "user/(.*)", "pack_fetch",
     virtual_root, "index"
     )
 
@@ -56,14 +56,22 @@ steam.set_api_key(api_key)
 steam.set_language(language)
 
 class pack_fetch:
-    def GET(self, sid):
+    def _get_page_for_sid(self, sid):
         try:
+            if not sid:
+                return templates.error("Need an ID")
             user = steam.user.profile(sid)
             pack = steam.tf2.backpack(user)
             sortby = web.input().get("sort", "default")
         except Exception as E:
             return templates.error(str(E))
         return templates.inventory(user, pack, sortby)
+
+    def GET(self, sid):
+        return self._get_page_for_sid(sid)
+
+    def POST(self, s):
+        return self._get_page_for_sid(web.input().get("User"))
 
 class index:
     def GET(self):
@@ -72,12 +80,6 @@ class index:
             form.Button("View")
             )
         return templates.index(profile_form())
-
-    def POST(self):
-        sid = web.input().get("User")
-        if not sid:
-            return templates.error("Need an ID")
-        raise web.seeother(virtual_root + "user/" + sid)
         
 if __name__ == "__main__":
     app.run()

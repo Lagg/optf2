@@ -6,6 +6,7 @@ $ qualitydict = {"unique": "The ", "community": "Community ",
 $                "developer": "Legendary ", "normal": "",
 $                "selfmade": "My "}
 $var title: Steamodd - $usern's Backpack
+$ perma = virtual_root + "user/%lu" % user.get_id64()
 <div id="header">
   $ cgame = user.get_current_game()
   $ cstatus = user.get_status()
@@ -30,13 +31,14 @@ $var title: Steamodd - $usern's Backpack
   $if len(items) <= 0:
       &nbsp;is empty!
   </h2>
+  <i id="plink"><a href="$perma" rel="bookmark">(permalink)</a></i>
   $if len(items) > 0:
-        <a href="?sort=serial">Serial</a>
-      | <a href="?sort=cell">Position</a>
-      | <a href="?sort=level">Level</a>
-      | <a href="?sort=name">Name</a>
-      | <a href="?sort=slot">Type</a>
-      | <a href="?sort=class">Class</a>
+        <a href="$perma?sort=serial">Serial</a>
+      | <a href="$perma?sort=cell">Position</a>
+      | <a href="$perma?sort=level">Level</a>
+      | <a href="$perma?sort=name">Name</a>
+      | <a href="$perma?sort=slot">Type</a>
+      | <a href="$perma?sort=class">Class</a>
 </div>
 $code:
     itemcmp = None

@@ -68,3 +68,4 @@ a:visited { text-decoration: none; color: #a9a9a9; }
 #status_snooze, #status_away, #status_busy { color: #2fb3ff; }
 
 #navbar { background: #212121; text-align: center; max-width: 100%; padding: 8px; margin-bottom: 15px; }
+#plink { font-size: 8px; font-weight: normal; }
