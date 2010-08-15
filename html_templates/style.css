@@ -59,13 +59,15 @@ body { background: #303030; color: white; }
 
 #avatar { font-size: 9px; }
 
-a { color: white; }
-a:hover { text-decoration: none; }
+a { color: #cacaca; text-decoration: none; }
+a:hover { text-decoration: underline; }
 a:visited { text-decoration: none; color: #a9a9a9; }
 
 #status_online { color: #00ff00; }
 #status_offline { color: #808080; }
 #status_snooze, #status_away, #status_busy { color: #2fb3ff; }
 
-#navbar { background: #212121; text-align: center; max-width: 100%; padding: 8px; margin-bottom: 15px; }
-#plink { font-size: 8px; font-weight: normal; }
+#navbar { background: #939393; text-align: left; max-width: 100%; padding: 8px; margin-bottom: 15px; }
+#navbar a { padding: 8px 4px 8px 4px; color: white; margin-left: 16px; }
+#navbar a:hover { background: #535353; text-decoration: none; }
+#plink { font-size: 10px; font-weight: normal; }

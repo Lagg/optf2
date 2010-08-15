@@ -30,7 +30,7 @@ $ perma = virtual_root + "user/%lu" % user.get_id64()
   Backpack
   $if len(items) <= 0:
       &nbsp;is empty!
-  <i id="plink"><a href="$perma" rel="bookmark">(permalink)</a></i>
+  <a id="plink" href="$perma" rel="bookmark">(permalink)</a>
   </h2>
   $if len(items) > 0:
         <a href="$perma?sort=serial">Serial</a>
