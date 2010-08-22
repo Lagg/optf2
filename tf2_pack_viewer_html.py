@@ -28,16 +28,16 @@ except ImportError as E:
 
 # You probably want this to be
 # an absolute path if you're not running the built-in server
-template_dir = "html_templates/"
+template_dir = "static/"
 
 # Most links to other viewer pages will
 # be prefixed with this.
 virtual_root = "/"
 
-css_url = "style.css"
+css_url = "/static/style.css"
 
 # The url to prefix icon names with
-icon_prefix = "/html_templates/"
+icon_prefix = "/static/"
 
 api_key = None
 
