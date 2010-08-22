@@ -53,10 +53,6 @@ body { background: #303030; color: white; }
     margin-bottom: 50px;
 }
 
-.class_equipped { display: inline; color: white; }
-
-.class_unequipped { display: inline; color: #202020; }
-
 #avatar { font-size: 9px; }
 
 a { color: #cacaca; text-decoration: none; }
