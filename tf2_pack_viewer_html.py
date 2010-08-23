@@ -55,7 +55,8 @@ templates = web.template.render(template_dir, base = "base",
                                 globals = {"css_url": css_url,
                                            "virtual_root": virtual_root,
                                            "icon_prefix": icon_prefix,
-                                           "encode_url": web.urlquote})
+                                           "encode_url": web.urlquote,
+                                           "len": len})
 
 steam.set_api_key(api_key)
 steam.set_language(language)
