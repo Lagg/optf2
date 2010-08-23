@@ -106,20 +106,24 @@ $code:
                         $desc
                   </div>
           <div class="item_neutral_attr">
-            Serial Number: $pack.get_item_id(item)
+            Serial: $pack.get_item_id(item)
           </div>
           <div class="item_neutral_attr">
             $if pos <= -1:
                 Not in backpack yet!
             $else:
-                Pack cell: $pos
+                Position: $pos
           </div>
           <div class="item_neutral_attr">
             $ equipped = pack.get_item_equipped_classes(item)
 
-            In use by:<br/>
+            Equipped: \
             $for ec in equipped:
                 <img src="${icon_prefix}${ec}_icon.png" alt="$ec"/>&nbsp; 
+          </div>
+          <div class="item_neutral_attr">
+            $ wiki_url = "http://wiki.teamfortress.com/wiki/" + encode_url(pack.get_item_name(item))
+            <a href="$wiki_url">More info</a>
           </div>
         </div>
       </div>
