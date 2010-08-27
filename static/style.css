@@ -10,7 +10,7 @@ body { background: #303030; color: white; }
 .normal_name { color: white; font-weight: bold; }
 .selfmade_name { color: #00e4ff; font-weight: bold; }
 
-#item_cell, #item_cell_undropped {
+.item_cell {
     margin: 8px;
     border: 2px solid black;
     width: 180px;
@@ -30,9 +30,9 @@ body { background: #303030; color: white; }
     clear: both;
 }
 
-#item_attribs { display: none; }
-#item_attribs div { padding: 4px; text-align: left; }
-#item_cell:hover #item_attribs {
+.item_attribs { display: none; }
+.item_attribs div { padding: 4px; text-align: left; }
+.item_cell:hover .item_attribs {
     display: inline;
     position: absolute;
     top: 0;
