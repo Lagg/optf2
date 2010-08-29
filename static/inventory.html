@@ -4,6 +4,7 @@ $ usern = user.get_persona()
 $ realn = user.get_real_name()
 $var title: $product_name - $usern's Backpack
 $ perma = virtual_root + "user/%lu" % user.get_id64()
+$ rss = virtual_root + "feed/%lu" % user.get_id64()
 <div id="header">
   $ cgame = user.get_current_game()
   $ cstatus = user.get_status()
@@ -27,7 +28,9 @@ $ perma = virtual_root + "user/%lu" % user.get_id64()
   Backpack
   $if len(items) <= 0:
       &nbsp;is empty!
-  <a id="plink" href="$perma" rel="bookmark">(permalink)</a>
+  <a href="$perma" rel="bookmark"><img src="${icon_prefix}plink_icon.png" alt="Permalink" title="Permalink"/></a>
+  <link rel="alternate" href="$rss" type="application/rss+xml"/>
+  <a href="$rss"><img src="${icon_prefix}feed_icon.png" alt="RSS" title="Subscribe to an RSS feed of this backpack"/></a>
   </h2>
   $if len(items) > 0:
         <a href="$perma?sort=default">Default</a>

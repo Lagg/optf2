@@ -50,6 +50,7 @@ product_name = "Steamodd"
 
 urls = (
     virtual_root + "user/(.*)", "pack_fetch",
+    virtual_root + "feed/(.*)", "pack_feed",
     virtual_root, "index"
     )
 
@@ -90,6 +91,23 @@ class pack_fetch:
 
     def POST(self, s):
         return self._get_page_for_sid(web.input().get("User"))
+
+class pack_feed:
+    # Eventually I'll add code that uses the wiki API and make dedicated
+    # pages for each item for the feed to link to, for now it just goes to the
+    # main viewer page
+    def GET(self, sid):
+        try:
+            if not sid:
+                return templates.error("Need an ID")
+            user = steam.user.profile(sid)
+            pack = steam.tf2.backpack(user)
+        except Exception as E:
+            return templates.error(str(E))
+        web.header("Content-Type", "application/rss+xml")
+        return web.template.render(template_dir,
+                                   globals = render_globals).inventory_feed(user,
+                                                                            pack)
 
 class index:
     def GET(self):
