@@ -66,4 +66,5 @@ a:visited { text-decoration: none; color: #a9a9a9; }
 #navbar { background: #939393; text-align: left; max-width: 100%; padding: 8px; margin-bottom: 15px; }
 #navbar a { padding: 8px 4px 8px 4px; color: white; margin-left: 16px; }
 #navbar a:hover { background: #535353; text-decoration: none; }
-#plink { font-size: 10px; font-weight: normal; }
+
+img { border: 0; }

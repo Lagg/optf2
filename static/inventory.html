@@ -2,10 +2,7 @@ $def with (user, pack, sortby)
 $ items = pack.get_items()
 $ usern = user.get_persona()
 $ realn = user.get_real_name()
-$ qualitydict = {"unique": "The ", "community": "Community ",
-$                "developer": "Legendary ", "normal": "",
-$                "selfmade": "My "}
-$var title: Steamodd - $usern's Backpack
+$var title: $product_name - $usern's Backpack
 $ perma = virtual_root + "user/%lu" % user.get_id64()
 <div id="header">
   $ cgame = user.get_current_game()
@@ -33,7 +30,8 @@ $ perma = virtual_root + "user/%lu" % user.get_id64()
   <a id="plink" href="$perma" rel="bookmark">(permalink)</a>
   </h2>
   $if len(items) > 0:
-        <a href="$perma?sort=serial">Serial</a>
+        <a href="$perma?sort=default">Default</a>
+      | <a href="$perma?sort=serial">Serial</a>
       | <a href="$perma?sort=cell">Position</a>
       | <a href="$perma?sort=level">Level</a>
       | <a href="$perma?sort=name">Name</a>

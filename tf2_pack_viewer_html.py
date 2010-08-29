@@ -43,6 +43,9 @@ api_key = None
 
 language = "en"
 
+# It would be nice of you not to change this
+product_name = "Steamodd"
+
 # End of configuration stuff
 
 urls = (
@@ -50,13 +53,22 @@ urls = (
     virtual_root, "index"
     )
 
+# These should stay explicit
+render_globals = {"css_url": css_url,
+                  "virtual_root": virtual_root,
+                  "icon_prefix": icon_prefix,
+                  "encode_url": web.urlquote,
+                  "len": len,
+                  "qualitydict": {"unique": "The ", "community": "Community ",
+                                  "developer": "Legendary ", "normal": "",
+                                  "selfmade": "My "},
+                  "instance": web.ctx,
+                  "product_name": product_name
+                  }
+
 app = web.application(urls, globals())
 templates = web.template.render(template_dir, base = "base",
-                                globals = {"css_url": css_url,
-                                           "virtual_root": virtual_root,
-                                           "icon_prefix": icon_prefix,
-                                           "encode_url": web.urlquote,
-                                           "len": len})
+                                globals = render_globals)
 
 steam.set_api_key(api_key)
 steam.set_language(language)
