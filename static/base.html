@@ -9,7 +9,10 @@ $def with (content)
     <meta name="generator" content="$product_name"/>
   </head>
   <body>
-    <div id="navbar"><a href="$virtual_root">$product_name</a></div>
+    <div id="navbar">
+      <a href="$virtual_root">$product_name</a>
+      <a href="${virtual_root}about">About</a>
+    </div>
     $:content
   </body>
 </html>

@@ -51,6 +51,7 @@ product_name = "Steamodd"
 urls = (
     virtual_root + "user/(.*)", "pack_fetch",
     virtual_root + "feed/(.*)", "pack_feed",
+    virtual_root + "about", "about",
     virtual_root, "index"
     )
 
@@ -73,6 +74,10 @@ templates = web.template.render(template_dir, base = "base",
 
 steam.set_api_key(api_key)
 steam.set_language(language)
+
+class about:
+    def GET(self):
+        return templates.about()
 
 class pack_fetch:
     def _get_page_for_sid(self, sid):

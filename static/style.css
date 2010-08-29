@@ -44,7 +44,7 @@ body { background: #303030; color: white; }
 
 #header { text-align: center; clear: both; }
 
-#content { margin-left: 90px; height: 100%; }
+#content { margin-left: 90px; height: 100%; text-align: center; }
 
 #userform {
     text-align: center;
