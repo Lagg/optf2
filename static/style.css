@@ -12,14 +12,37 @@ body { background: #303030; color: white; }
 
 .item_cell {
     margin: 8px;
-    border: 2px solid black;
+    background: #3c352e;
     width: 180px;
     height: 180px;
     padding: 10px;
+    padding-left: 0;
     text-align: center;
-    overflow: auto;
     float: left;
     position: relative;
+    z-index: 24;
+    /* Yes I'm using non-standard properties. Better than wasting bandwidth
+       with corner images */
+    -moz-border-radius: 20px;
+    -webkit-border-radius: 20px;
+    border-radius: 20px;
+}
+.item_attribs { display: none; }
+.item_attribs div { padding: 4px; text-align: left; }
+.item_cell:hover {
+    background: #5a4e42;
+    z-index: 25;
+}
+.item_cell:hover .item_attribs {
+    display: block;
+    position: absolute;
+    top: 190px;
+    width: 15em;
+    background: black;
+    -moz-border-radius: 10px;
+    -webkit-border-radius: 10px;
+    border-radius: 10px;
+    margin: 10px;
 }
 
 #footer {
@@ -30,17 +53,6 @@ body { background: #303030; color: white; }
     clear: both;
 }
 
-.item_attribs { display: none; }
-.item_attribs div { padding: 4px; text-align: left; }
-.item_cell:hover .item_attribs {
-    display: inline;
-    position: absolute;
-    top: 0;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    background: #303030;
-}
 
 #header { text-align: center; clear: both; }
 
