@@ -12,7 +12,7 @@ $def with (user, pack)
       <item>
         <description>Level $pack.get_item_level(item) $pack.get_item_type(item)</description>
         <title>$qualitydict[pack.get_item_quality(item)["str"]] $pack.get_item_name(item)</title>
-        <link>${instance.homedomain}${virtual_root}user/$user.get_id64()</link>
+        <link>${instance.homedomain}${virtual_root}item/${user.get_id64()}/${pack.get_item_id(item)}</link>
       </item>
   </channel>
 </rss>

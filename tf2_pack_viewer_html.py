@@ -54,6 +54,7 @@ source_url = "http://gitorious.org/steamodd/main"
 urls = (
     virtual_root + "user/(.*)", "pack_fetch",
     virtual_root + "feed/(.+)", "pack_feed",
+    virtual_root + "item/(.+)", "pack_item",
     virtual_root + "about", "about",
     virtual_root, "index"
     )
@@ -78,6 +79,21 @@ templates = web.template.render(template_dir, base = "base",
 
 steam.set_api_key(api_key)
 steam.set_language(language)
+
+class pack_item:
+    def GET(self, iid):
+        try:
+            idl = iid.split('/')
+            user = steam.user.profile(idl[0])
+            pack = steam.tf2.backpack(user)
+            try: idl[1] = int(idl[1])
+            except: raise Exception("Item ID must be an integer")
+            item = pack.get_item_by_id(int(idl[1]))
+            if not item:
+                raise Exception("Item not found")
+        except Exception as E:
+            return templates.error(str(E))
+        return templates.item(user, item, pack)
 
 class about:
     def GET(self):
