@@ -46,6 +46,9 @@ language = "en"
 # It would be nice of you not to change this
 product_name = "Steamodd"
 
+# Where to get the source code.
+source_url = "http://gitorious.org/steamodd/main"
+
 # End of configuration stuff
 
 urls = (
@@ -65,7 +68,8 @@ render_globals = {"css_url": css_url,
                                   "developer": "Legendary ", "normal": "",
                                   "selfmade": "My "},
                   "instance": web.ctx,
-                  "product_name": product_name
+                  "product_name": product_name,
+                  "source_url": source_url
                   }
 
 app = web.application(urls, globals())
