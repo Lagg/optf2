@@ -53,7 +53,7 @@ source_url = "http://gitorious.org/steamodd/main"
 
 urls = (
     virtual_root + "user/(.*)", "pack_fetch",
-    virtual_root + "feed/(.*)", "pack_feed",
+    virtual_root + "feed/(.+)", "pack_feed",
     virtual_root + "about", "about",
     virtual_root, "index"
     )
@@ -107,8 +107,6 @@ class pack_feed:
     # main viewer page
     def GET(self, sid):
         try:
-            if not sid:
-                return templates.error("Need an ID")
             user = steam.user.profile(sid)
             pack = steam.tf2.backpack(user)
         except Exception as E:
