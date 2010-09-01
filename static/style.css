@@ -56,7 +56,7 @@ body { background: #303030; color: white; font-family: Arial, Helvetica, sans-se
 
 #header { text-align: center; clear: both; }
 
-#content { margin-left: 90px; height: 100%; text-align: center; }
+#content { height: 100%; text-align: center; }
 
 #userform {
     text-align: center;
@@ -80,3 +80,11 @@ a:visited { text-decoration: none; color: #a9a9a9; }
 #navbar a:hover { background: #535353; text-decoration: none; }
 
 img { border: 0; }
+
+#item_stats div {
+    padding: 4px;
+}
+
+#backpack {
+    margin-left: 90px;
+}

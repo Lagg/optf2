@@ -85,6 +85,7 @@ $code:
     if itemcmp:
         items.sort(cmp = itemcmp)
 <div id="content">
+  <div id="backpack">
   $for item in items:
       $ qitem = pack.get_item_quality(item)["str"]
       $ pos = pack.get_item_position(item)
@@ -131,6 +132,7 @@ $code:
           </div>
         </div>
       </div>
+  </div>
 </div>
 <div id="footer">
   Valve says I should link to <a href="http://steampowered.com">this</a>.
