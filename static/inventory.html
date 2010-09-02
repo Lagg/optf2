@@ -15,12 +15,14 @@ $ rss = virtual_root + "feed/%lu" % user.get_id64()
   <div id="status_$cstatus">
     $if cgame:
         Playing \
+        $ game_extra = cgame.get("extra", "Unknown")
+        $ game_server = cgame.get("server", "0.0.0.0:0")
         $if cgame.has_key("id"):
-            <a href="http://store.steampowered.com/app/$cgame['id']">$cgame["extra"]</a>
+            <a href="http://store.steampowered.com/app/$cgame['id']">$game_extra</a>
         $else:
-            $cgame["extra"]
-        $if cgame.has_key("server") and cgame["server"] != "0.0.0.0:0":
-            <a href="steam://connect/$cgame['server']">(Connect)</a>
+            $game_extra
+        $if game_server != "0.0.0.0:0":
+            <a href="steam://connect/$game_server">(Connect)</a>
     $else:
         $cstatus
   </div>
