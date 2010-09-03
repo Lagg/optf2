@@ -43,6 +43,10 @@ $var title: $product_name - $usern's $itemn
         No
   </div>
   <br/><a href="$wiki_url">Official TF2 Wiki Article</a>
+  $# Begin complaint code (remove this when Valve fixes their crap
+  $if itemn.find("The ") != -1:
+      <br/><br/><a href="http://forums.steampowered.com/forums/forumdisplay.php?f=15">(Complain to Valve about this incorrect title)</a>
+  $# End complaint code
   </div>
   </div>
 </div>
