@@ -79,20 +79,26 @@ a:visited { text-decoration: none; color: #a9a9a9; }
 
 img { border: 0; }
 
-#item_stats div {
-    padding: 4px;
-    text-align: left;
-    margin-left: 100px;
-}
 #item_stats {
     background: #303030;
     -moz-border-radius: 10px;
     -webkit-border-radius: 10px;
     border-radius: 10px;
     margin: 0 auto;
-    width: 600px;
+    width: 800px;
     height: 600px;
+}
+#item_image_large { float: left; }
+#item_attrs {
+    float: right;
+    padding: 8px 0 8px 8px;
+    width: 200px;
+    text-align: left;
+    margin-right: 20px;
     overflow: auto;
+}
+#item_attrs div {
+    padding: 4px;
 }
 
 #backpack {
