@@ -1,7 +1,7 @@
 $def with (profile_form)
 $var title: $product_name
 
-<form id="userform" name="pform" method="post" action="${virtual_root}user/">
+<form id="userform" method="post" action="${virtual_root}user/">
   $if not profile_form.valid:
       <p>Bad profile given</p>
   $:profile_form.render()

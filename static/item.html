@@ -5,12 +5,17 @@ $var title: $product_name - $usern's $itemn
 
 <div id="header">
   $ qitem = pack.get_item_quality(item)
-  <h1 class="${qitem['str']}_name"><a href="${virtual_root}user/${user.get_id64()}">$usern's</a> $qitem["prettystr"] $itemn</h1>
+  <h1 class="${qitem['str']}_name">
+    <a href="${virtual_root}user/${user.get_id64()}">$usern's</a> $qitem["prettystr"] $itemn
+    <a href="${virtual_root}item/${user.get_id64()}/${pack.get_item_id(item)}">
+      <img src="${static_prefix}plink_icon.png" alt="Permalink" title="Permalink"/>
+    </a>
+  </h1>
 </div>
 <div id="content">
   <div id="item_stats">
   <img id="item_image_large" src="$pack.get_item_image(item, pack.ITEM_IMAGE_LARGE)" alt="$usern's $itemn"/>
-  <img src="${static_prefix}vertical.gif" height="600" width="1"/>
+  <img src="${static_prefix}vertical.gif" height="600" width="1" alt="divider"/>
   <div id="item_attrs">
   $ wiki_url = "http://wiki.teamfortress.com/wiki/" + encode_url(pack.get_item_name(item))
   $for attr in pack.get_item_attributes(item):
