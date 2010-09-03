@@ -60,12 +60,8 @@ body { background: #303030; color: white; font-family: Arial, Helvetica, sans-se
 
 #content { height: 100%; text-align: center; }
 
-#userform {
-    text-align: center;
-    margin-top: 200px;
-    margin-left: 40%;
-    margin-bottom: 50px;
-}
+#userform { text-align: center; }
+#userform table { margin: 15% auto; }
 
 #avatar { font-size: 9px; }
 
@@ -85,6 +81,18 @@ img { border: 0; }
 
 #item_stats div {
     padding: 4px;
+    text-align: left;
+    margin-left: 100px;
+}
+#item_stats {
+    background: #303030;
+    -moz-border-radius: 10px;
+    -webkit-border-radius: 10px;
+    border-radius: 10px;
+    margin: 0 auto;
+    width: 600px;
+    height: 600px;
+    overflow: auto;
 }
 
 #backpack {

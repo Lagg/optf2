@@ -36,8 +36,10 @@ virtual_root = "/"
 
 css_url = "/static/style.css"
 
-# The url to prefix icon names with
-icon_prefix = "/static/"
+# The url to prefix URLs
+# pointing to static data with
+# e.g. class icons
+static_prefix = "/static/"
 
 api_key = None
 
@@ -62,7 +64,7 @@ urls = (
 # These should stay explicit
 render_globals = {"css_url": css_url,
                   "virtual_root": virtual_root,
-                  "icon_prefix": icon_prefix,
+                  "static_prefix": static_prefix,
                   "encode_url": web.urlquote,
                   "len": len,
                   "qualitydict": {"unique": "The ", "community": "Community ",

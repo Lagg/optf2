@@ -20,6 +20,26 @@ $var title: $product_name - $usern's $itemn
               $else:
                   $desc
           </div>
+  <div class="item_neutral_attr">
+    Serial: $pack.get_item_id(item)
+  </div>
+  <div class="item_neutral_attr">
+    $ pos = pack.get_item_position(item)
+    Position: \
+    $if pos <= -1:
+        Not in backpack yet!
+    $else:
+        $pos
+  </div>
+  <div class="item_neutral_attr">
+    $ equipped = pack.get_item_equipped_classes(item)
+    Equipped: \
+    $if len(equipped) > 0:
+        $for ec in equipped:
+            <img src="${static_prefix}${ec}_icon.png" title="$ec" alt="$ec"/>&nbsp;
+    $else:
+        No
+  </div>
   <br/><a href="$wiki_url">Official TF2 Wiki Article</a>
   </div>
 </div>
