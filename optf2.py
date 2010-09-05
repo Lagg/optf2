@@ -46,10 +46,10 @@ api_key = None
 language = "en"
 
 # It would be nice of you not to change this
-product_name = "Steamodd"
+product_name = "OPTF2"
 
 # Where to get the source code.
-source_url = "http://gitorious.org/steamodd/main"
+source_url = "http://gitorious.org/steamodd/optf2"
 
 # End of configuration stuff
 
