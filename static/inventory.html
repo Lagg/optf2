@@ -3,8 +3,8 @@ $ items = pack.get_items()
 $ usern = user.get_persona()
 $ realn = user.get_real_name()
 $var title: $product_name - $usern's Backpack
-$ perma = virtual_root + "user/%lu" % user.get_id64()
-$ rss = virtual_root + "feed/%lu" % user.get_id64()
+$ perma = "{0}user/{1}".format(virtual_root, user.get_id64())
+$ rss = "{0}feed/{1}".format(virtual_root, user.get_id64())
 <div id="header">
   $ cgame = user.get_current_game()
   $ cstatus = user.get_status()

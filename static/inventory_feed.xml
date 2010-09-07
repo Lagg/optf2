@@ -10,9 +10,11 @@ $def with (user, pack)
   $items.reverse()
   $for item in items:
       <item>
+        $ permalink = "{0}{1}item/{2}/{3}".format(instance.homedomain, virtual_root, user.get_id64(), pack.get_item_id(item))
         <description>Level $pack.get_item_level(item) $pack.get_item_type(item)</description>
         <title>$qualitydict[pack.get_item_quality(item)["str"]] $pack.get_item_name(item)</title>
-        <link>${instance.homedomain}${virtual_root}item/${user.get_id64()}/${pack.get_item_id(item)}</link>
+        <link>$permalink</link>
+        <guid isPermaLink="true">$permalink</guid>
       </item>
   </channel>
 </rss>
