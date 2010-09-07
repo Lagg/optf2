@@ -17,7 +17,7 @@ OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 """
 
 try:
-    import steam.user, steam.tf2, steam
+    import steam.user, steam.tf2, steam, os
     import web
     from web import form
 except ImportError as E:
@@ -82,6 +82,10 @@ templates = web.template.render(template_dir, base = "base",
 steam.set_api_key(api_key)
 steam.set_language(language)
 
+db_schema = "CREATE TABLE IF NOT EXISTS search_count (id64 INTEGER, persona TEXT, count INTEGER, valid BOOLEAN);"
+db_obj = web.database(dbn = "sqlite", db = os.path.join(steam.get_cache_dir(), "optf2.db"))
+db_obj.query(db_schema)
+
 class pack_item:
     def GET(self, iid):
         try:
@@ -108,6 +112,13 @@ class pack_fetch:
                 return templates.error("Need an ID")
             user = steam.user.profile(sid)
             pack = steam.tf2.backpack(user)
+            count = db_obj.select("search_count", what="count", where = "id64 = $uid64", vars = {"uid64": user.get_id64()})
+            try:
+                newcount = count[0]["count"] + 1
+                db_obj.update("search_count", where = "id64 = $uid64", vars = {"uid64": user.get_id64()}, count = newcount,
+                              persona = user.get_persona())
+            except IndexError:
+                db_obj.insert("search_count", valid = True, count = 1, id64 = user.get_id64(), persona = user.get_persona())
             sortby = web.input().get("sort", "default")
         except Exception as E:
             return templates.error(str(E))
@@ -140,7 +151,8 @@ class index:
             form.Textbox("User"),
             form.Button("View")
             )
-        return templates.index(profile_form())
+        countlist = db_obj.select("search_count", order = "count DESC", limit = 20)
+        return templates.index(profile_form(), countlist)
         
 if __name__ == "__main__":
     app.run()

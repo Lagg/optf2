@@ -61,7 +61,7 @@ body { background: #303030; color: white; font-family: Arial, Helvetica, sans-se
 #content { height: 100%; text-align: center; }
 
 #userform { text-align: center; }
-#userform table { margin: 15% auto; }
+#userform table { margin: 15% auto; margin-bottom: 50px; }
 
 #avatar { font-size: 9px; }
 
@@ -104,3 +104,9 @@ img { border: 0; }
 #backpack {
     margin-left: 90px;
 }
+
+.row_odd { background: #555555; }
+.row_even { background: #777777; }
+#search_table { margin: 15% auto; margin-top: 0; }
+#search_table tr td { padding: 6px; }
+#search_title { background: #454545; text-align: center; }

@@ -1,4 +1,4 @@
-$def with (profile_form)
+$def with (profile_form, countlist)
 $var title: $product_name
 
 <form id="userform" method="post" action="${virtual_root}user/">
@@ -6,3 +6,9 @@ $var title: $product_name
       <p>Bad profile given</p>
   $:profile_form.render()
 </form>
+<table id="search_table">
+  <tr id="search_title"><td colspan="2"><b>Top Backpacks</b></td></tr>
+  <tr class="row_even"><td><b>User</b></td><td><b>Views</b></td></tr>
+$for row in countlist:
+    <tr class="row_${loop.parity}"><td><a href="${virtual_root}user/$row['id64']">$row["persona"]</a></td><td>$row["count"]</td></tr>
+</table>
