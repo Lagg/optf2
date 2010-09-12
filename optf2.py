@@ -18,6 +18,9 @@ OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 try:
     import steam.user, steam.tf2, steam, os
+    from time import time
+    import cPickle as pickle
+    from cStringIO import StringIO
     import web
     from web import form
 except ImportError as E:
@@ -51,6 +54,14 @@ product_name = "OPTF2"
 # Where to get the source code.
 source_url = "http://gitorious.org/steamodd/optf2"
 
+# Cache a player's backpack. Reduces the number of API
+# requests and makes it a lot faster but might make the
+# database big
+cache_pack = True
+
+# Refresh cache every x seconds.
+cache_pack_refresh_interval = 30
+
 # End of configuration stuff
 
 urls = (
@@ -82,21 +93,59 @@ templates = web.template.render(template_dir, base = "base",
 steam.set_api_key(api_key)
 steam.set_language(language)
 
-db_schema = "CREATE TABLE IF NOT EXISTS search_count (id64 INTEGER, persona TEXT, count INTEGER, valid BOOLEAN);"
+db_schema = ["CREATE TABLE IF NOT EXISTS search_count (id64 INTEGER, persona TEXT, count INTEGER, valid BOOLEAN)",
+             "CREATE TABLE IF NOT EXISTS backpack_cache (id64 INTEGER, backpack BLOB, last_refresh DATE)"]
 db_obj = web.database(dbn = "sqlite", db = os.path.join(steam.get_cache_dir(), "optf2.db"))
-db_obj.query(db_schema)
+for s in db_schema:
+    db_obj.query(s)
+
+def make_packfile_path(id64):
+    return os.path.join(steam.get_cache_dir(), "{0}.pack".format(id64))
+
+def refresh_pack_cache(user, pack):
+    pack.load_pack(user)
+    try:
+        id64 = db_obj.select("backpack_cache", what = "id64", where = "id64 = $uid64",
+                             vars = {"uid64": user.get_id64()})[0]["id64"]
+        db_obj.update("backpack_cache", where = "id64 = $uid64", vars = {"uid64": id64},
+                      backpack = pickle.dumps(pack.get_pack_object()), last_refresh = int(time()))
+    except IndexError:
+        db_obj.insert("backpack_cache", id64 = user.get_id64(), last_refresh = int(time()),
+                      backpack = pickle.dumps(pack.get_pack_object()))
+
+def load_pack_cached(user, pack):
+    if cache_pack:
+        packfile = make_packfile_path(user.get_id64())
+        try:
+            packrow = db_obj.select("backpack_cache", what = "backpack, last_refresh", where = "id64 = $uid64",
+                                    vars = {"uid64": user.get_id64()})[0]
+            if (int(time()) - packrow["last_refresh"]) < cache_pack_refresh_interval:
+                pack.load_pack_file(StringIO(str(packrow["backpack"])))
+            else:
+                refresh_pack_cache(user, pack)
+        except IndexError:
+            refresh_pack_cache(user, pack)
+    else:
+        pack.load_pack(user)
 
 class pack_item:
     def GET(self, iid):
         try:
             idl = iid.split('/')
             user = steam.user.profile(idl[0])
-            pack = steam.tf2.backpack(user)
+            pack = steam.tf2.backpack()
+
+            load_pack_cached(user, pack)
+
             try: idl[1] = int(idl[1])
             except: raise Exception("Item ID must be an integer")
             item = pack.get_item_by_id(int(idl[1]))
             if not item:
-                raise Exception("Item not found")
+                refresh_pack_cache(user, pack)
+                load_pack_cached(user, pack)
+                item = pack.get_item_by_id(int(idl[1]))
+                if not item:
+                    raise Exception("Item not found")
         except Exception as E:
             return templates.error(str(E))
         return templates.item(user, item, pack)
@@ -111,7 +160,10 @@ class pack_fetch:
             if not sid:
                 return templates.error("Need an ID")
             user = steam.user.profile(sid)
-            pack = steam.tf2.backpack(user)
+            pack = steam.tf2.backpack()
+
+            load_pack_cached(user, pack)
+
             count = db_obj.select("search_count", what="count", where = "id64 = $uid64", vars = {"uid64": user.get_id64()})
             try:
                 newcount = count[0]["count"] + 1
@@ -137,7 +189,8 @@ class pack_feed:
     def GET(self, sid):
         try:
             user = steam.user.profile(sid)
-            pack = steam.tf2.backpack(user)
+            pack = steam.tf2.backpack()
+            load_pack_cached(user, pack)
         except Exception as E:
             return templates.error(str(E))
         web.header("Content-Type", "application/rss+xml")
