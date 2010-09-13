@@ -113,13 +113,13 @@ def refresh_pack_cache(user, pack):
         db_obj.insert("backpack_cache", id64 = user.get_id64(), last_refresh = int(time()),
                       backpack = pickle.dumps(pack.get_pack_object()))
 
-def load_pack_cached(user, pack):
+def load_pack_cached(user, pack, stale = False):
     if cache_pack:
         packfile = make_packfile_path(user.get_id64())
         try:
             packrow = db_obj.select("backpack_cache", what = "backpack, last_refresh", where = "id64 = $uid64",
                                     vars = {"uid64": user.get_id64()})[0]
-            if (int(time()) - packrow["last_refresh"]) < cache_pack_refresh_interval:
+            if stale or (int(time()) - packrow["last_refresh"]) < cache_pack_refresh_interval:
                 pack.load_pack_file(StringIO(str(packrow["backpack"])))
             else:
                 refresh_pack_cache(user, pack)
@@ -135,14 +135,13 @@ class pack_item:
             user = steam.user.profile(idl[0])
             pack = steam.tf2.backpack()
 
-            load_pack_cached(user, pack)
+            load_pack_cached(user, pack, stale = True)
 
             try: idl[1] = int(idl[1])
             except: raise Exception("Item ID must be an integer")
             item = pack.get_item_by_id(int(idl[1]))
             if not item:
                 refresh_pack_cache(user, pack)
-                load_pack_cached(user, pack)
                 item = pack.get_item_by_id(int(idl[1]))
                 if not item:
                     raise Exception("Item not found")
@@ -183,9 +182,6 @@ class pack_fetch:
         return self._get_page_for_sid(web.input().get("User"))
 
 class pack_feed:
-    # Eventually I'll add code that uses the wiki API and make dedicated
-    # pages for each item for the feed to link to, for now it just goes to the
-    # main viewer page
     def GET(self, sid):
         try:
             user = steam.user.profile(sid)
