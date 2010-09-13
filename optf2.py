@@ -31,7 +31,7 @@ except ImportError as E:
 
 # You probably want this to be
 # an absolute path if you're not running the built-in server
-template_dir = "static/"
+template_dir = "templates/"
 
 # Most links to other viewer pages will
 # be prefixed with this.
