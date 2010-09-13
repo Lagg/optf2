@@ -88,7 +88,7 @@ img { border: 0; }
     width: 800px;
     height: 600px;
 }
-#item_image_large { float: left; }
+#item_image_large { float: left; min-width: 512px; min-height: 512px; }
 #item_attrs {
     float: right;
     padding: 8px 0 8px 8px;
@@ -97,13 +97,11 @@ img { border: 0; }
     margin-right: 20px;
     overflow: auto;
 }
-#item_attrs div {
-    padding: 4px;
-}
+#item_attrs div { padding: 4px; }
+#stat_vertrule { float: left; }
+.item_link img { min-width: 128px; min-height: 128px; }
 
-#backpack {
-    margin-left: 90px;
-}
+#backpack { margin-left: 90px; }
 
 .row_odd { background: #555555; }
 .row_even { background: #777777; }
