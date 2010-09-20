@@ -17,7 +17,7 @@ OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 """
 
 try:
-    import steam.user, steam.tf2, steam, os
+    import steam.user, steam.tf2, steam, os, json, urllib2
     from time import time
     import cPickle as pickle
     from cStringIO import StringIO
@@ -65,6 +65,7 @@ cache_pack_refresh_interval = 30
 # End of configuration stuff
 
 urls = (
+    virtual_root + "comp/(.+)", "user_completion",
     virtual_root + "user/(.*)", "pack_fetch",
     virtual_root + "feed/(.+)", "pack_feed",
     virtual_root + "item/(.+)", "pack_item",
@@ -127,6 +128,28 @@ def load_pack_cached(user, pack, stale = False):
             refresh_pack_cache(user, pack)
     else:
         pack.load_pack(user)
+
+class user_completion:
+    """ Searches for an account matching the username given in the query
+    and returns a JSON object
+    Yes it's dirty, yes it'll probably die if Valve changes the layout.
+    Yes it's Valve's fault for not providing an equivalent API call.
+    Yes I can't use minidom because I would have to replace unicode chars
+    because of Valve's lazy encoding.
+    Yes I'm designing it to be reusable by other people and myself. """
+    def GET(self, user):
+        search_url = "http://steamcommunity.com/actions/Search?T=Account&K={0}".format(web.urlquote(user))
+
+        try:
+            res = urllib2.urlopen(search_url).read().split('<a class="linkTitle" href="')
+            userlist = {}
+
+            for user in res:
+                if user.startswith("http://steamcommunity.com/"):
+                    userlist[user[user.find(">") + 1:user.find("<")]] = os.path.basename(user[:user.find('"')])
+            return json.dumps(userlist)
+        except:
+            return "{}"
 
 class pack_item:
     def GET(self, iid):
