@@ -1,4 +1,4 @@
-$def with (user, pack, sortby)
+$def with (user, pack, sortby, isvalve)
 $ items = pack.get_items()
 $ usern = user.get_persona()
 $ realn = user.get_real_name()
@@ -8,9 +8,12 @@ $ rss = "{0}feed/{1}".format(virtual_root, user.get_id64())
 <div id="header">
   $ cgame = user.get_current_game()
   $ cstatus = user.get_status()
+  $if isvalve:
+      $ name_suffix = '<img src="{0}valve.png" alt="Valve" title="Valve Employee"/>'.format(static_prefix)
+  $else: $ name_suffix = ''
   <div id="avatar">
     <img src="$user.get_avatar_url(user.AVATAR_LARGE)" alt="$realn" title="$realn"/><br/>
-    <b>$realn</b>
+    <b>$realn &nbsp;$:name_suffix</b>
   </div>
   <div id="status_$cstatus">
     $if cgame:

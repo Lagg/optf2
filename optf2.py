@@ -198,20 +198,22 @@ class pack_fetch:
             user = steam.user.profile(sid)
             pack = steam.tf2.backpack()
 
+            isvalve = (user.get_primary_group() == valve_group_id)
+
             load_pack_cached(user, pack)
 
             count = db_obj.select("search_count", what="count", where = "id64 = $uid64", vars = {"uid64": user.get_id64()})
             try:
                 newcount = count[0]["count"] + 1
                 db_obj.update("search_count", where = "id64 = $uid64", vars = {"uid64": user.get_id64()}, count = newcount,
-                              persona = user.get_persona(), valve = (user.get_primary_group() == valve_group_id))
+                              persona = user.get_persona(), valve = isvalve)
             except IndexError:
-                db_obj.insert("search_count", valve = (user.get_primary_group() == valve_group_id),
+                db_obj.insert("search_count", valve = isvalve,
                               count = 1, id64 = user.get_id64(), persona = user.get_persona())
             sortby = web.input().get("sort", "default")
         except Exception as E:
             return templates.error(str(E))
-        return templates.inventory(user, pack, sortby)
+        return templates.inventory(user, pack, sortby, isvalve)
 
     def GET(self, sid):
         return self._get_page_for_sid(sid)
