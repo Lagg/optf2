@@ -73,6 +73,10 @@ urls = (
     virtual_root, "index"
     )
 
+# The 64 bit ID of the Valve group (this is how I check
+# if the user is a Valve employee)
+valve_group_id = 103582791429521412
+
 # These should stay explicit
 render_globals = {"css_url": css_url,
                   "virtual_root": virtual_root,
@@ -94,7 +98,7 @@ templates = web.template.render(template_dir, base = "base",
 steam.set_api_key(api_key)
 steam.set_language(language)
 
-db_schema = ["CREATE TABLE IF NOT EXISTS search_count (id64 INTEGER, persona TEXT, count INTEGER, valid BOOLEAN)",
+db_schema = ["CREATE TABLE IF NOT EXISTS search_count (id64 INTEGER, persona TEXT, count INTEGER, valve BOOLEAN)",
              "CREATE TABLE IF NOT EXISTS backpack_cache (id64 INTEGER, backpack BLOB, last_refresh DATE)"]
 db_obj = web.database(dbn = "sqlite", db = os.path.join(steam.get_cache_dir(), "optf2.db"))
 for s in db_schema:
@@ -200,9 +204,10 @@ class pack_fetch:
             try:
                 newcount = count[0]["count"] + 1
                 db_obj.update("search_count", where = "id64 = $uid64", vars = {"uid64": user.get_id64()}, count = newcount,
-                              persona = user.get_persona())
+                              persona = user.get_persona(), valve = (user.get_primary_group() == valve_group_id))
             except IndexError:
-                db_obj.insert("search_count", valid = True, count = 1, id64 = user.get_id64(), persona = user.get_persona())
+                db_obj.insert("search_count", valve = (user.get_primary_group() == valve_group_id),
+                              count = 1, id64 = user.get_id64(), persona = user.get_persona())
             sortby = web.input().get("sort", "default")
         except Exception as E:
             return templates.error(str(E))
