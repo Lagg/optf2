@@ -137,16 +137,26 @@ class user_completion:
     Yes I can't use minidom because I would have to replace unicode chars
     because of Valve's lazy encoding.
     Yes I'm designing it to be reusable by other people and myself. """
+
+    _community_url = "http://steamcommunity.com/"
     def GET(self, user):
-        search_url = "http://steamcommunity.com/actions/Search?T=Account&K={0}".format(web.urlquote(user))
+        search_url = self._community_url + "actions/Search?T=Account&K={0}".format(web.urlquote(user))
 
         try:
             res = urllib2.urlopen(search_url).read().split('<a class="linkTitle" href="')
-            userlist = {}
+            userlist = []
 
             for user in res:
-                if user.startswith("http://steamcommunity.com/"):
-                    userlist[user[user.find(">") + 1:user.find("<")]] = os.path.basename(user[:user.find('"')])
+                if user.startswith(self._community_url):
+                    userobj = {
+                        "persona": user[user.find(">") + 1:user.find("<")],
+                        "id": os.path.basename(user[:user.find('"')])
+                        }
+                    if user.startswith(self._community_url + "profiles"):
+                        userobj["id_type"] = "id64"
+                    else:
+                        userobj["id_type"] = "id"
+                    userlist.append(userobj)
             return json.dumps(userlist)
         except:
             return "{}"

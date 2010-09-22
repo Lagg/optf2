@@ -6,13 +6,11 @@ $var title: $product_name
 <link rel="stylesheet" type="text/css" href="${static_prefix}juicss/jquery-ui-1.8.5.custom.css"/>
 <script type="text/javascript"><!--
 function completion_magic (req, resp) {
-  var i = 0;
   var finalcomp = new Array ();
   $$.getJSON ("${virtual_root}comp/" + req.term, function (data, status) {
-    $$.each (data, function (k, v) {
-        finalcomp[i] = new Object ({label: k, value: v});
-        i++;
-    });
+    for (var i = 0; i < data.length; i++) {
+        finalcomp.push({label: data[i]["persona"], value: data[i]["id"]});
+    }
 
     resp (finalcomp.slice (0, 20));
 
