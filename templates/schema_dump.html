@@ -1,0 +1,28 @@
+$def with (schema)
+$var title: $product_name - All Items
+
+<div id="header"><h2>All items in TF2</h2></div>
+<div id="content">
+  <div id="backpack">
+  $for item in schema.get_items(from_schema=True):
+      $ wiki_link = wiki_url + encode_url(schema.get_item_name(item))
+      $ qitem = schema.get_item_quality(item)["str"]
+      <div class="item_cell" onclick="window.location = '${wiki_link}';">
+        <div class="${qitem}_name">$qualitydict[qitem] $schema.get_item_name(item)</div>
+        <div class="item_level">Level $schema.get_item_level(item) $schema.get_item_type(item)</div>
+        <a class="item_link" href="$wiki_link">
+          <img class="item_image_small" src="$schema.get_item_image(item, schema.ITEM_IMAGE_SMALL)" alt="$schema.get_item_name(item)"/>
+        </a>
+        <div class="item_attribs">
+          $for attr in schema.get_item_attributes(item):
+              $ desc = schema.format_attribute_description(attr)
+              <div class="item_${schema.get_attribute_type(attr)}_attr">
+                $if desc.find("\n") != -1:
+                    $:desc.replace("\n", "<br/>")
+                $else:
+                    $desc
+              </div>
+        </div>
+      </div>
+  </div>
+</div>

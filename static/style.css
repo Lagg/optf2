@@ -29,7 +29,7 @@ body { background: #303030; color: white; font-family: Arial, Helvetica, sans-se
     border-radius: 20px;
 }
 .item_cell_undropped { background: #302323; }
-.item_attribs { display: none; cursor: default; }
+.item_attribs { display: none; cursor: default; overflow: hidden; }
 .item_attribs div { padding: 4px; text-align: left; }
 .item_cell:hover, .item_cell_undropped:hover {
     background: #5a4e42;
@@ -88,7 +88,8 @@ img { border: 0; }
     width: 800px;
     height: 600px;
 }
-#item_image_large { float: left; min-width: 512px; min-height: 512px; }
+.item_image_small { max-width: 128px; max-height: 128px; }
+#item_image_large { float: left; width: 512px; height: 512px; }
 #item_attrs {
     float: right;
     padding: 8px 0 8px 8px;
@@ -99,7 +100,6 @@ img { border: 0; }
 }
 #item_attrs div { padding: 4px; }
 #stat_vertrule { float: left; }
-.item_link img { min-width: 128px; min-height: 128px; }
 
 #backpack { margin-left: 90px; }
 

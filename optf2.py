@@ -69,6 +69,7 @@ urls = (
     virtual_root + "user/(.*)", "pack_fetch",
     virtual_root + "feed/(.+)", "pack_feed",
     virtual_root + "item/(.+)", "pack_item",
+    virtual_root + "schema_dump", "schema_dump",
     virtual_root + "about", "about",
     virtual_root, "index"
     )
@@ -88,7 +89,8 @@ render_globals = {"css_url": css_url,
                                   "selfmade": "My "},
                   "instance": web.ctx,
                   "product_name": product_name,
-                  "source_url": source_url
+                  "source_url": source_url,
+                  "wiki_url": "http://wiki.teamfortress.com/wiki/"
                   }
 
 app = web.application(urls, globals())
@@ -132,6 +134,16 @@ def load_pack_cached(user, pack, stale = False):
             refresh_pack_cache(user, pack)
     else:
         pack.load_pack(user)
+
+class schema_dump:
+    """ Dumps everything in the schema in a pretty way """
+
+    def GET(self):
+        try:
+            schema = steam.tf2.backpack()
+            return templates.schema_dump(schema)
+        except Exception as E:
+            return templates.error(E)
 
 class user_completion:
     """ Searches for an account matching the username given in the query
