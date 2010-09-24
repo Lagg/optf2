@@ -62,6 +62,9 @@ cache_pack = True
 # Refresh cache every x seconds.
 cache_pack_refresh_interval = 30
 
+# How many rows to show for the top viewed backpacks table
+top_backpack_rows = 10
+
 # End of configuration stuff
 
 urls = (
@@ -207,7 +210,28 @@ class pack_fetch:
         try:
             if not sid:
                 return templates.error("Need an ID")
-            user = steam.user.profile(sid)
+            try:
+                user = steam.user.profile(os.path.basename(sid))
+            except steam.user.ProfileError:
+                search = json.loads(user_completion().GET(sid))
+                nuser = None
+                for result in search:
+                    if result["persona"] == sid:
+                        nuser = result["id"]
+                        break
+                for result in search:
+                    if result["persona"].lower() == sid.lower():
+                        nuser = result["id"]
+                        break
+                for result in search:
+                    if result["persona"].lower().find(sid.lower()) != -1:
+                        nuser = result["id"]
+                        break
+                if nuser:
+                    user = steam.user.profile(nuser)
+                else:
+                    raise steam.user.ProfileError("Bad profile name")
+
             pack = steam.tf2.backpack()
 
             isvalve = (user.get_primary_group() == valve_group_id)
@@ -252,7 +276,7 @@ class index:
             form.Textbox("User"),
             form.Button("View")
             )
-        countlist = db_obj.select("search_count", order = "count DESC", limit = 20)
+        countlist = db_obj.select("search_count", order = "count DESC", limit = top_backpack_rows)
         return templates.index(profile_form(), countlist)
         
 if __name__ == "__main__":
