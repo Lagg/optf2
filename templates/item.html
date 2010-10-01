@@ -1,12 +1,14 @@
 $def with (user, item, pack)
-$ itemn = pack.get_item_name(item)
+$ itemn = pack.get_item_custom_name(item)
+$ qitem = pack.get_item_quality(item)
+$if not itemn:
+    $ itemn = qitem["prettystr"] + " " + pack.get_item_name(item)
 $ usern = user.get_persona()
 $var title: $product_name - $usern's $itemn
 
 <div id="header">
-  $ qitem = pack.get_item_quality(item)
   <h1 class="${qitem['str']}_name">
-    <a href="${virtual_root}user/${user.get_id64()}">$usern's</a> $qitem["prettystr"] $itemn
+    <a href="${virtual_root}user/${user.get_id64()}">$usern's</a> $itemn
     <a href="${virtual_root}item/${user.get_id64()}/${pack.get_item_id(item)}">
       <img src="${static_prefix}plink_icon.png" alt="Permalink" title="Permalink"/>
     </a>

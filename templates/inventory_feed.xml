@@ -14,9 +14,11 @@ $def with (user, pack)
         $ level = pack.get_item_level(item)
         $ type = pack.get_item_type(item)
         $ quality = pack.get_item_quality(item)
-        $ name = pack.get_item_name(item)
+        $ name = pack.get_item_custom_name(item)
+        $if not name:
+            $ name = qualitydict.get(quality["str"], "") + " " + pack.get_item_name(item)
         <description>Level $level $type</description>
-        <title>$qualitydict[quality["str"]] $name</title>
+        <title>$name</title>
         <link>$permalink</link>
         <guid isPermaLink="true">$permalink</guid>
         <info xmlns="urn:agg.org:optf2">
