@@ -138,6 +138,69 @@ def load_pack_cached(user, pack, stale = False):
     else:
         pack.load_pack(user)
 
+def sort_items(items, pack, sortby):
+    itemcmp = None
+    def defcmp(x, y):
+        if x < y:
+            return -1
+        elif x > y:
+            return 1
+        elif x == y:
+            return 0
+
+    if sortby == "serial":
+        def itemcmp(x, y):
+            return defcmp(pack.get_item_id(x),
+                          pack.get_item_id(y))
+    elif sortby == "cell":
+        def itemcmp(x, y):
+            return defcmp(pack.get_item_position(x),
+                          pack.get_item_position(y))
+    elif sortby == "level":
+        def itemcmp(x, y):
+            return defcmp(pack.get_item_level(x),
+                          pack.get_item_level(y))
+    elif sortby == "name":
+        def itemcmp(x, y):
+            return defcmp(pack.get_item_quality(x)["str"] + " " + pack.get_item_name(x),
+                          pack.get_item_quality(y)["str"] + " " + pack.get_item_name(y))
+    elif sortby == "slot":
+        def itemcmp(x, y):
+            return defcmp(pack.get_item_slot(x), pack.get_item_slot(y))
+    elif sortby == "class":
+        def itemcmp(x, y):
+            cx = pack.get_item_equipable_classes(x)
+            cy = pack.get_item_equipable_classes(y)
+            lenx = len(cx)
+            leny = len(cy)
+
+            if lenx == 1 and leny == 1:
+                return defcmp(cx[0], cy[0])
+            else:
+                return defcmp(lenx, leny)
+
+    if itemcmp:
+        items.sort(cmp = itemcmp)
+
+def process_attributes(items, pack):
+    """ Filters attributes for the item list,
+    optf2-specific keys are prefixed with optf2_ """
+
+    for item in items:
+        attrs = pack.get_item_attributes(item)
+
+        for attr in attrs:
+            if pack.get_attribute_name(attr).find("set item tint RGB") != -1:
+                raw_rgb = int(pack.get_attribute_value(attr))
+                item_color = "#{0:02X}{1:02X}{2:02X}".format((raw_rgb >> 16) & 0xFF,
+                                                             (raw_rgb >> 8) & 0xFF,
+                                                             (raw_rgb) & 0xFF)
+                item["optf2_color"] = item_color
+                attrs.remove(attr)
+                continue
+
+    return items
+
 class schema_dump:
     """ Dumps everything in the schema in a pretty way """
 
@@ -199,7 +262,7 @@ class pack_item:
                     raise Exception("Item not found")
         except Exception as E:
             return templates.error(str(E))
-        return templates.item(user, item, pack)
+        return templates.item(user, process_attributes([item], pack)[0], pack)
 
 class about:
     def GET(self):
@@ -238,6 +301,10 @@ class pack_fetch:
 
             load_pack_cached(user, pack)
 
+            items = pack.get_items()
+            sort_items(items, pack, web.input().get("sort", "default"))
+            process_attributes(items, pack)
+
             count = db_obj.select("search_count", what="count", where = "id64 = $uid64", vars = {"uid64": user.get_id64()})
             try:
                 newcount = count[0]["count"] + 1
@@ -246,10 +313,9 @@ class pack_fetch:
             except IndexError:
                 db_obj.insert("search_count", valve = isvalve,
                               count = 1, id64 = user.get_id64(), persona = user.get_persona())
-            sortby = web.input().get("sort", "default")
         except Exception as E:
             return templates.error(str(E))
-        return templates.inventory(user, pack, sortby, isvalve)
+        return templates.inventory(user, pack, isvalve, items)
 
     def GET(self, sid):
         return self._get_page_for_sid(sid)

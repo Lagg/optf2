@@ -1,5 +1,4 @@
-$def with (user, pack, sortby, isvalve)
-$ items = pack.get_items()
+$def with (user, pack, isvalve, items)
 $ usern = user.get_persona()
 $ realn = user.get_real_name()
 $var title: $product_name - $usern's Backpack
@@ -45,49 +44,6 @@ $ rss = "{0}feed/{1}".format(virtual_root, user.get_id64())
       | <a href="$perma?sort=slot">Type</a>
       | <a href="$perma?sort=class">Class</a>
 </div>
-$code:
-    itemcmp = None
-    def defcmp(x, y):
-        if x < y:
-            return -1
-        elif x > y:
-            return 1
-        elif x == y:
-            return 0
-
-    if sortby == "serial":
-        def itemcmp(x, y):
-            return defcmp(pack.get_item_id(x),
-                          pack.get_item_id(y))
-    elif sortby == "cell":
-        def itemcmp(x, y):
-            return defcmp(pack.get_item_position(x),
-                          pack.get_item_position(y))
-    elif sortby == "level":
-        def itemcmp(x, y):
-            return defcmp(pack.get_item_level(x),
-                          pack.get_item_level(y))
-    elif sortby == "name":
-        def itemcmp(x, y):
-            return defcmp(pack.get_item_quality(x)["str"] + " " + pack.get_item_name(x),
-                          pack.get_item_quality(y)["str"] + " " + pack.get_item_name(y))
-    elif sortby == "slot":
-        def itemcmp(x, y):
-            return defcmp(pack.get_item_slot(x), pack.get_item_slot(y))
-    elif sortby == "class":
-        def itemcmp(x, y):
-            cx = pack.get_item_equipable_classes(x)
-            cy = pack.get_item_equipable_classes(y)
-            lenx = len(cx)
-            leny = len(cy)
-
-            if lenx == 1 and leny == 1:
-                return defcmp(cx[0], cy[0])
-            else:
-                return defcmp(lenx, leny)
-                    
-    if itemcmp:
-        items.sort(cmp = itemcmp)
 <div id="content">
   <script type="text/javascript" src="${static_prefix}jquery-1.4.2.min.js"></script>
   <script type="text/javascript" src="${static_prefix}jquery.joverlay.pack.js"></script>
@@ -114,20 +70,26 @@ $code:
         $if not full_name:
             $ full_name = qualitydict.get(qitem, "") + " " + pack.get_item_name(item)
         <div class="${qitem}_name">$full_name</div>
-        <div class="item_level">Level $pack.get_item_level(item) $pack.get_item_type(item)</div>
+        $ item_color = item.get("optf2_color")
+        $if item_color:
+            $ painty = '<span style="color: {0}; font-weight: bold;">Painted</span>'.format(item_color)
+        $else:
+            $ painty = ""
+        <div class="item_level">Level $pack.get_item_level(item) $:painty $pack.get_item_type(item)</div>
         <a class="item_link" href="$item_link">
           <img class="item_image_small" src="$pack.get_item_image(item, pack.ITEM_IMAGE_SMALL)" alt="$pack.get_item_name(item)"/>
         </a>
         <div class="item_attribs">
           $for attr in pack.get_item_attributes(item):
               $ desc = pack.format_attribute_description(attr)
-              $if desc.find("Attrib_") == -1:
-                  <div class="item_${pack.get_attribute_type(attr)}_attr">
-                    $if desc.find("\n") != -1:
-                        $:desc.replace("\n", "<br/>")
-                    $else:
-                        $desc
-                  </div>
+              $if desc.find("Attrib_") != -1:
+                  $ continue
+              <div class="item_${pack.get_attribute_type(attr)}_attr">
+                  $if desc.find("\n") != -1:
+                      $:desc.replace("\n", "<br/>")
+                  $else:
+                      $desc
+              </div>
         </div>
       </div>
   </div>
