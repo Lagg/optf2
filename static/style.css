@@ -10,6 +10,7 @@ body { background: #303030; color: white; font-family: Arial, Helvetica, sans-se
 .normal_name { color: white; font-weight: bold; }
 .selfmade_name { color: #00e4ff; font-weight: bold; }
 .vintage_name { color: #5561ff; font-weight: bold; }
+.rarity4_name { color: #00ff00; font-weight: bold; }
 
 .item_cell, .item_cell_undropped {
     margin: 8px;
