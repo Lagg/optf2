@@ -80,17 +80,9 @@ $ rss = "{0}feed/{1}".format(virtual_root, user.get_id64())
           <img class="item_image_small" src="$pack.get_item_image(item, pack.ITEM_IMAGE_SMALL)" alt="$pack.get_item_name(item)"/>
         </a>
         <div class="item_attribs">
-          $for attr in pack.get_item_attributes(item):
-              $ desc = pack.format_attribute_description(attr)
-              $if desc.find("Attrib_") != -1:
-                  $ continue
-              $if pack.get_attribute_name(attr).find("set item tint RGB") != -1:
-                  $ continue
+          $for attr in item["optf2_attrs"]:
               <div class="item_${pack.get_attribute_type(attr)}_attr">
-                  $if desc.find("\n") != -1:
-                      $:desc.replace("\n", "<br/>")
-                  $else:
-                      $desc
+                $:pack.format_attribute_description(attr)
               </div>
         </div>
       </div>

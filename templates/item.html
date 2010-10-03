@@ -5,7 +5,7 @@ $if not itemn:
     $ itemn = qitem["prettystr"] + " " + pack.get_item_name(item)
 $ painty = item.get("optf2_color")
 $if painty:
-    $ painty = '<span style="color: {0}; font-weight: bold;">'.format(painty) + "Painted" + '</span>'
+    $ painty = '<span style="color: {0}; font-weight: bold;">Painted</span>'.format(painty)
 $else:
     $ painty = ""
 $ usern = user.get_persona()
@@ -25,17 +25,13 @@ $var title: $product_name - $usern's $itemn
   <img id="stat_vertrule" src="${static_prefix}vertical.gif" height="600" width="1" alt="divider"/>
   <div id="item_attrs">
   $ item_wiki_url = wiki_url + encode_url(pack.get_item_name(item))
-  $for attr in pack.get_item_attributes(item):
+  $for attr in item["optf2_attrs"]:
       $ desc = pack.format_attribute_description(attr)
-      $if desc.find("Attrib_") != -1:
-          $ continue
-      $if pack.get_attribute_name(attr).find("set item tint RGB") != -1:
-          $ continue
       <div class="item_${pack.get_attribute_type(attr)}_attr">
-        $if desc.find("\n") != -1:
-            $:desc.replace("\n", "<br/>")
+        $if desc == "Gift":
+            Gift from <a href="http://steamcommunity.com/profiles/${item['optf2_gift_from']}">this user</a>
         $else:
-            $desc
+            $:desc
       </div>
   <div class="item_neutral_attr">
     Serial: $pack.get_item_id(item)

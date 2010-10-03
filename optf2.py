@@ -23,6 +23,7 @@ try:
     from cStringIO import StringIO
     import web
     from web import form
+    from copy import deepcopy
 except ImportError as E:
     print(str(E))
     raise SystemExit
@@ -191,7 +192,11 @@ def process_attributes(items, pack):
         attrs = pack.get_item_attributes(item)
 
         for attr in attrs:
-            if pack.get_attribute_name(attr).find("set item tint RGB") != -1:
+            desc = pack.get_attribute_description(attr)
+            if desc.find("Attrib_") != -1:
+                attrs.remove(attr)
+                continue
+            if pack.get_attribute_name(attr) == "set item tint RGB":
                 raw_rgb = int(pack.get_attribute_value(attr))
                 item_color = "rgb({0:d},{1:d},{2:d})".format((raw_rgb) & 0xFF,
                                                              (raw_rgb >> 8) & 0xFF,
@@ -199,6 +204,12 @@ def process_attributes(items, pack):
                 item["optf2_color"] = item_color
                 attrs.remove(attr)
                 continue
+            if pack.get_attribute_name(attr) == "gifter account id":
+                attr["description_string"] = "Gift"
+                item["optf2_gift_from"] = "7656" + str(int(pack.get_attribute_value(attr) +
+                                                           1197960265728))
+            attr["description_string"] = attr["description_string"].replace("\n", "<br/>")
+        item["optf2_attrs"] = deepcopy(attrs)
 
     return items
 
@@ -207,8 +218,8 @@ class schema_dump:
 
     def GET(self):
         try:
-            schema = steam.tf2.backpack()
-            return templates.schema_dump(schema)
+            pack = steam.tf2.backpack()
+            return templates.schema_dump(pack, process_attributes(pack.get_items(from_schema = True), pack))
         except Exception as E:
             return templates.error(E)
 
@@ -330,12 +341,15 @@ class pack_feed:
             user = steam.user.profile(sid)
             pack = steam.tf2.backpack()
             load_pack_cached(user, pack)
+            items = pack.get_items()
+            process_attributes(items, pack)
         except Exception as E:
             return templates.error(str(E))
         web.header("Content-Type", "application/rss+xml")
         return web.template.render(template_dir,
                                    globals = render_globals).inventory_feed(user,
-                                                                            pack)
+                                                                            pack,
+                                                                            items)
 
 class index:
     def GET(self):
