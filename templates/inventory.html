@@ -84,6 +84,8 @@ $ rss = "{0}feed/{1}".format(virtual_root, user.get_id64())
               $ desc = pack.format_attribute_description(attr)
               $if desc.find("Attrib_") != -1:
                   $ continue
+              $if pack.get_attribute_name(attr).find("set item tint RGB") != -1:
+                  $ continue
               <div class="item_${pack.get_attribute_type(attr)}_attr">
                   $if desc.find("\n") != -1:
                       $:desc.replace("\n", "<br/>")

@@ -27,13 +27,16 @@ $var title: $product_name - $usern's $itemn
   $ item_wiki_url = wiki_url + encode_url(pack.get_item_name(item))
   $for attr in pack.get_item_attributes(item):
       $ desc = pack.format_attribute_description(attr)
-      $if desc.find("Attrib_") == -1:
-          <div class="item_${pack.get_attribute_type(attr)}_attr">
-              $if desc.find("\n") != -1:
-                  $:desc.replace("\n", "<br/>")
-              $else:
-                  $desc
-          </div>
+      $if desc.find("Attrib_") != -1:
+          $ continue
+      $if pack.get_attribute_name(attr).find("set item tint RGB") != -1:
+          $ continue
+      <div class="item_${pack.get_attribute_type(attr)}_attr">
+        $if desc.find("\n") != -1:
+            $:desc.replace("\n", "<br/>")
+        $else:
+            $desc
+      </div>
   <div class="item_neutral_attr">
     Serial: $pack.get_item_id(item)
   </div>
@@ -56,6 +59,12 @@ $var title: $product_name - $usern's $itemn
     $else:
         No
   </div>
+  $if pack.is_item_promotional(item):
+      <div class="item_neutral_attr">Promotional</div>
+  $if pack.is_item_unlock(item):
+      <div class="item_positive_attr">Achievement Unlock</div>
+  $if pack.is_item_purchased(item):
+      <div class="item_neutral_attr">Mann Co. Purchase</div>
   <br/><a href="$item_wiki_url">Official TF2 Wiki Article</a>
   $# Begin complaint code (remove this when Valve fixes their crap
   $if itemn.find("The ") != -1:
