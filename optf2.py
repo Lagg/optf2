@@ -257,24 +257,35 @@ class user_completion:
 
 class pack_item:
     def GET(self, iid):
+        def item_get(idl):
+            if idl[0] == "from_schema":
+                item = pack.get_item_by_schema_id(int(idl[1]))
+            else:
+                item = pack.get_item_by_id(int(idl[1]))
+                if not item:
+                    refresh_pack_cache(user, pack)
+                item = pack.get_item_by_id(int(idl[1]))
+
+            if not item:
+                raise Exception("Item not found")
+            return item
+
         try:
             idl = iid.split('/')
-            user = steam.user.profile(idl[0])
             pack = steam.tf2.backpack()
-
-            load_pack_cached(user, pack, stale = True)
+            if idl[0] != "from_schema":
+                user = steam.user.profile(idl[0])
+                load_pack_cached(user, pack, stale = True)
+            else:
+                user = None
 
             try: idl[1] = int(idl[1])
             except: raise Exception("Item ID must be an integer")
-            item = pack.get_item_by_id(int(idl[1]))
-            if not item:
-                refresh_pack_cache(user, pack)
-                item = pack.get_item_by_id(int(idl[1]))
-                if not item:
-                    raise Exception("Item not found")
+
+            item = process_attributes([item_get(idl)], pack)[0]
         except Exception as E:
             return templates.error(str(E))
-        return templates.item(user, process_attributes([item], pack)[0], pack)
+        return templates.item(user, item, pack)
 
 class about:
     def GET(self):
