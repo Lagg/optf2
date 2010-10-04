@@ -45,16 +45,6 @@ $ rss = "{0}feed/{1}".format(virtual_root, user.get_id64())
       | <a href="$perma?sort=class">Class</a>
 </div>
 <div id="content">
-  <script type="text/javascript"><!--
-    $$(document).ready(function(){
-        $$(".item_link").removeAttr("href");
-    });
-
-    function item_overlay_success(elem) {
-        $$("#navbar").remove();
-        $$("#item_stats").hide().fadeIn('slow');
-    }
-  --></script>
   <div id="backpack">
   $for item in items:
       $ qitem = pack.get_item_quality(item)["str"]
@@ -63,7 +53,7 @@ $ rss = "{0}feed/{1}".format(virtual_root, user.get_id64())
           $ cell_class = "item_cell_undropped"
       $else:
           $ cell_class = "item_cell"
-      <div class="$cell_class" onclick="$$().jOverlay({url:'$item_link', onSuccess: item_overlay_success});">
+      <div class="$cell_class" onclick="item_open('${item_link}');">
         $ full_name = pack.get_item_custom_name(item)
         $if not full_name:
             $ full_name = qualitydict.get(qitem, "") + " " + pack.get_item_name(item)
