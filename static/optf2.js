@@ -24,7 +24,7 @@ function item_open_success(data, status, xhr) {
         dialog_width = $(document).width();
     }
 
-    $("#loading_notice").remove();
+    $("#loading_" + dialog_content.find("#item_id").html()).remove();
 
     $(dialog_content).dialog({
         resize: item_resize,
@@ -36,6 +36,20 @@ function item_open_success(data, status, xhr) {
 }
 
 function item_open(item_url, item_id) {
-    $("#" + item_id).prepend("<div id=\"loading_notice\"><b>Loading...</b></div>");
-    $.get(item_url, item_open_success, {}, "html");
+    $("#" + item_id).prepend("<div id=\"loading_" + item_id + "\"><b>Loading...</b></div>");
+    var oldcontent = $("body").find(".dedicated_item");
+    var reallyoldcontent = null;
+    for (var i = 0; i < oldcontent.length; i++) {
+        var id = $(oldcontent[i]).find("#item_id").html();
+        if (id == item_id) {
+            reallyoldcontent = oldcontent[i];
+            break;
+        }
+    }
+
+    if (reallyoldcontent) {
+        $(reallyoldcontent).dialog({open: function(e, u) { $("#loading_" + item_id).remove(); }});
+    } else {
+        $.get(item_url, item_open_success, {}, "html");
+    }
 }

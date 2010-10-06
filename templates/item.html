@@ -31,7 +31,7 @@ $var title: $product_name - $usern $itemn
   </h1>
 </div>
 <div id="content">
-  <div id="item_stats">
+  <div id="item_stats" class="dedicated_item">
   <img id="item_image_large" src="$pack.get_item_image(item, pack.ITEM_IMAGE_LARGE)" alt="$usern $itemn"/>
   <img id="stat_vertrule" src="${static_prefix}vertical.gif" height="600" width="1" alt="divider"/>
   <div id="item_attrs">
@@ -46,7 +46,7 @@ $var title: $product_name - $usern $itemn
       </div>
   $if user:
       <div class="item_neutral_attr">
-        Serial: $pack.get_item_id(item)
+        Serial: <span id="item_id">$pack.get_item_id(item)</span>
       </div>
       <div class="item_neutral_attr">
         $ pos = pack.get_item_position(item)
@@ -66,6 +66,11 @@ $var title: $product_name - $usern $itemn
                 </a>&nbsp;
         $else:
             No
+      </div>
+  $else:
+      <div class="item_neutral_attr">
+        $ schema_id = pack.get_item_schema_id(item);
+        ID: <span id="item_id">$schema_id</span>
       </div>
   $if pack.is_item_promotional(item):
       <div class="item_neutral_attr">Promotional</div>
