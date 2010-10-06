@@ -49,11 +49,12 @@ $ rss = "{0}feed/{1}".format(virtual_root, user.get_id64())
   $for item in items:
       $ qitem = pack.get_item_quality(item)["str"]
       $ item_link = virtual_root + "item/%lu/%lu" % (user.get_id64(), pack.get_item_id(item))
+      $ item_id = pack.get_item_id(item)
       $if pack.get_item_position(item) <= -1:
           $ cell_class = "item_cell_undropped"
       $else:
           $ cell_class = "item_cell"
-      <div class="$cell_class" onclick="item_open('${item_link}');">
+      <div class="$cell_class" id="$item_id" onclick="item_open('${item_link}', '$item_id');">
         $ full_name = pack.get_item_custom_name(item)
         $if not full_name:
             $ full_name = qualitydict.get(qitem, "") + " " + pack.get_item_name(item)
