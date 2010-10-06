@@ -8,9 +8,10 @@ $var title: $product_name - All Items
       $ item_link = "{0}item/from_schema/{1}".format(virtual_root, pack.get_item_schema_id(item))
       $ qitem = pack.get_item_quality(item)["str"]
       $ painty = item.get("optf2_color", "")
+      $ item_id = pack.get_item_schema_id(item)
       $if painty:
           $ painty = '<span style="color: {0}; font-weight: bold;">Painted</span>'.format(painty)
-      <div class="item_cell" onclick="item_open('$item_link');">
+      <div class="item_cell" id="$item_id" onclick="item_open('$item_link', '$item_id');">
         <div class="${qitem}_name">$qualitydict[qitem] $pack.get_item_name(item)</div>
         <div class="item_level">Level $pack.get_item_level(item) $:painty $pack.get_item_type(item)</div>
         <a class="item_link" href="$item_link">
