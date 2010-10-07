@@ -67,12 +67,6 @@ $var title: $product_name - $usern $itemn
         $ schema_id = pack.get_item_schema_id(item);
         ID: <span id="item_id">$schema_id</span>
       </div>
-  $if pack.is_item_promotional(item):
-      <div class="item_neutral_attr">Promotional</div>
-  $if pack.is_item_unlock(item):
-      <div class="item_positive_attr">Achievement Unlock</div>
-  $if pack.is_item_purchased(item):
-      <div class="item_neutral_attr">Mann Co. Purchase</div>
   <br/><a href="$item_wiki_url">Official TF2 Wiki Article</a>
   $# Begin complaint code (remove this when Valve fixes their crap
   $if itemn.find("The ") != -1:
