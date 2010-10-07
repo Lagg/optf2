@@ -11,7 +11,7 @@ $var title: $product_name - All Items
       $ item_id = pack.get_item_schema_id(item)
       $if painty:
           $ painty = '<span style="color: {0}; font-weight: bold;">Painted</span>'.format(painty)
-      <div class="item_cell" id="$item_id" onclick="item_open('$item_link', '$item_id');">
+      <div class="item_cell" id="s${item_id}" onclick="item_open('$item_link', '$item_id');">
         $:item["optf2_cell_name"]
         <div class="item_level">Level $pack.get_item_level(item) $:painty $pack.get_item_type(item)</div>
         <a class="item_link" href="$item_link">

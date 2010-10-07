@@ -53,7 +53,7 @@ $ rss = "{0}feed/{1}".format(virtual_root, user.get_id64())
           $ cell_class = "item_cell_undropped"
       $else:
           $ cell_class = "item_cell"
-      <div class="$cell_class" id="$item_id" onclick="item_open('${item_link}', '$item_id');">
+      <div class="$cell_class" id="s${item_id}" onclick="item_open('${item_link}', '$item_id');">
         $:item["optf2_cell_name"]
         $ item_color = item.get("optf2_color")
         $if item_color:

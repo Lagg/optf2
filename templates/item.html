@@ -68,8 +68,8 @@ $var title: $product_name - $usern $itemn
         ID: <span id="item_id">$schema_id</span>
       </div>
   <br/><a href="$item_wiki_url">Official TF2 Wiki Article</a>
-  $# Begin complaint code (remove this when Valve fixes their crap
-  $if itemn.find("The ") != -1:
+  $# Begin complaint code (remove this when Valve fixes their crap)
+  $if itemn.find("The ") != -1 and pack.is_item_prefixed(item):
       <br/><br/><a href="http://forums.steampowered.com/forums/forumdisplay.php?f=15">(Complain to Valve about this incorrect title)</a>
   $# End complaint code
   </div>

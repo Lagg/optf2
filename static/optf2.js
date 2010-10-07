@@ -36,7 +36,7 @@ function item_open_success(data, status, xhr) {
 }
 
 function item_open(item_url, item_id) {
-    $("#" + item_id).prepend("<div id=\"loading_" + item_id + "\"><b>Loading...</b></div>");
+    $("#s" + item_id).prepend("<div id=\"loading_" + item_id + "\"><b>Loading...</b></div>");
     var oldcontent = $("body").find(".dedicated_item");
     var reallyoldcontent = null;
     for (var i = 0; i < oldcontent.length; i++) {
