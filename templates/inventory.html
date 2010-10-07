@@ -47,7 +47,6 @@ $ rss = "{0}feed/{1}".format(virtual_root, user.get_id64())
 <div id="content">
   <div id="backpack">
   $for item in items:
-      $ qitem = pack.get_item_quality(item)["str"]
       $ item_link = virtual_root + "item/%lu/%lu" % (user.get_id64(), pack.get_item_id(item))
       $ item_id = pack.get_item_id(item)
       $if pack.get_item_position(item) <= -1:
@@ -55,10 +54,7 @@ $ rss = "{0}feed/{1}".format(virtual_root, user.get_id64())
       $else:
           $ cell_class = "item_cell"
       <div class="$cell_class" id="$item_id" onclick="item_open('${item_link}', '$item_id');">
-        $ full_name = pack.get_item_custom_name(item)
-        $if not full_name:
-            $ full_name = qualitydict.get(qitem, "") + " " + pack.get_item_name(item)
-        <div class="${qitem}_name">$full_name</div>
+        $:item["optf2_cell_name"]
         $ item_color = item.get("optf2_color")
         $if item_color:
             $ painty = '<span style="color: {0}; font-weight: bold;">Painted</span>'.format(item_color)

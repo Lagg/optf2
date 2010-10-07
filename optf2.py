@@ -82,16 +82,18 @@ urls = (
 # if the user is a Valve employee)
 valve_group_id = 103582791429521412
 
+qualitydict = {"unique": "The ", "community": "Community ",
+               "developer": "Legendary ", "normal": "",
+               "selfmade": "My ", "vintage": "Vintage ",
+               "rarity4": "Unusual "}
+
 # These should stay explicit
 render_globals = {"css_url": css_url,
                   "virtual_root": virtual_root,
                   "static_prefix": static_prefix,
                   "encode_url": web.urlquote,
                   "len": len,
-                  "qualitydict": {"unique": "The ", "community": "Community ",
-                                  "developer": "Legendary ", "normal": "",
-                                  "selfmade": "My ", "vintage": "Vintage ",
-                                  "rarity4": "Unusual "},
+                  "qualitydict": qualitydict,
                   "instance": web.ctx,
                   "product_name": product_name,
                   "source_url": source_url,
@@ -210,6 +212,39 @@ def process_attributes(items, pack):
                                                            1197960265728))
             attr["description_string"] = attr["description_string"].replace("\n", "<br/>")
         item["optf2_attrs"] = deepcopy(attrs)
+
+        quality_str = pack.get_item_quality(item)["str"]
+        pretty_quality_str = pack.get_item_quality(item)["prettystr"]
+        prefix = qualitydict.get(quality_str, "")
+        custom_name = pack.get_item_custom_name(item)
+        item_name = pack.get_item_name(item)
+
+        if custom_name or not pack.is_item_prefixed(item):
+            prefix = ""
+        if custom_name:
+            item_name = custom_name
+
+        item["optf2_cell_name"] = '<div class="{0}_name">{1} {2}</div>'.format(
+            quality_str, prefix, item_name)
+
+        if custom_name or not pack.is_item_prefixed(item):
+            prefix = ""
+        else:
+            prefix = pretty_quality_str
+        color = item.get("optf2_color")
+        paint_job = ""
+        if color:
+            paint_job = '<span style="color: {0}; font-weight: bold;">Painted</span>'.format(color)
+        item["optf2_dedicated_name"] = "{0} {1} {2}".format(paint_job, prefix, item_name)
+
+        if color:
+            paint_job = "(Painted)"
+        else:
+            paint_job = ""
+        if prefix:
+            prefix = qualitydict.get(quality_str, pretty_quality_str)
+
+        item["optf2_feed_name"] = "{0} {1} {2}".format(prefix, item_name, paint_job)
 
     return items
 

@@ -3,11 +3,6 @@ $ itemn = pack.get_item_custom_name(item)
 $ qitem = pack.get_item_quality(item)
 $if not itemn:
     $ itemn = qitem["prettystr"] + " " + pack.get_item_name(item)
-$ painty = item.get("optf2_color")
-$if painty:
-    $ painty = '<span style="color: {0}; font-weight: bold;">Painted</span>'.format(painty)
-$else:
-    $ painty = ""
 $if not user:
     $ usern = "Schema"
 $else:
@@ -24,7 +19,7 @@ $var title: $product_name - $usern $itemn
         $ plink_user = user.get_id64()
         $ urlpart = "user/{0}".format(plink_user)
         $ idpart = pack.get_item_id(item)
-    <a href="${virtual_root}${urlpart}">$usern</a> $:painty $itemn
+    <a href="${virtual_root}${urlpart}">$usern</a> $:item["optf2_dedicated_name"]
     <a href="${virtual_root}item/${plink_user}/${idpart}">
       <img src="${static_prefix}plink_icon.png" alt="Permalink" title="Permalink"/>
     </a>

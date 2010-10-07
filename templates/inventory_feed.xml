@@ -15,9 +15,9 @@ $def with (user, pack, items)
         $ quality = pack.get_item_quality(item)
         $ name = pack.get_item_custom_name(item)
         $if not name:
-            $ name = qualitydict.get(quality["str"], "") + " " + pack.get_item_name(item)
+            $ name = pack.get_item_name(item)
         <description>Level $level $type</description>
-        <title>$name</title>
+        <title>$:item["optf2_feed_name"]</title>
         <link>$permalink</link>
         <guid isPermaLink="true">$permalink</guid>
         <info xmlns="urn:agg.org:optf2">
