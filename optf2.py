@@ -219,7 +219,7 @@ def process_attributes(items, pack):
         custom_name = pack.get_item_custom_name(item)
         item_name = pack.get_item_name(item)
 
-        if custom_name or not pack.is_item_prefixed(item):
+        if custom_name or (not pack.is_item_prefixed(item) and quality_str == "unique"):
             prefix = ""
         if custom_name:
             item_name = custom_name
@@ -227,7 +227,7 @@ def process_attributes(items, pack):
         item["optf2_cell_name"] = '<div class="{0}_name">{1} {2}</div>'.format(
             quality_str, prefix, item_name)
 
-        if custom_name or not pack.is_item_prefixed(item):
+        if custom_name or (not pack.is_item_prefixed(item) and quality_str == "unique"):
             prefix = ""
         else:
             prefix = pretty_quality_str
