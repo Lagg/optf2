@@ -4,13 +4,13 @@ body { background: #303030; color: white; font-family: Arial, Helvetica, sans-se
 .item_positive_attr { font-weight: bold; color: #00ff00; }
 .item_neutral_attr { font-weight: bold; color: white; }
 
-.unique_name { color: #ffd12f; font-weight: bold; }
-.community_name { color: #2fb3ff; font-weight: bold; }
-.developer_name { color: #ff00fc; font-weight: bold; }
-.normal_name { color: white; font-weight: bold; }
-.selfmade_name { color: #00e4ff; font-weight: bold; }
-.vintage_name { color: #5561ff; font-weight: bold; }
-.rarity4_name { color: #00ff00; font-weight: bold; }
+.unique_name { color: #ffd700; font-weight: bold; }
+.community_name { color: #87d459; font-weight: bold; }
+.developer_name { color: #db14a0; font-weight: bold; }
+.normal_name { color: #d0d0d0; font-weight: bold; }
+.selfmade_name { color: #79be50; font-weight: bold; }
+.vintage_name { color: #6186c5; font-weight: bold; }
+.rarity4_name { color: #a965d9; font-weight: bold; }
 
 .item_cell, .item_cell_undropped {
     margin: 8px;
