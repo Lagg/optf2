@@ -107,8 +107,8 @@ templates = web.template.render(template_dir, base = "base",
 steam.set_api_key(api_key)
 steam.set_language(language)
 
-db_schema = ["CREATE TABLE IF NOT EXISTS search_count (id64 INTEGER, persona TEXT, count INTEGER, valve BOOLEAN)",
-             "CREATE TABLE IF NOT EXISTS backpack_cache (id64 INTEGER, backpack BLOB, last_refresh DATE)"]
+db_schema = ["CREATE TABLE IF NOT EXISTS search_count (id64 INTEGER PRIMARY KEY, persona TEXT, count INTEGER, valve BOOLEAN)",
+             "CREATE TABLE IF NOT EXISTS backpack_cache (id64 INTEGER PRIMARY KEY, backpack BLOB, last_refresh DATE)"]
 db_obj = web.database(dbn = "sqlite", db = os.path.join(steam.get_cache_dir(), "optf2.db"))
 for s in db_schema:
     db_obj.query(s)
@@ -119,12 +119,11 @@ def make_packfile_path(id64):
 def refresh_pack_cache(user, pack):
     pack.load_pack(user)
     try:
-        id64 = db_obj.select("backpack_cache", what = "id64", where = "id64 = $uid64",
-                             vars = {"uid64": user.get_id64()})[0]["id64"]
-        db_obj.update("backpack_cache", where = "id64 = $uid64", vars = {"uid64": id64},
-                      backpack = pickle.dumps(pack.get_pack_object()), last_refresh = int(time()))
-    except IndexError:
         db_obj.insert("backpack_cache", id64 = user.get_id64(), last_refresh = int(time()),
+                      backpack = pickle.dumps(pack.get_pack_object()))
+    except:
+        db_obj.update("backpack_cache", where = "id64 = $id64", vars = {"id64": user.get_id64()},
+                      last_refresh = int(time()),
                       backpack = pickle.dumps(pack.get_pack_object()))
 
 def load_pack_cached(user, pack, stale = False):
@@ -363,14 +362,17 @@ class pack_fetch:
             sort_items(items, pack, web.input().get("sort", "default"))
             process_attributes(items, pack)
 
-            count = db_obj.select("search_count", what="count", where = "id64 = $uid64", vars = {"uid64": user.get_id64()})
             try:
-                newcount = count[0]["count"] + 1
-                db_obj.update("search_count", where = "id64 = $uid64", vars = {"uid64": user.get_id64()}, count = newcount,
-                              persona = user.get_persona(), valve = isvalve)
-            except IndexError:
+                db_obj.query("""UPDATE search_count SET count = count + 1,
+                                                        persona = $p,
+                                                        valve = $iv WHERE id64 = $id64""",
+                             vars = {"id64": user.get_id64(),
+                                     "p": user.get_persona(),
+                                     "iv": isvalve})
+            except:
                 db_obj.insert("search_count", valve = isvalve,
-                              count = 1, id64 = user.get_id64(), persona = user.get_persona())
+                              count = 1, id64 = user.get_id64(),
+                              persona = user.get_persona())
         except Exception as E:
             return templates.error(str(E))
         return templates.inventory(user, pack, isvalve, items)
