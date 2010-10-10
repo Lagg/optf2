@@ -198,13 +198,20 @@ def process_attributes(items, pack):
                 attrs.remove(attr)
                 continue
             if pack.get_attribute_name(attr) == "set item tint RGB":
-                raw_rgb = int(pack.get_attribute_value(attr))
-                item_color = "rgb({0:d},{1:d},{2:d})".format((raw_rgb >> 16) & 0xFF,
-                                                             (raw_rgb >> 8) & 0xFF,
-                                                             (raw_rgb) & 0xFF)
+                if attr.has_key("float_value") and pack.get_item_class(item) != "tool":
+                    raw_rgb = int(attr["float_value"])
+                else:
+                    raw_rgb = int(pack.get_attribute_value(attr))
+                item_color = "#{0:X}{1:X}{2:X}".format((raw_rgb >> 16) & 0xFF,
+                                                        (raw_rgb >> 8) & 0xFF,
+                                                        (raw_rgb) & 0xFF)
                 item["optf2_color"] = item_color
                 attrs.remove(attr)
                 continue
+            if (pack.get_attribute_name(attr) == "attach particle effect" or
+                pack.get_attribute_name(attr) == "set supply crate series"):
+                if attr.has_key("float_value") and attr["value"] > 1000:
+                    attr["value"] = attr["float_value"]
             if pack.get_attribute_name(attr) == "gifter account id":
                 attr["description_string"] = "Gift"
                 item["optf2_gift_from"] = "7656" + str(int(pack.get_attribute_value(attr) +
