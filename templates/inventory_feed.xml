@@ -12,7 +12,6 @@ $def with (user, pack, items)
         $ permalink = "{0}{1}item/{2}/{3}".format(instance.homedomain, virtual_root, user.get_id64(), pack.get_item_id(item))
         $ level = pack.get_item_level(item)
         $ type = pack.get_item_type(item)
-        $ quality = pack.get_item_quality(item)
         $ name = pack.get_item_custom_name(item)
         $if not name:
             $ name = pack.get_item_name(item)
@@ -20,24 +19,6 @@ $def with (user, pack, items)
         <title>$:item["optf2_feed_name"]</title>
         <link>$permalink</link>
         <guid isPermaLink="true">$permalink</guid>
-        <info xmlns="urn:agg.org:optf2">
-          $ attrs = pack.get_item_attributes(item)
-          <attributes>
-            $for attr in item["optf2_attrs"]:
-                $ desc = pack.format_attribute_description(attr)
-                $ attrtype = pack.get_attribute_type(attr)
-                <$attrtype>$desc</$attrtype>
-          </attributes>
-          <image type="small">$pack.get_item_image(item, pack.ITEM_IMAGE_SMALL)</image>
-          <image type="large">$pack.get_item_image(item, pack.ITEM_IMAGE_LARGE)</image>
-          <level>$level</level>
-          $if item.has_key("optf2_color"):
-              $ type = "Painted " + type
-              <color>$item["optf2_color"]</color>
-          <type>$type</type>
-          <quality optf2="$qualitydict[quality['str']]" pretty="$quality['prettystr']" enum="$quality['id']" normal="$quality['str']"/>
-          <name>$name</name>
-        </info>
       </item>
   </channel>
 </rss>
