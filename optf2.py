@@ -132,10 +132,15 @@ def load_pack_cached(user, pack, stale = False):
         try:
             packrow = db_obj.select("backpack_cache", what = "backpack, last_refresh", where = "id64 = $uid64",
                                     vars = {"uid64": user.get_id64()})[0]
+            packfile = StringIO(str(packrow["backpack"]))
+
             if stale or (int(time()) - packrow["last_refresh"]) < cache_pack_refresh_interval:
-                pack.load_pack_file(StringIO(str(packrow["backpack"])))
+                pack.load_pack_file(packfile)
             else:
-                refresh_pack_cache(user, pack)
+                try:
+                    refresh_pack_cache(user, pack)
+                except urllib2.URLError:
+                    pack.load_pack_file(packfile)
         except IndexError:
             refresh_pack_cache(user, pack)
     else:
@@ -310,7 +315,8 @@ class pack_item:
             else:
                 item = pack.get_item_by_id(int(idl[1]))
                 if not item:
-                    refresh_pack_cache(user, pack)
+                    try: refresh_pack_cache(user, pack)
+                    except urllib2.URLError: pass
                 item = pack.get_item_by_id(int(idl[1]))
 
             if not item:
