@@ -69,6 +69,10 @@ $ rss = "{0}feed/{1}".format(virtual_root, user.get_id64())
               <div class="item_${pack.get_attribute_type(attr)}_attr">
                 $:pack.format_attribute_description(attr)
               </div>
+          $if item["optf2_untradeable"]:
+              <div class="item_neutral_attr">
+                Untradeable
+              </div>
         </div>
       </div>
   </div>

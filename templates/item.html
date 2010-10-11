@@ -39,6 +39,10 @@ $var title: $product_name - $usern $itemn
         $else:
             $:desc
       </div>
+  $if item["optf2_untradeable"]:
+      <div class="item_neutral_attr">
+        Untradeable
+      </div>
   $if user:
       <div class="item_neutral_attr">
         Serial: <span id="item_id">$pack.get_item_id(item)</span>

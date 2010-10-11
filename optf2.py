@@ -191,9 +191,15 @@ def process_attributes(items, pack):
 
     for item in items:
         attrs = pack.get_item_attributes(item)
+        item["optf2_untradeable"] = pack.is_item_untradeable(item)
 
         for attr in attrs:
             desc = pack.get_attribute_description(attr)
+
+            if pack.get_attribute_name(attr) == "cannot trade":
+                item["optf2_untradeable"] = True
+                attrs.remove(attr)
+                continue
             if desc.find("Attrib_") != -1:
                 attrs.remove(attr)
                 continue
