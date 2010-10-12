@@ -66,6 +66,10 @@ cache_pack_refresh_interval = 30
 # How many rows to show for the top viewed backpacks table
 top_backpack_rows = 10
 
+# Turn on debugging (prints a backtrace and other info
+# instead of returning an internal server error)
+web.config.debug = False
+
 # End of configuration stuff
 
 urls = (
@@ -108,13 +112,57 @@ steam.set_api_key(api_key)
 steam.set_language(language)
 
 db_schema = ["CREATE TABLE IF NOT EXISTS search_count (id64 INTEGER PRIMARY KEY, persona TEXT, count INTEGER, valve BOOLEAN)",
-             "CREATE TABLE IF NOT EXISTS backpack_cache (id64 INTEGER PRIMARY KEY, backpack BLOB, last_refresh DATE)"]
+             "CREATE TABLE IF NOT EXISTS backpack_cache (id64 INTEGER PRIMARY KEY, backpack BLOB, last_refresh DATE)",
+             "CREATE TABLE IF NOT EXISTS profile_cache (id64 INTEGER PRIMARY key, profile BLOB, last_refresh DATA)"]
 db_obj = web.database(dbn = "sqlite", db = os.path.join(steam.get_cache_dir(), "optf2.db"))
 for s in db_schema:
     db_obj.query(s)
 
-def make_packfile_path(id64):
-    return os.path.join(steam.get_cache_dir(), "{0}.pack".format(id64))
+def cache_not_stale(row):
+    return (int(time()) - row["last_refresh"]) < cache_pack_refresh_interval
+
+def refresh_profile_cache(sid):
+    user = steam.user.profile(sid)
+    summary = user.get_summary_object()
+
+    try:
+        db_obj.insert("profile_cache", id64 = user.get_id64(),
+                      last_refresh = int(time()),
+                      profile = pickle.dumps(summary))
+    except:
+        db_obj.update("profile_cache", id64 = user.get_id64(),
+                      last_refresh = int(time()),
+                      profile = pickle.dumps(summary),
+                      where = "id64 = $id64", vars = {"id64": user.get_id64()})
+
+    return user
+
+def load_profile_cached(sid, stale = False):
+    user = steam.user.profile()
+    if not sid.isdigit():
+        sid = user.get_id64_from_sid(sid.encode("ascii"))
+        if not sid:
+            return refresh_profile_cache(sid)
+
+    if cache_pack:
+        try:
+            prow = db_obj.select("profile_cache", what = "profile, last_refresh",
+                                 where = "id64 = $id64", vars = {"id64": int(sid)})[0]
+            pfile = StringIO(str(prow["profile"]))
+
+            if stale or cache_not_stale(prow):
+                user.load_summary_file(pfile)
+            else:
+                try:
+                    return refresh_profile_cache(sid)
+                except:
+                    user.load_summary_file(pfile)
+                    return user
+            return user
+        except IndexError:
+            return refresh_profile_cache(sid)
+    else:
+        return refresh_profile_cache(sid)
 
 def refresh_pack_cache(user, pack):
     pack.load_pack(user)
@@ -128,13 +176,12 @@ def refresh_pack_cache(user, pack):
 
 def load_pack_cached(user, pack, stale = False):
     if cache_pack:
-        packfile = make_packfile_path(user.get_id64())
         try:
             packrow = db_obj.select("backpack_cache", what = "backpack, last_refresh", where = "id64 = $uid64",
                                     vars = {"uid64": user.get_id64()})[0]
             packfile = StringIO(str(packrow["backpack"]))
 
-            if stale or (int(time()) - packrow["last_refresh"]) < cache_pack_refresh_interval:
+            if stale or cache_not_stale(packrow):
                 pack.load_pack_file(packfile)
             else:
                 try:
@@ -272,8 +319,8 @@ class schema_dump:
         try:
             pack = steam.tf2.backpack()
             return templates.schema_dump(pack, process_attributes(pack.get_items(from_schema = True), pack))
-        except Exception as E:
-            return templates.error(E)
+        except:
+            return templates.error("Couldn't load schema")
 
 class user_completion:
     """ Searches for an account matching the username given in the query
@@ -327,7 +374,7 @@ class pack_item:
             idl = iid.split('/')
             pack = steam.tf2.backpack()
             if idl[0] != "from_schema":
-                user = steam.user.profile(idl[0])
+                user = load_profile_cached(idl[0], stale = True)
                 load_pack_cached(user, pack, stale = True)
             else:
                 user = None
@@ -346,54 +393,58 @@ class about:
 
 class pack_fetch:
     def _get_page_for_sid(self, sid):
+        if not sid:
+            return templates.error("Need an ID")
         try:
-            if not sid:
-                return templates.error("Need an ID")
-            try:
-                user = steam.user.profile(os.path.basename(sid))
-            except steam.user.ProfileError:
-                search = json.loads(user_completion().GET(sid))
-                nuser = None
-                for result in search:
-                    if result["persona"] == sid:
-                        nuser = result["id"]
-                        break
-                for result in search:
-                    if result["persona"].lower() == sid.lower():
-                        nuser = result["id"]
-                        break
-                for result in search:
-                    if result["persona"].lower().find(sid.lower()) != -1:
-                        nuser = result["id"]
-                        break
-                if nuser:
-                    user = steam.user.profile(nuser)
-                else:
-                    raise steam.user.ProfileError("Bad profile name")
+            user = load_profile_cached(os.path.basename(sid))
+        except steam.user.ProfileError:
+            search = json.loads(user_completion().GET(sid))
+            nuser = None
+            for result in search:
+                if result["persona"] == sid:
+                    nuser = result["id"]
+                    break
+            for result in search:
+                if result["persona"].lower() == sid.lower():
+                    nuser = result["id"]
+                    break
+            for result in search:
+                if result["persona"].lower().find(sid.lower()) != -1:
+                    nuser = result["id"]
+                    break
+            if nuser:
+                try:
+                    user = load_profile_cached(nuser)
+                except:
+                    return templates.error("Failed to load user profile")
+            else:
+                return templates.error("Bad profile name")
 
-            pack = steam.tf2.backpack()
+        pack = steam.tf2.backpack()
 
-            isvalve = (user.get_primary_group() == valve_group_id)
+        isvalve = (user.get_primary_group() == valve_group_id)
 
+        try:
             load_pack_cached(user, pack)
 
             items = pack.get_items()
             sort_items(items, pack, web.input().get("sort", "default"))
             process_attributes(items, pack)
+        except:
+            return templates.error("Failed to load backpack")
 
-            try:
-                db_obj.query("""UPDATE search_count SET count = count + 1,
-                                                        persona = $p,
-                                                        valve = $iv WHERE id64 = $id64""",
-                             vars = {"id64": user.get_id64(),
-                                     "p": user.get_persona(),
-                                     "iv": isvalve})
-            except:
-                db_obj.insert("search_count", valve = isvalve,
-                              count = 1, id64 = user.get_id64(),
-                              persona = user.get_persona())
-        except Exception as E:
-            return templates.error(str(E))
+        try:
+            db_obj.query("""UPDATE search_count SET count = count + 1,
+                                                    persona = $p,
+                                                    valve = $iv WHERE id64 = $id64""",
+                         vars = {"id64": user.get_id64(),
+                                 "p": user.get_persona(),
+                                 "iv": isvalve})
+        except:
+            db_obj.insert("search_count", valve = isvalve,
+                          count = 1, id64 = user.get_id64(),
+                          persona = user.get_persona())
+
         return templates.inventory(user, pack, isvalve, items)
 
     def GET(self, sid):
@@ -405,7 +456,7 @@ class pack_fetch:
 class pack_feed:
     def GET(self, sid):
         try:
-            user = steam.user.profile(sid)
+            user = load_profile_cached(sid, stale = True)
             pack = steam.tf2.backpack()
             load_pack_cached(user, pack)
             items = pack.get_items()
