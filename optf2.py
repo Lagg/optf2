@@ -91,6 +91,29 @@ qualitydict = {"unique": "The ", "community": "Community ",
                "selfmade": "My ", "vintage": "Vintage ",
                "rarity4": "Unusual "}
 
+# I don't like this either but Valve didn't expose them
+# through the API
+particledict = {0: "Invalid Particle",
+                1: "Particle 1",
+                2: "Flying Bits",
+                3: "Nemesis Burst",
+                4: "Community Sparkle",
+                5: "Holy Glow",
+                6: "Green Confetti",
+                7: "Purple Confetti",
+                8: "Haunted Ghosts",
+                9: "Green Energy",
+                10: "Purple Energy",
+                11: "Circling TF Logo",
+                12: "Massed Flies",
+                13: "Burning Flames",
+                14: "Scorching Flames",
+                15: "Searing Plasma",
+                16: "Vivid Plasma",
+                17: "Sunbeams",
+                18: "Circling Peace Sign",
+                19: "Circling Heart"}
+
 # These should stay explicit
 render_globals = {"css_url": css_url,
                   "virtual_root": virtual_root,
@@ -98,6 +121,7 @@ render_globals = {"css_url": css_url,
                   "encode_url": web.urlquote,
                   "len": len,
                   "qualitydict": qualitydict,
+                  "particledict": particledict,
                   "instance": web.ctx,
                   "product_name": product_name,
                   "source_url": source_url,
@@ -252,9 +276,11 @@ def process_attributes(items, pack):
                 item["optf2_untradeable"] = True
                 attrs.remove(attr)
                 continue
+
             if desc.find("Attrib_") != -1:
                 attrs.remove(attr)
                 continue
+
             if pack.get_attribute_name(attr) == "set item tint RGB":
                 if attr.has_key("float_value") and pack.get_item_class(item) != "tool":
                     raw_rgb = int(attr["float_value"])
@@ -266,10 +292,16 @@ def process_attributes(items, pack):
                 item["optf2_color"] = item_color
                 attrs.remove(attr)
                 continue
+
             if (pack.get_attribute_name(attr) == "attach particle effect" or
                 pack.get_attribute_name(attr) == "set supply crate series"):
                 if attr.has_key("float_value") and attr["value"] > 1000:
                     attr["value"] = attr["float_value"]
+
+            if pack.get_attribute_name(attr) == "attach particle effect":
+                attr["description_string"] = ("Effect: " +
+                                              particledict.get(int(attr["value"]), particledict[0]))
+
             if pack.get_attribute_name(attr) == "gifter account id":
                 attr["description_string"] = "Gift"
                 item["optf2_gift_from"] = "7656" + str(int(pack.get_attribute_value(attr) +
