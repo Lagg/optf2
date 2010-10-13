@@ -70,6 +70,10 @@ top_backpack_rows = 10
 # instead of returning an internal server error)
 web.config.debug = False
 
+# Enables fastcgi support with flup, be sure to have it
+# installed.
+enable_fastcgi = False
+
 # End of configuration stuff
 
 urls = (
@@ -514,8 +518,9 @@ class index:
             )
         countlist = db_obj.select("search_count", order = "count DESC", limit = top_backpack_rows)
         return templates.index(profile_form(), countlist)
-        
+
+if enable_fastcgi:
+    web.wsgi.runwsgi = lambda func, addr=None: web.wsgi.runfcgi(func, addr)
+
 if __name__ == "__main__":
     app.run()
-else:
-    web.wsgi.runwsgi = lambda func, addr=None: web.wsgi.runfcgi(func, addr)
