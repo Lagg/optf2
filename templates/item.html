@@ -35,7 +35,7 @@ $var title: $product_name - $usern $itemn
       $ desc = pack.format_attribute_description(attr)
       <div class="item_${pack.get_attribute_type(attr)}_attr">
         $if desc == "Gift":
-            Gift from <a href="http://steamcommunity.com/profiles/${item['optf2_gift_from']}">this user</a>
+            Gift from <a href="${virtual_root}user/${item['optf2_gift_from']}">$item["optf2_gift_from_persona"]</a>
         $else:
             $:desc
       </div>

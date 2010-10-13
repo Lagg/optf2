@@ -306,6 +306,11 @@ def process_attributes(items, pack):
                 attr["description_string"] = "Gift"
                 item["optf2_gift_from"] = "7656" + str(int(pack.get_attribute_value(attr) +
                                                            1197960265728))
+                try:
+                    user = load_profile_cached(item["optf2_gift_from"], stale = True)
+                    item["optf2_gift_from_persona"] = user.get_persona()
+                except:
+                    item["optf2_gift_from_persona"] = "this user"
             attr["description_string"] = attr["description_string"].replace("\n", "<br/>")
         item["optf2_attrs"] = deepcopy(attrs)
 
