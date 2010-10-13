@@ -512,3 +512,5 @@ class index:
         
 if __name__ == "__main__":
     app.run()
+else:
+    web.wsgi.runwsgi = lambda func, addr=None: web.wsgi.runfcgi(func, addr)
