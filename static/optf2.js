@@ -2,12 +2,24 @@ $(document).ready(function(){
     $(".item_link").removeAttr("href");
 });
 
+function item_image_resize(img, iw, ih, w, h) {
+    var ratio = Math.min(w / iw, h / ih);
+
+    img.width(ratio * iw);
+    img.height(ratio * ih);
+}
+
 function item_resize(event, ui) {
     var item = $(event.target);
+    var image = item.find("#item_image_large");
 
     item.height(ui.size.height);
     item.width(ui.size.width);
     item.find("#stat_vertrule").height(ui.size.height);
+
+    item_image_resize(image, image.width(), image.height(),
+                      Math.min(ui.size.width - 200, 512),
+                      Math.min(ui.size.height - 100, 512));
 }
 
 function item_open_success(data, status, xhr) {
