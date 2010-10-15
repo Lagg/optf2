@@ -1,5 +1,6 @@
 $def with (user, pack, isvalve, items)
 $ usern = user.get_persona()
+$ profileurl = user.get_profile_url()
 $ realn = user.get_real_name()
 $var title: $product_name - $usern's Backpack
 $ perma = "{0}user/{1}".format(virtual_root, user.get_id64())
@@ -11,7 +12,9 @@ $ rss = "{0}feed/{1}".format(virtual_root, user.get_id64())
       $ name_suffix = '<img src="{0}valve.png" alt="Valve" title="Valve Employee"/>'.format(static_prefix)
   $else: $ name_suffix = ''
   <div id="avatar">
-    <img src="$user.get_avatar_url(user.AVATAR_LARGE)" alt="$realn" title="$realn"/><br/>
+    <a href="$profileurl">
+      <img src="$user.get_avatar_url(user.AVATAR_LARGE)" alt="$realn" title="$realn"/>
+    </a><br/>
     <b>$realn &nbsp;$:name_suffix</b>
   </div>
   <div id="status_$cstatus">
@@ -28,7 +31,7 @@ $ rss = "{0}feed/{1}".format(virtual_root, user.get_id64())
     $else:
         $cstatus
   </div>
-  <h2><a href="$user.get_profile_url()">$usern's</a>
+  <h2><a href="$profileurl">$usern's</a>
   Backpack
   $if len(items) <= 0:
       &nbsp;is empty!
