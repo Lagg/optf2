@@ -475,16 +475,16 @@ class pack_fetch:
             return templates.error("Failed to load backpack")
 
         try:
+            db_obj.insert("search_count", valve = isvalve,
+                          count = 1, id64 = user.get_id64(),
+                          persona = user.get_persona())
+        except:
             db_obj.query("""UPDATE search_count SET count = count + 1,
                                                     persona = $p,
                                                     valve = $iv WHERE id64 = $id64""",
                          vars = {"id64": user.get_id64(),
                                  "p": user.get_persona(),
                                  "iv": isvalve})
-        except:
-            db_obj.insert("search_count", valve = isvalve,
-                          count = 1, id64 = user.get_id64(),
-                          persona = user.get_persona())
 
         return templates.inventory(user, pack, isvalve, items)
 
