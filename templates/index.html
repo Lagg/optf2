@@ -20,7 +20,7 @@ $$("#User").autocomplete({
 })});
 --></script>
 
-<form id="userform" method="post" action="${virtual_root}user/">
+<form id="userform" method="post" action="${virtual_root}">
   $if not profile_form.valid:
       <p>Bad profile given</p>
   $:profile_form.render()

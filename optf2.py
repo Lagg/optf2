@@ -491,9 +491,6 @@ class pack_fetch:
     def GET(self, sid):
         return self._get_page_for_sid(sid)
 
-    def POST(self, s):
-        return self._get_page_for_sid(web.input().get("User"))
-
 class pack_feed:
     def GET(self, sid):
         try:
@@ -518,6 +515,10 @@ class index:
             )
         countlist = db_obj.select("search_count", order = "count DESC", limit = top_backpack_rows)
         return templates.index(profile_form(), countlist)
+    def POST(self):
+        user = web.input().get("User")
+        if user: raise web.seeother(virtual_root + "user/" + user)
+        else: return templates.error("Don't do that")
 
 if enable_fastcgi:
     web.wsgi.runwsgi = lambda func, addr=None: web.wsgi.runfcgi(func, addr)
