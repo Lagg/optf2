@@ -23,6 +23,7 @@ try:
     from cStringIO import StringIO
     import web
     from web import form
+    from copy import deepcopy
 except ImportError as E:
     print(str(E))
     raise SystemExit
@@ -316,7 +317,7 @@ def process_attributes(items, pack):
                 except:
                     item["optf2_gift_from_persona"] = "this user"
             attr["description_string"] = attr["description_string"].replace("\n", "<br/>")
-            item["optf2_attrs"].append(attr)
+            item["optf2_attrs"].append(deepcopy(attr))
 
         quality_str = pack.get_item_quality(item)["str"]
         pretty_quality_str = pack.get_item_quality(item)["prettystr"]
