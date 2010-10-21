@@ -23,7 +23,6 @@ try:
     from cStringIO import StringIO
     import web
     from web import form
-    from copy import deepcopy
 except ImportError as E:
     print(str(E))
     raise SystemExit
@@ -272,17 +271,19 @@ def process_attributes(items, pack):
     for item in items:
         attrs = pack.get_item_attributes(item)
         item["optf2_untradeable"] = pack.is_item_untradeable(item)
+        item["optf2_attrs"] = []
 
         for attr in attrs:
             desc = pack.get_attribute_description(attr)
 
+            if pack.get_attribute_name(attr) == "always tradable":
+                continue
+
             if pack.get_attribute_name(attr) == "cannot trade":
                 item["optf2_untradeable"] = True
-                attrs.remove(attr)
                 continue
 
             if desc.find("Attrib_") != -1:
-                attrs.remove(attr)
                 continue
 
             if pack.get_attribute_name(attr) == "set item tint RGB":
@@ -294,7 +295,6 @@ def process_attributes(items, pack):
                                                         (raw_rgb >> 8) & 0xFF,
                                                         (raw_rgb) & 0xFF)
                 item["optf2_color"] = item_color
-                attrs.remove(attr)
                 continue
 
             if (pack.get_attribute_name(attr) == "attach particle effect" or
@@ -316,7 +316,7 @@ def process_attributes(items, pack):
                 except:
                     item["optf2_gift_from_persona"] = "this user"
             attr["description_string"] = attr["description_string"].replace("\n", "<br/>")
-        item["optf2_attrs"] = deepcopy(attrs)
+            item["optf2_attrs"].append(attr)
 
         quality_str = pack.get_item_quality(item)["str"]
         pretty_quality_str = pack.get_item_quality(item)["prettystr"]
