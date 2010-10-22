@@ -58,15 +58,10 @@ body { background: #303030; color: white; font-family: Arial, Helvetica, sans-se
     clear: both;
 }
 
-
-#header { text-align: center; clear: both; }
-
 #content { height: 100%; text-align: center; }
 
 #userform { text-align: center; }
 #userform table { margin: 15% auto; margin-bottom: 50px; }
-
-#avatar { font-size: 9px; }
 
 a { color: #cacaca; text-decoration: none; }
 a:hover { text-decoration: underline; }
@@ -108,3 +103,29 @@ img { border: 0; }
 #search_table { margin: 0 auto 0 auto; }
 #search_table tr td { padding: 6px; }
 #search_title { background: #454545; text-align: center; }
+
+#header { text-align: center; clear: both; }
+
+#userinfo {
+    border: 1px solid #000000;
+    background: #505050;
+    padding: 5px;
+    position: relative;
+    height: 90px;
+    width: 300px;
+    margin: 30px auto 25px auto;
+    -moz-border-radius: 10px;
+    -webkit-border-radius: 10px;
+    border-radius: 10px;
+    overflow: hidden;
+}
+
+#statbox {
+    top: 10px;
+    text-align: left;
+    position: absolute;
+    left: 70px;
+    padding-left: 10px;
+}
+
+#avatar { top: 15px; position: absolute; width: 64px; height: 64px; left: 10px; }

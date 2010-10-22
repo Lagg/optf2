@@ -1,4 +1,4 @@
-$def with (user, pack, isvalve, items)
+$def with (user, pack, isvalve, items, views)
 $ usern = user.get_persona()
 $ profileurl = user.get_profile_url()
 $ realn = user.get_real_name()
@@ -11,33 +11,41 @@ $ rss = "{0}feed/{1}".format(virtual_root, user.get_id64())
   $if isvalve:
       $ name_suffix = '<img src="{0}valve.png" alt="Valve" title="Valve Employee"/>'.format(static_prefix)
   $else: $ name_suffix = ''
-  <div id="avatar">
-    <a href="$profileurl">
-      <img src="$user.get_avatar_url(user.AVATAR_LARGE)" alt="$realn" title="$realn"/>
-    </a><br/>
-    <b>$realn &nbsp;$:name_suffix</b>
-  </div>
-  <div id="status_$cstatus">
-    $if cgame:
-        Playing \
-        $ game_extra = cgame.get("extra", "Unknown")
-        $ game_server = cgame.get("server", "0.0.0.0:0")
-        $if cgame.has_key("id"):
-            <a href="http://store.steampowered.com/app/$cgame['id']">$game_extra</a>
+  <div id="userinfo">
+    <div id="avatar">
+      <a href="$profileurl">
+        <img src="$user.get_avatar_url(user.AVATAR_MEDIUM)" alt="$realn" title="$realn"/>
+      </a>
+    </div>
+    <div id="statbox">
+      <b><a href="$profileurl">$usern</a> $:name_suffix</b>
+      <a href="$perma" rel="bookmark">
+        <img src="${static_prefix}plink_icon.png" alt="Permalink" title="Permalink"/>
+      </a>
+      <a href="$rss">
+        <img src="${static_prefix}feed_icon.png" alt="RSS" title="Subscribe to an RSS feed of this backpack"/>
+      </a>
+      <div id="status_$cstatus">
+        $if cgame:
+            Playing \
+            $ game_extra = cgame.get("extra", "Unknown")
+            $ game_server = cgame.get("server", "0.0.0.0:0")
+            $if cgame.has_key("id"):
+                <a href="http://store.steampowered.com/app/$cgame['id']">$game_extra</a>
+            $else:
+                $game_extra
+            $if game_server != "0.0.0.0:0":
+                <a href="steam://connect/$game_server">(Connect)</a>
         $else:
-            $game_extra
-        $if game_server != "0.0.0.0:0":
-            <a href="steam://connect/$game_server">(Connect)</a>
-    $else:
-        $cstatus
+            $cstatus
+      </div>
+      $views
+      $if views == 1:
+          view
+      $else:
+          views
+    </div>
   </div>
-  <h2><a href="$profileurl">$usern's</a>
-  Backpack
-  $if len(items) <= 0:
-      &nbsp;is empty!
-  <a href="$perma" rel="bookmark"><img src="${static_prefix}plink_icon.png" alt="Permalink" title="Permalink"/></a>
-  <a href="$rss"><img src="${static_prefix}feed_icon.png" alt="RSS" title="Subscribe to an RSS feed of this backpack"/></a>
-  </h2>
   $if len(items) > 0:
         <a href="$perma?sort=default">Default</a>
       | <a href="$perma?sort=serial">Serial</a>
@@ -48,6 +56,8 @@ $ rss = "{0}feed/{1}".format(virtual_root, user.get_id64())
       | <a href="$perma?sort=class">Class</a>
 </div>
 <div id="content">
+  $if len(items) <= 0:
+      <h2>Empty!</h2>
   <div id="backpack">
   $for item in items:
       $ item_link = virtual_root + "item/%lu/%lu" % (user.get_id64(), pack.get_item_id(item))

@@ -438,7 +438,7 @@ class pack_fetch:
         if not sid:
             return templates.error("Need an ID")
         try:
-            user = load_profile_cached(os.path.basename(sid))
+            user = load_profile_cached(sid)
         except steam.user.ProfileError:
             search = json.loads(user_completion().GET(sid))
             nuser = None
@@ -487,7 +487,13 @@ class pack_fetch:
                                  "p": user.get_persona(),
                                  "iv": isvalve})
 
-        return templates.inventory(user, pack, isvalve, items)
+        try:
+            views = db_obj.select("search_count", where = "id64 = $id64",
+                                  vars = {"id64": user.get_id64()})[0]["count"]
+        except:
+            views = 0
+
+        return templates.inventory(user, pack, isvalve, items, views)
 
     def GET(self, sid):
         return self._get_page_for_sid(sid)
@@ -518,7 +524,7 @@ class index:
         return templates.index(profile_form(), countlist)
     def POST(self):
         user = web.input().get("User")
-        if user: raise web.seeother(virtual_root + "user/" + user)
+        if user: raise web.seeother(virtual_root + "user/" + os.path.basename(user))
         else: return templates.error("Don't do that")
 
 if enable_fastcgi:
