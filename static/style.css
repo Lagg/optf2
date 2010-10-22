@@ -13,6 +13,7 @@ body { background: #303030; color: white; font-family: Arial, Helvetica, sans-se
 .rarity4_name { color: #a965d9; font-weight: bold; }
 
 .item_cell, .item_cell_undropped {
+    border: 1px solid #000000;
     margin: 8px;
     background: #3c352e;
     width: 180px;
