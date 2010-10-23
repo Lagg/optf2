@@ -139,9 +139,10 @@ templates = web.template.render(template_dir, base = "base",
 steam.set_api_key(api_key)
 steam.set_language(language)
 
-db_schema = ["CREATE TABLE IF NOT EXISTS search_count (id64 INTEGER PRIMARY KEY, persona TEXT, count INTEGER, valve BOOLEAN)",
+db_schema = ["CREATE TABLE IF NOT EXISTS search_count (id64 INTEGER, ip TEXT, count INTEGER DEFAULT 1)",
              "CREATE TABLE IF NOT EXISTS backpack_cache (id64 INTEGER PRIMARY KEY, backpack BLOB, last_refresh DATE)",
-             "CREATE TABLE IF NOT EXISTS profile_cache (id64 INTEGER PRIMARY key, profile BLOB, last_refresh DATA)"]
+             "CREATE TABLE IF NOT EXISTS profile_cache (id64 INTEGER PRIMARY KEY, profile BLOB, last_refresh DATE)",
+             "CREATE TABLE IF NOT EXISTS unique_views (id64 INTEGER PRIMARY KEY, count INTEGER DEFAULT 1, persona TEXT, valve BOOLEAN)"]
 db_obj = web.database(dbn = "sqlite", db = os.path.join(steam.get_cache_dir(), "optf2.db"))
 for s in db_schema:
     db_obj.query(s)
@@ -464,8 +465,6 @@ class pack_fetch:
 
         pack = steam.tf2.backpack()
 
-        isvalve = (user.get_primary_group() == valve_group_id)
-
         try:
             load_pack_cached(user, pack)
 
@@ -475,23 +474,35 @@ class pack_fetch:
         except:
             return templates.error("Failed to load backpack")
 
+        isvalve = (user.get_primary_group() == valve_group_id)
+        count = 1
         try:
-            db_obj.insert("search_count", valve = isvalve,
-                          count = 1, id64 = user.get_id64(),
-                          persona = user.get_persona())
+            count = db_obj.select("search_count", where = "id64 = $id64 AND ip = $ip",
+                                  vars = {"id64": user.get_id64(),
+                                          "ip": web.ctx.ip})[0]["count"]
+
+            db_obj.query("""UPDATE search_count SET count = count + 1
+                                                    WHERE id64 = $id64 AND ip = $ip """,
+                         vars = {"id64": user.get_id64(), "ip": web.ctx.ip})
         except:
-            db_obj.query("""UPDATE search_count SET count = count + 1,
-                                                    persona = $p,
-                                                    valve = $iv WHERE id64 = $id64""",
-                         vars = {"id64": user.get_id64(),
-                                 "p": user.get_persona(),
-                                 "iv": isvalve})
+            db_obj.insert("search_count", id64 = user.get_id64(),
+                          ip = web.ctx.ip)
 
         try:
-            views = db_obj.select("search_count", where = "id64 = $id64",
-                                  vars = {"id64": user.get_id64()})[0]["count"]
+            views = db_obj.query("SELECT COUNT(*) AS unique_views FROM search_count WHERE id64 = $id64",
+                                 vars = {"id64": user.get_id64()})[0]["unique_views"]
         except:
-            views = 0
+            views = 1
+
+        try:
+            db_obj.insert("unique_views", id64 = user.get_id64(),
+                          persona = user.get_persona(), valve = isvalve,
+                          count = views)
+        except:
+            db_obj.update("unique_views", where = "id64 = $id64",
+                          vars = {"id64": user.get_id64()},
+                          persona = user.get_persona(), valve = isvalve,
+                          count = views)
 
         return templates.inventory(user, pack, isvalve, items, views)
 
@@ -520,7 +531,7 @@ class index:
             form.Textbox("User"),
             form.Button("View")
             )
-        countlist = db_obj.select("search_count", order = "count DESC", limit = top_backpack_rows)
+        countlist = db_obj.select("unique_views", order = "count DESC", limit = top_backpack_rows)
         return templates.index(profile_form(), countlist)
     def POST(self):
         user = web.input().get("User")
