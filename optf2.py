@@ -317,6 +317,11 @@ def process_attributes(items, pack):
                     item["optf2_gift_from_persona"] = user.get_persona()
                 except:
                     item["optf2_gift_from_persona"] = "this user"
+
+            # Workaround until Valve gives sane values
+            if attr["value"] > 1000000000 and "float_value" in attr:
+                attr["value"] = attr["float_value"]
+
             attr["description_string"] = attr["description_string"].replace("\n", "<br/>")
             item["optf2_attrs"].append(deepcopy(attr))
 
