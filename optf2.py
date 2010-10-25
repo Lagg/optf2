@@ -338,7 +338,9 @@ def process_attributes(items, pack):
                     item["optf2_gift_from_persona"] = "this user"
 
             # Workaround until Valve gives sane values
-            if attr["value"] > 1000000000 and "float_value" in attr:
+            if (pack.get_attribute_value_type(attr) != "date" and
+                attr["value"] > 1000000000 and
+                "float_value" in attr):
                 attr["value"] = attr["float_value"]
 
             attr["description_string"] = attr["description_string"].replace("\n", "<br/>")
