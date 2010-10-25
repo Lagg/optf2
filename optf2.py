@@ -381,6 +381,18 @@ def process_attributes(items, pack):
 
     return items
 
+def get_equippable_classes(items, pack):
+    """ Returns a set of classes that can equip this
+    item """
+
+    valid_classes = set()
+
+    for item in items:
+        classes = pack.get_item_equipable_classes(item)
+        if classes[0]: valid_classes |= set(classes)
+
+    return valid_classes
+
 class schema_dump:
     """ Dumps everything in the schema in a pretty way """
 
@@ -522,6 +534,8 @@ class pack_fetch:
                 items = filter_items_by_class(items, pack, query["sortclass"])
 
             process_attributes(items, pack)
+
+            filter_classes = get_equippable_classes(items, pack)
         except:
             return templates.error("Failed to load backpack")
 
@@ -555,7 +569,7 @@ class pack_fetch:
                           persona = user.get_persona(), valve = isvalve,
                           count = views)
 
-        return templates.inventory(user, pack, isvalve, items, views)
+        return templates.inventory(user, pack, isvalve, items, views, filter_classes)
 
     def GET(self, sid):
         return self._get_page_for_sid(sid)
