@@ -14,7 +14,7 @@ body { background: #303030; color: white; font-family: Arial, Helvetica, sans-se
 
 .item_cell, .item_cell_undropped {
     border: 1px solid #000000;
-    margin: 8px;
+    margin: 5px;
     background: #3c352e;
     width: 180px;
     height: 180px;
@@ -27,9 +27,20 @@ body { background: #303030; color: white; font-family: Arial, Helvetica, sans-se
     cursor: pointer;
     /* Yes I'm using non-standard properties. Better than wasting bandwidth
        with corner images */
-    -moz-border-radius: 20px;
-    -webkit-border-radius: 20px;
-    border-radius: 20px;
+    -moz-border-radius: 15px;
+    -webkit-border-radius: 15px;
+    border-radius: 15px;
+}
+.equipped {
+    background: #000000;
+    color: #ba4935;
+    position: absolute;
+    bottom: 5px;
+    right: 10px;
+    padding: 4px;
+    -moz-border-radius: 10px;
+    -webkit-border-radius: 10px;
+    border-radius: 10px;
 }
 .item_cell_undropped { background: #302323; }
 .item_attribs { display: none; cursor: default; overflow: hidden; }
