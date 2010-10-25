@@ -47,13 +47,25 @@ $ rss = "{0}feed/{1}".format(virtual_root, user.get_id64())
     </div>
   </div>
   $if len(items) > 0:
-        <a href="$perma?sort=default">Default</a>
-      | <a href="$perma?sort=serial">Serial</a>
-      | <a href="$perma?sort=cell">Position</a>
-      | <a href="$perma?sort=level">Level</a>
-      | <a href="$perma?sort=name">Name</a>
-      | <a href="$perma?sort=slot">Type</a>
-      | <a href="$perma?sort=class">Class</a>
+      <div class="sortlinks">
+        Sort:
+        <a href="$qurl(sort = 'default')">Default</a>
+        | <a href="$qurl(sort = 'serial')">Serial</a>
+        | <a href="$qurl(sort = 'cell')">Position</a>
+        | <a href="$qurl(sort = 'level')">Level</a>
+        | <a href="$qurl(sort = 'name')">Name</a>
+        | <a href="$qurl(sort = 'slot')">Type</a>
+        | <a href="$qurl(sort = 'class')">Class</a>
+      </div>
+      <div class="sortlinks">
+        Filter:
+        <a href="$qurl(sortclass = None)"><img src="${static_prefix}tf_icon.png" alt="All" title="All"/></a>
+        $for k in pack.equipped_classes:
+            $ sortclass = pack.equipped_classes[k]
+            <a href="$qurl(sortclass = sortclass)">
+              <img src="${static_prefix}${sortclass}_icon.png" alt="${sortclass}" title="${sortclass}"/>
+            </a>
+      </div>
 </div>
 <div id="content">
   $if len(items) <= 0:

@@ -129,7 +129,8 @@ render_globals = {"css_url": css_url,
                   "instance": web.ctx,
                   "product_name": product_name,
                   "source_url": source_url,
-                  "wiki_url": "http://wiki.teamfortress.com/wiki/"
+                  "wiki_url": "http://wiki.teamfortress.com/wiki/",
+                  "qurl": web.http.changequery
                   }
 
 app = web.application(urls, globals())
@@ -265,6 +266,17 @@ def sort_items(items, pack, sortby):
 
     if itemcmp:
         items.sort(cmp = itemcmp)
+
+def filter_items_by_class(items, pack, theclass):
+    filtered_items = []
+
+    for item in items:
+        classes = pack.get_item_equipable_classes(item)
+        for c in classes:
+            if c == theclass:
+                filtered_items.append(item)
+                break
+    return filtered_items
 
 def process_attributes(items, pack):
     """ Filters attributes for the item list,
@@ -474,7 +486,13 @@ class pack_fetch:
             load_pack_cached(user, pack)
 
             items = pack.get_items()
-            sort_items(items, pack, web.input().get("sort", "default"))
+            query = web.input()
+
+            sort_items(items, pack, query.get("sort", "default"))
+
+            if "sortclass" in query:
+                items = filter_items_by_class(items, pack, query["sortclass"])
+
             process_attributes(items, pack)
         except:
             return templates.error("Failed to load backpack")
