@@ -17,6 +17,8 @@ $def with (content)
     <div id="navbar">
       <a href="$virtual_root">$product_name</a>
       <a href="${virtual_root}schema_dump">Item List</a>
+      $if news_url:
+          <a href="$news_url">News</a>
       <a href="${virtual_root}about">About</a>
     </div>
     $:content

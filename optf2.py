@@ -80,6 +80,11 @@ enable_fastcgi = False
 os.environ["SCRIPT_NAME"] = ''
 os.environ["REAL_SCRIPT_NAME"] = ''
 
+# The link to the news page/changelog
+# set this to None if you don't want
+# this shown. (Not recommended)
+news_url = "http://agg.optf2.com/log/?cat=5"
+
 # End of configuration stuff
 
 urls = (
@@ -137,6 +142,7 @@ render_globals = {"css_url": css_url,
                   "product_name": product_name,
                   "source_url": source_url,
                   "wiki_url": "http://wiki.teamfortress.com/wiki/",
+                  "news_url": news_url,
                   "qurl": web.http.changequery
                   }
 
