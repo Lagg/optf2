@@ -74,6 +74,12 @@ web.config.debug = False
 # installed.
 enable_fastcgi = False
 
+# These stop the script name from showing up
+# in URLs after a redirect. Remove them
+# if they cause problems.
+os.environ["SCRIPT_NAME"] = ''
+os.environ["REAL_SCRIPT_NAME"] = ''
+
 # End of configuration stuff
 
 urls = (
@@ -81,6 +87,7 @@ urls = (
     virtual_root + "user/(.*)", "pack_fetch",
     virtual_root + "feed/(.+)", "pack_feed",
     virtual_root + "item/(.+)", "pack_item",
+    virtual_root + "persona/(.+)", "persona",
     virtual_root + "schema_dump", "schema_dump",
     virtual_root + "about", "about",
     virtual_root, "index"
@@ -446,6 +453,25 @@ class pack_item:
         except Exception as E:
             return templates.error(str(E))
         return templates.item(user, item, pack)
+
+class persona:
+    def GET(self, id):
+        theobject = {"persona": "", "realname": ""}
+        callback = web.input().get("jsonp")
+
+        try:
+            user = steam.user.profile(id)
+            theobject["persona"] = user.get_persona()
+            theobject["realname"] = user.get_real_name()
+            theobject["id64"] = str(user.get_id64())
+            theobject["avatarurl"] = user.get_avatar_url(user.AVATAR_SMALL)
+        except: pass
+
+        web.header("Content-Type", "text/javascript")
+        if not callback:
+            return json.dumps(theobject)
+        else:
+            return callback + '(' + json.dumps(theobject) + ');'
 
 class about:
     def GET(self):
