@@ -373,6 +373,9 @@ def process_attributes(items, pack):
         custom_name = pack.get_item_custom_name(item)
         item_name = pack.get_item_name(item)
 
+        if item_name.find("The ") != -1 and pack.is_item_prefixed(item):
+            item_name = item_name[4:]
+
         if custom_name or (not pack.is_item_prefixed(item) and quality_str == "unique"):
             prefix = ""
         if custom_name:
