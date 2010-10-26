@@ -1,7 +1,17 @@
-$def with (pack, items)
+$def with (pack, items, filter_classes)
 $var title: $product_name - All Items
 
-<div id="header"><h2>All items in TF2</h2></div>
+<div id="header">
+  <h2>All items in TF2</h2>
+  <div class="sortlinks">
+    Filter:
+    <a href="$qurl(sortclass = None)"><img src="${static_prefix}tf_icon.png" alt="All" title="All"/></a>
+    $for k in filter_classes:
+        <a href="$qurl(sortclass = k)">
+          <img src="${static_prefix}${k}_icon.png" alt="${k}" title="${k}"/>
+        </a>
+  </div>
+</div>
 <div id="content">
   <div id="backpack">
   $for item in items:
@@ -29,4 +39,7 @@ $var title: $product_name - All Items
         </div>
       </div>
   </div>
+</div>
+<div id="footer">
+  Valve says I should link to <a href="http://steampowered.com">this</a>.
 </div>

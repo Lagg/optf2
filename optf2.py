@@ -404,8 +404,16 @@ class schema_dump:
 
     def GET(self):
         try:
+            query = web.input()
             pack = steam.tf2.backpack()
-            return templates.schema_dump(pack, process_attributes(pack.get_items(from_schema = True), pack))
+            items = pack.get_items(from_schema = True)
+
+            if "sortclass" in query:
+                items = filter_items_by_class(items, pack, query["sortclass"])
+
+            filter_classes = get_equippable_classes(items, pack)
+
+            return templates.schema_dump(pack, process_attributes(items, pack), filter_classes)
         except:
             return templates.error("Couldn't load schema")
 
