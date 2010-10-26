@@ -70,6 +70,9 @@ $ rss = "{0}feed/{1}".format(virtual_root, user.get_id64())
       <h2>Empty!</h2>
   <div id="backpack">
   $for item in items:
+      $if not item:
+          <div class="item_cell"></div>
+          $ continue
       $ item_link = virtual_root + "item/%lu/%lu" % (user.get_id64(), pack.get_item_id(item))
       $ item_id = pack.get_item_id(item)
       $if pack.get_item_position(item) <= -1:

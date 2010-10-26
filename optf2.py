@@ -279,11 +279,25 @@ def sort_items(items, pack, sortby):
 
     if itemcmp:
         items.sort(cmp = itemcmp)
+        if sortby == "cell":
+            newitems = []
+            lastpos = -1
+            for item in items:
+                if lastpos == -1:
+                    lastpos = pack.get_item_position(item)
+                else:
+                    for i in range(lastpos, pack.get_item_position(item) - 1):
+                        newitems.append(None)
+                newitems.append(deepcopy(item))
+                lastpos = pack.get_item_position(item)
+            return newitems
+    return items
 
 def filter_items_by_class(items, pack, theclass):
     filtered_items = []
 
     for item in items:
+        if not item: continue
         classes = pack.get_item_equipable_classes(item)
         for c in classes:
             if c == theclass:
@@ -296,6 +310,7 @@ def process_attributes(items, pack):
     optf2-specific keys are prefixed with optf2_ """
 
     for item in items:
+        if not item: continue
         attrs = pack.get_item_attributes(item)
         item["optf2_untradeable"] = pack.is_item_untradeable(item)
         item["optf2_attrs"] = []
@@ -394,6 +409,7 @@ def get_equippable_classes(items, pack):
     valid_classes = set()
 
     for item in items:
+        if not item: continue
         classes = pack.get_item_equipable_classes(item)
         if classes[0]: valid_classes |= set(classes)
 
@@ -542,7 +558,7 @@ class pack_fetch:
             items = pack.get_items()
             query = web.input()
 
-            sort_items(items, pack, query.get("sort", "default"))
+            items = sort_items(items, pack, query.get("sort", "default"))
 
             if "sortclass" in query:
                 items = filter_items_by_class(items, pack, query["sortclass"])
