@@ -328,6 +328,17 @@ def process_attributes(items, pack):
             if desc.find("Attrib_") != -1:
                 continue
 
+            # The minicrit attribute has the dalokohs bar
+            # description string
+            if pack.get_attribute_name(attr) == "lunchbox adds minicrits":
+                attr["description_string"] = "While under the effects, damage done and damage taken will be Mini-Crits."
+
+            # The GRU have the crit-o-cola mini-crit
+            # attribute attached for some reason.
+            if (pack.get_item_schema_id(item) == 239 and
+                pack.get_attribute_name(attr) == "lunchbox adds minicrits"):
+                continue
+
             if pack.get_attribute_name(attr) == "set item tint RGB":
                 if attr.has_key("float_value") and pack.get_item_class(item) != "tool":
                     raw_rgb = int(attr["float_value"])
@@ -393,6 +404,10 @@ def process_attributes(items, pack):
         if color:
             paint_job = '<span style="color: {0}; font-weight: bold;">Painted</span>'.format(color)
         item["optf2_dedicated_name"] = "{0} {1} {2}".format(paint_job, prefix, item_name)
+
+        if color:
+            paint_job = "Painted"
+        item["optf2_title_name"] = "{0} {1} {2}".format(paint_job, prefix, item_name)
 
         if color:
             paint_job = "(Painted)"
