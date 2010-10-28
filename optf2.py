@@ -328,6 +328,10 @@ def process_attributes(items, pack):
             if desc.find("Attrib_") != -1:
                 continue
 
+            # Another bogus description string
+            if pack.get_attribute_name(attr) == "noise maker":
+                continue
+
             # The minicrit attribute has the dalokohs bar
             # description string
             if pack.get_attribute_name(attr) == "lunchbox adds minicrits":
