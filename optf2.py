@@ -85,6 +85,10 @@ os.environ["REAL_SCRIPT_NAME"] = ''
 # this shown. (Not recommended)
 news_url = "http://agg.optf2.com/log/?cat=5"
 
+# The max size of the backpack. Used
+# for the padded cell sort
+backpack_padded_size = 200
+
 # End of configuration stuff
 
 urls = (
@@ -236,6 +240,21 @@ def load_pack_cached(user, pack, stale = False):
     else:
         pack.load_pack(user)
 
+def get_invalid_pos_items(items, pack):
+    poslist = []
+    invalid_items = []
+    for item in items:
+        if not item: continue
+        pos = pack.get_item_position(item)
+        if pos != -1 and pos not in poslist:
+            poslist.append(pack.get_item_position(item))
+        else:
+            for item in items:
+                if item and item not in invalid_items and pos == pack.get_item_position(item):
+                    invalid_items.append(deepcopy(item))
+
+    return invalid_items
+
 def sort_items(items, pack, sortby):
     itemcmp = None
     def defcmp(x, y):
@@ -290,6 +309,9 @@ def sort_items(items, pack, sortby):
                         newitems.append(None)
                 newitems.append(deepcopy(item))
                 lastpos = pack.get_item_position(item)
+            if lastpos < backpack_padded_size:
+                for i in range(lastpos, backpack_padded_size):
+                    newitems.append(None)
             return newitems
     return items
 
@@ -573,14 +595,15 @@ class pack_fetch:
                 return templates.error("Bad profile name")
 
         pack = steam.tf2.backpack()
+        query = web.input()
+        sortby = query.get("sort", "default")
 
         try:
             load_pack_cached(user, pack)
 
             items = pack.get_items()
-            query = web.input()
 
-            items = sort_items(items, pack, query.get("sort", "default"))
+            items = sort_items(items, pack, sortby)
 
             if "sortclass" in query:
                 items = filter_items_by_class(items, pack, query["sortclass"])
@@ -588,6 +611,11 @@ class pack_fetch:
             process_attributes(items, pack)
 
             filter_classes = get_equippable_classes(items, pack)
+
+            baditems = get_invalid_pos_items(items, pack)
+            for bitem in baditems:
+                if bitem in items:
+                    items.remove(bitem)
         except:
             return templates.error("Failed to load backpack")
 
@@ -621,7 +649,7 @@ class pack_fetch:
                           persona = user.get_persona(), valve = isvalve,
                           count = views)
 
-        return templates.inventory(user, pack, isvalve, items, views, filter_classes)
+        return templates.inventory(user, pack, isvalve, items, views, filter_classes, sortby, baditems)
 
     def GET(self, sid):
         return self._get_page_for_sid(sid)

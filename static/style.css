@@ -14,7 +14,7 @@ body { background: #303030; color: white; font-family: Arial, Helvetica, sans-se
 
 .item_cell, .item_cell_undropped {
     border: 1px solid #000000;
-    margin: 5px;
+    margin: 3px;
     background: #3c352e;
     width: 150px;
     height: 150px;
@@ -31,6 +31,16 @@ body { background: #303030; color: white; font-family: Arial, Helvetica, sans-se
     -webkit-border-radius: 15px;
     border-radius: 15px;
 }
+.item_cell_undropped { background: #302323; }
+
+.unique_cell { border-color: #ffd700; }
+.community_cell { border-color: #87d459; }
+.developer_cell { border-color: #db14a0; }
+.normal_cell { border-color: #d0d0d0; }
+.selfmade_cell { border-color: #79be50; }
+.vintage_cell { border-color: #6186c5; }
+.rarity4_cell { border-color: #a965d9; }
+
 .equipped {
     background: #000000;
     color: #ba4935;
@@ -42,7 +52,6 @@ body { background: #303030; color: white; font-family: Arial, Helvetica, sans-se
     -webkit-border-radius: 10px;
     border-radius: 10px;
 }
-.item_cell_undropped { background: #302323; }
 .item_attribs { display: none; cursor: default; overflow: hidden; }
 .item_attribs div { padding: 4px; text-align: left; }
 .item_cell:hover, .item_cell_undropped:hover {
