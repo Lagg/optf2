@@ -28,6 +28,10 @@ $var title: $product_name - $usern $item["optf2_title_name"]
   <img id="stat_vertrule" src="${static_prefix}vertical.gif" height="600" width="1" alt="divider"/>
   <div id="item_attrs">
   $ item_wiki_url = wiki_url + encode_url(pack.get_item_name(item))
+  $if item["optf2_description"]:
+      <div class="item_neutral_attr" style="font-weight: normal;">
+        $item["optf2_description"]
+      </div>
   $for attr in item["optf2_attrs"]:
       $ desc = pack.format_attribute_description(attr)
       <div class="item_${pack.get_attribute_type(attr)}_attr">

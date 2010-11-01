@@ -41,6 +41,10 @@ $def insert_cell(pack, item, user, sortby):
               $:insert_name(pack, item)
         $else:
             <div class="item_attribs">
+        $if item["optf2_description"]:
+              <div class="item_neutral_attr" style="font-weight: normal;">
+                $item["optf2_description"]
+              </div>
         $for attr in item["optf2_attrs"]:
               <div class="item_${pack.get_attribute_type(attr)}_attr">
                 $:pack.format_attribute_description(attr)

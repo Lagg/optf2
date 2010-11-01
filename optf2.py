@@ -336,6 +336,7 @@ def process_attributes(items, pack):
         attrs = pack.get_item_attributes(item)
         item["optf2_untradeable"] = pack.is_item_untradeable(item)
         item["optf2_attrs"] = []
+        item["optf2_description"] = pack.get_item_custom_description(item)
 
         for attr in attrs:
             desc = pack.get_attribute_description(attr)
@@ -353,6 +354,22 @@ def process_attributes(items, pack):
             # Another bogus description string
             if pack.get_attribute_name(attr) == "noise maker":
                 continue
+
+            # Workaround until Valve gives sane values
+            if (pack.get_attribute_value_type(attr) != "date" and
+                attr["value"] > 1000000000 and
+                "float_value" in attr):
+                attr["value"] = attr["float_value"]
+
+            # Contained item is a schema id
+            if pack.get_attribute_name(attr) == "referenced item def":
+                sival = int(pack.get_attribute_value(attr))
+                sitem = pack.get_item_by_schema_id(sival)
+                sidesc = "an invalid item"
+
+                if item:
+                    sidesc = '<a href="{0}item/from_schema/{1:d}">{2}</a>'.format(virtual_root, sival, pack.get_item_name(sitem))
+                attr["description_string"] = 'Contains ' + sidesc
 
             # The minicrit attribute has the dalokohs bar
             # description string
@@ -376,11 +393,6 @@ def process_attributes(items, pack):
                 item["optf2_color"] = item_color
                 continue
 
-            if (pack.get_attribute_name(attr) == "attach particle effect" or
-                pack.get_attribute_name(attr) == "set supply crate series"):
-                if attr.has_key("float_value") and attr["value"] > 1000:
-                    attr["value"] = attr["float_value"]
-
             if pack.get_attribute_name(attr) == "attach particle effect":
                 attr["description_string"] = ("Effect: " +
                                               particledict.get(int(attr["value"]), particledict[0]))
@@ -394,12 +406,6 @@ def process_attributes(items, pack):
                     item["optf2_gift_from_persona"] = user.get_persona()
                 except:
                     item["optf2_gift_from_persona"] = "this user"
-
-            # Workaround until Valve gives sane values
-            if (pack.get_attribute_value_type(attr) != "date" and
-                attr["value"] > 1000000000 and
-                "float_value" in attr):
-                attr["value"] = attr["float_value"]
 
             attr["description_string"] = attr["description_string"].replace("\n", "<br/>")
             item["optf2_attrs"].append(deepcopy(attr))
