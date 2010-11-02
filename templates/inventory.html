@@ -13,7 +13,7 @@ $def insert_name(pack, item):
     $else:
         $ painty = ""
     <div class="item_level">Level $pack.get_item_level(item) $:painty $pack.get_item_type(item)</div>
-$def insert_cell(pack, item, user, sortby):
+$def insert_cell(pack, item, user, sortby, invalid = False):
       $if not item:
           $if sortby == "cell":
               $ return '<div class="item_cell" style="width: 90px; height: 90px;"></div>'
@@ -29,7 +29,10 @@ $def insert_cell(pack, item, user, sortby):
       $if sortby == "cell":
           <div class="$cell_class ${quality}_cell" id="s${item_id}" style="width: 90px; height: 90px;" onclick="item_open('${item_link}', '$item_id');">
       $else:
-          <div class="$cell_class" id="s${item_id}"  onclick="item_open('${item_link}', '$item_id');">
+          $ style_extra = ""
+          $if invalid:
+              $ style_extra = 'style="border-color: #ff0000;"'
+          <div class="$cell_class" id="s${item_id}" $:style_extra  onclick="item_open('${item_link}', '$item_id');">
             $:insert_name(pack, item)
         <a class="item_link" href="$item_link">
           <img class="item_image_small" src="$pack.get_item_image(item, pack.ITEM_IMAGE_SMALL)" alt="$pack.get_item_name(item)"/>
@@ -127,7 +130,7 @@ $def insert_cell(pack, item, user, sortby):
   $ x_count = 0
   $if len(baditems) > 0:
       $for item in baditems:
-          $:insert_cell(pack, item, user, sortby)
+          $:insert_cell(pack, item, user, sortby, invalid = True)
       $if sortby == "cell":
           <div style="clear: both; margin-bottom: 20px;">&nbsp;</div>
   $for item in items:
