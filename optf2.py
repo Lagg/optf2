@@ -18,6 +18,7 @@ OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 try:
     import steam.user, steam.tf2, steam, os, json, urllib2
+    import socket
     from time import time
     import cPickle as pickle
     from cStringIO import StringIO
@@ -90,6 +91,8 @@ news_url = "http://agg.optf2.com/log/?cat=5"
 backpack_padded_size = 200
 
 # End of configuration stuff
+
+socket.setdefaulttimeout(5)
 
 urls = (
     virtual_root + "comp/(.+)", "user_completion",
