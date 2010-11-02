@@ -304,6 +304,10 @@ def sort_items(items, pack, sortby):
         if sortby == "cell":
             newitems = []
             lastpos = -1
+            ipos = pack.get_item_position(items[0])
+            if ipos > 1:
+                for i in range(1, ipos):
+                    newitems.append(None)
             for item in items:
                 if lastpos == -1:
                     lastpos = pack.get_item_position(item)
@@ -606,6 +610,7 @@ class pack_fetch:
         pack = steam.tf2.backpack()
         query = web.input()
         sortby = query.get("sort", "default")
+        sortclass = query.get("sortclass")
 
         try:
             load_pack_cached(user, pack)
@@ -614,17 +619,33 @@ class pack_fetch:
 
             items = sort_items(items, pack, sortby)
 
-            if "sortclass" in query:
-                items = filter_items_by_class(items, pack, query["sortclass"])
+            if sortclass:
+                items = filter_items_by_class(items, pack, sortclass)
 
             process_attributes(items, pack)
 
             filter_classes = get_equippable_classes(items, pack)
 
             baditems = get_invalid_pos_items(items, pack)
+            badpos = []
+            filledpos = []
             for bitem in baditems:
                 if bitem in items:
-                    items.remove(bitem)
+                    bpos = pack.get_item_position(bitem)
+                    if bpos in filledpos or bpos not in badpos:
+                        items.remove(bitem)
+                        if bpos > 0:
+                            badpos.append(bpos)
+                    else:
+                        if sortby == "cell":
+                            items[items.index(bitem)] = None
+                            filledpos.append(bpos)
+                        else:
+                            items.remove(bitem)
+        except steam.tf2.TF2Error as E:
+            return templates.error("Failed to load backpack ({0})".format(E))
+        except steam.user.ProfileError as E:
+            return templates.error("Failed to load profile ({0})".format(E))
         except:
             return templates.error("Failed to load backpack")
 
