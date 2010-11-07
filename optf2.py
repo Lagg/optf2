@@ -410,7 +410,7 @@ def process_attributes(items, pack):
                                                            1197960265728))
                 try:
                     user = load_profile_cached(item["optf2_gift_from"], stale = True)
-                    item["optf2_gift_from_persona"] = user.get_persona()
+                    item["optf2_gift_from_persona"] = user.get_persona().decode("utf-8")
                 except:
                     item["optf2_gift_from_persona"] = "this user"
 
@@ -562,8 +562,8 @@ class persona:
 
         try:
             user = steam.user.profile(id)
-            theobject["persona"] = user.get_persona()
-            theobject["realname"] = user.get_real_name()
+            theobject["persona"] = user.get_persona().decode("utf-8")
+            theobject["realname"] = user.get_real_name().decode("utf-8")
             theobject["id64"] = str(user.get_id64())
             theobject["avatarurl"] = user.get_avatar_url(user.AVATAR_SMALL)
         except: pass
@@ -671,12 +671,12 @@ class pack_fetch:
 
         try:
             db_obj.insert("unique_views", id64 = user.get_id64(),
-                          persona = user.get_persona(), valve = isvalve,
+                          persona = user.get_persona().decode("utf-8"), valve = isvalve,
                           count = views)
         except:
             db_obj.update("unique_views", where = "id64 = $id64",
                           vars = {"id64": user.get_id64()},
-                          persona = user.get_persona(), valve = isvalve,
+                          persona = user.get_persona().decode("utf-8"), valve = isvalve,
                           count = views)
 
         return templates.inventory(user, pack, isvalve, items, views, filter_classes, sortby, baditems)
