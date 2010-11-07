@@ -40,13 +40,31 @@ body { background: #303030; color: white; font-family: Arial, Helvetica, sans-se
 .selfmade_cell { border-color: #79be50; }
 .vintage_cell { border-color: #6186c5; }
 .rarity4_cell { border-color: #a965d9; }
+.minimal_cell { width: 90px; height: 90px; }
+.gift_icon { position: absolute; bottom: 55px; left: 5px; bottom: 55px; }
+.desc_icon { position: absolute; bottom: 30px; left: 5px; }
+.name_icon { position: absolute; bottom: 5px; left: 5px; }
+.gift_icon_minimal { position: absolute; right: 55px; top: 5px; }
+.desc_icon_minimal { position: absolute; right: 30px; top: 5px; }
+.name_icon_minimal { position: absolute; right: 5px; top: 5px; }
+.paint_splotch {
+    position: absolute;
+    top: 8px; left: 8px;
+    font-weight: bold;
+    width: 10px;
+    height: 10px;
+    -moz-border-radius: 10px;
+    -webkit-border-radius: 10px;
+    border-radius: 10px;
+}
 
 .equipped {
     background: #000000;
     color: #ba4935;
     position: absolute;
     bottom: 5px;
-    right: 10px;
+    right: 5px;
+    font-size: 9px;
     padding: 4px;
     -moz-border-radius: 10px;
     -webkit-border-radius: 10px;

@@ -27,7 +27,7 @@ $def insert_cell(pack, item, user, sortby, invalid = False):
       $else:
           $ cell_class = "item_cell"
       $if sortby == "cell":
-          <div class="$cell_class ${quality}_cell" id="s${item_id}" style="width: 90px; height: 90px;" onclick="item_open('${item_link}', '$item_id');">
+          <div class="$cell_class ${quality}_cell minimal_cell" id="s${item_id}" onclick="item_open('${item_link}', '$item_id');">
       $else:
           $ style_extra = ""
           $if invalid:
@@ -37,6 +37,18 @@ $def insert_cell(pack, item, user, sortby, invalid = False):
         <a class="item_link" href="$item_link">
           <img class="item_image_small" src="$pack.get_item_image(item, pack.ITEM_IMAGE_SMALL)" alt="$pack.get_item_name(item)"/>
         </a>
+        $if sortby == "cell":
+            $ icon_suffix = "_minimal"
+        $else:
+            $ icon_suffix = ""
+        $if pack.get_item_custom_name(item):
+            <img src="${static_prefix}name_tag.png" class="name_icon${icon_suffix}" alt="Named"/>
+        $if pack.get_item_custom_description(item):
+            <img src="${static_prefix}desc_tag.png" class="desc_icon${icon_suffix}"  alt="Described"/>
+        $if "optf2_gift_from" in item:
+            <img src="${static_prefix}gift_icon.png" class="gift_icon${icon_suffix}"  alt="Gift"/>
+        $if "optf2_color" in item and sortby == "cell":
+            <span class="paint_splotch" style="background: $item['optf2_color'];">&nbsp;</span>
         $if len(pack.get_item_equipped_classes(item)) > 0:
             <span class="equipped">Equipped</span>
         $if sortby == "cell":
@@ -104,7 +116,7 @@ $def insert_cell(pack, item, user, sortby, invalid = False):
     Sort:
     <a href="$qurl(sort = 'default')">Time</a>
     | <a href="$qurl(sort = 'serial')">Serial</a>
-    | <a href="$qurl(sort = 'cell')">Backpack</a>
+    | <a href="$qurl(sort = 'cell')" style="color: #7f7061; font-weight: bold;">Backpack</a>
     | <a href="$qurl(sort = 'level')">Level</a>
     | <a href="$qurl(sort = 'name')">Name</a>
     | <a href="$qurl(sort = 'slot')">Type</a>
