@@ -562,8 +562,12 @@ class persona:
 
         try:
             user = steam.user.profile(id)
-            theobject["persona"] = user.get_persona().decode("utf-8")
-            theobject["realname"] = user.get_real_name().decode("utf-8")
+            persona = user.get_persona()
+            realname = user.get_real_name()
+            if persona:
+                theobject["persona"] = persona.decode("utf-8")
+            if realname:
+                theobject["realname"] = realname.decode("utf-8")
             theobject["id64"] = str(user.get_id64())
             theobject["avatarurl"] = user.get_avatar_url(user.AVATAR_SMALL)
         except: pass
