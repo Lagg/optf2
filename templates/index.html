@@ -20,6 +20,9 @@ $$("#User").autocomplete({
 })});
 --></script>
 
+<div id="logo">
+  <img src="${static_prefix}optf2_logo.png" alt="Logo"/>
+</div>
 <form id="userform" method="post" action="${virtual_root}">
   $if not profile_form.valid:
       <p>Bad profile given</p>

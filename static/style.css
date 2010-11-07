@@ -99,7 +99,7 @@ body { background: #303030; color: white; font-family: Arial, Helvetica, sans-se
 #content { height: 100%; text-align: center; }
 
 #userform { text-align: center; }
-#userform table { margin: 15% auto; margin-bottom: 50px; }
+#userform table { margin: 30px auto 50px auto; }
 
 a { color: #cacaca; text-decoration: none; }
 a:hover { text-decoration: underline; }
@@ -170,3 +170,5 @@ img { border: 0; }
 
 .sortlinks { margin: 10px auto 10px auto; width: 350px; text-align: left; }
 .sortlinks img { padding: 0 5px 0 5px; }
+
+#logo { width: 389px; height: 126px; margin: 50px auto 50px auto; }
