@@ -71,13 +71,13 @@ $def insert_cell(pack, item, user, sortby, invalid = False):
         </div>
       </div>
 
-<div id="header">
+<div id="header" style="position: relative; margin: 20px auto 0 auto; width: 750px; height: 120px;">
   $ cgame = user.get_current_game()
   $ cstatus = user.get_status()
   $if isvalve:
       $ name_suffix = '<img src="{0}valve.png" alt="Valve" title="Valve Employee"/>'.format(static_prefix)
   $else: $ name_suffix = ''
-  <div id="userinfo">
+  <div class="toolbox" style="left: 0;">
     <div id="avatar">
       <a href="$profileurl">
         <img src="$user.get_avatar_url(user.AVATAR_MEDIUM)" alt="$realn" title="$realn"/>
@@ -112,9 +112,10 @@ $def insert_cell(pack, item, user, sortby, invalid = False):
           views
     </div>
   </div>
+  <div class="toolbox" style="right: 0px;">
   <div class="sortlinks">
     Sort:
-    <a href="$qurl(sort = 'default')">Time</a>
+    <a href="$qurl(sort = 'time')">Time</a>
     | <a href="$qurl(sort = 'serial')">Serial</a>
     | <a href="$qurl(sort = 'cell')" style="color: #7f7061; font-weight: bold;">Backpack</a>
     | <a href="$qurl(sort = 'level')">Level</a>
@@ -129,6 +130,7 @@ $def insert_cell(pack, item, user, sortby, invalid = False):
         <a href="$qurl(sortclass = k)">
           <img src="${static_prefix}${k}_icon.png" alt="${k}" title="${k}"/>
         </a>
+  </div>
   </div>
 </div>
 <div id="content">

@@ -11,6 +11,7 @@ body { background: #303030; color: white; font-family: Arial, Helvetica, sans-se
 .selfmade_name { color: #79be50; font-weight: bold; }
 .vintage_name { color: #6186c5; font-weight: bold; }
 .rarity4_name { color: #a965d9; font-weight: bold; }
+.item_name { overflow: hidden; }
 
 .item_cell, .item_cell_undropped {
     border: 1px solid #000000;
@@ -80,7 +81,7 @@ body { background: #303030; color: white; font-family: Arial, Helvetica, sans-se
     display: block;
     position: absolute;
     top: 170px;
-    width: 15em;
+    min-width: 15em;
     background: black;
     -moz-border-radius: 10px;
     -webkit-border-radius: 10px;
@@ -144,14 +145,13 @@ img { border: 0; }
 
 #header { text-align: center; clear: both; }
 
-#userinfo {
+.toolbox {
     border: 1px solid #000000;
     background: #505050;
     padding: 5px;
-    position: relative;
+    position: absolute;
     height: 90px;
-    width: 300px;
-    margin: 30px auto 25px auto;
+    width: 350px;
     -moz-border-radius: 10px;
     -webkit-border-radius: 10px;
     border-radius: 10px;

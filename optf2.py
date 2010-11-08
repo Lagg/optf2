@@ -431,7 +431,7 @@ def process_attributes(items, pack):
         if custom_name:
             item_name = custom_name
 
-        item["optf2_cell_name"] = '<div class="{0}_name">{1} {2}</div>'.format(
+        item["optf2_cell_name"] = '<div class="{0}_name item_name">{1} {2}</div>'.format(
             quality_str, prefix, item_name)
 
         if custom_name or (not pack.is_item_prefixed(item) and quality_str == "unique"):
@@ -613,7 +613,7 @@ class pack_fetch:
 
         pack = steam.tf2.backpack()
         query = web.input()
-        sortby = query.get("sort", "default")
+        sortby = query.get("sort", "cell")
         sortclass = query.get("sortclass")
 
         try:
