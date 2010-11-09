@@ -411,6 +411,7 @@ def process_attributes(items, pack):
                 try:
                     user = load_profile_cached(item["optf2_gift_from"], stale = True)
                     item["optf2_gift_from_persona"] = user.get_persona().decode("utf-8")
+                    attr["description_string"] = "Gift from " + item["optf2_gift_from_persona"]
                 except:
                     item["optf2_gift_from_persona"] = "this user"
 
