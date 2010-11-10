@@ -542,18 +542,19 @@ class pack_item:
         try:
             idl = iid.split('/')
             pack = steam.tf2.backpack()
+            user = None
             if idl[0] != "from_schema":
                 user = load_profile_cached(idl[0], stale = True)
                 load_pack_cached(user, pack, stale = True)
-            else:
-                user = None
 
             try: idl[1] = int(idl[1])
             except: raise Exception("Item ID must be an integer")
 
             item = process_attributes([item_get(idl)], pack)[0]
         except Exception as E:
-            return templates.error(str(E))
+            eid64 = None
+            if user: eid64 = user.get_id64()
+            return templates.item_error_notfound(eid64, idl[1])
         return templates.item(user, item, pack)
 
 class persona:
