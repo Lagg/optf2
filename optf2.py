@@ -100,6 +100,7 @@ urls = (
     virtual_root + "feed/(.+)", "pack_feed",
     virtual_root + "item/(.+)", "pack_item",
     virtual_root + "persona/(.+)", "persona",
+    virtual_root + "attrib_dump", "attrib_dump",
     virtual_root + "schema_dump", "schema_dump",
     virtual_root + "about", "about",
     virtual_root, "index"
@@ -490,6 +491,18 @@ class schema_dump:
             return templates.schema_dump(pack, process_attributes(items, pack), filter_classes)
         except:
             return templates.error("Couldn't load schema")
+
+class attrib_dump:
+    """ Dumps all schema attributes in a pretty way """
+
+    def GET(self):
+        try:
+            pack = steam.tf2.backpack()
+            if not pack.get_item_schema_attributes():
+                raise Exception
+            return templates.attrib_dump(pack)
+        except:
+            return templates.error("Couldn't load attributes")
 
 class user_completion:
     """ Searches for an account matching the username given in the query

@@ -1,0 +1,35 @@
+$def with (pack)
+$var title: $product_name - All Item Attributes
+
+<div id="header">
+  <h2>All item attributes</h2>
+</div>
+<div id="content">
+  $ attribs = pack.get_item_schema_attributes()
+  <table id="attrib_table">
+    <tr><th>ID</th><th>Name</th><th>Description</th><th>Value Type</th><th>Class</th></tr>
+  $for attr in attribs:
+      $ type = pack.get_attribute_type(attr)
+      $ valtype = pack.get_attribute_value_type(attr)
+      $ minval = pack.get_attribute_value_min(attr)
+      $ maxval = pack.get_attribute_value_max(attr)
+      $ minfval = pack.get_attribute_value_formatted(minval, valtype)
+      $ maxfval = pack.get_attribute_value_formatted(maxval, valtype)
+      <tr>
+        <td>$pack.get_attribute_id(attr)</td>
+        <td>
+          <span class="item_${type}_attr">$pack.get_attribute_name(attr)</span>
+        </td>
+        <td>
+          $if "description_string" in attr:
+              $ mmstr = " {0}-{1} ".format(minfval, maxfval)
+              $:pack.get_attribute_description(attr).replace("\n", "<br/>").replace("%s1", mmstr)
+        </td>
+        <td>$valtype</td>
+        <td>$pack.get_attribute_class(attr)</td>
+      </tr>
+  </table>
+</div>
+<div id="footer">
+  Valve says I should link to <a href="http://steampowered.com">this</a>.
+</div>

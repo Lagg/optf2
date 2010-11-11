@@ -141,6 +141,9 @@ img { border: 0; }
 .row_even { background: #777777; }
 #search_table { margin: 0 auto 0 auto; }
 #search_table tr td { padding: 6px; }
+#attrib_table tr td { padding: 6px; background: black; }
+#attrib_table tr th { background: #555555; padding: 8px; }
+#attrib_table { margin: 0 auto 30px auto; text-align: left; }
 #search_title { background: #454545; text-align: center; }
 
 #header { text-align: center; clear: both; }
