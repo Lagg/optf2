@@ -17,20 +17,22 @@ $var title: $product_name - All Item Attributes
       $ minfval = pack.get_attribute_value_formatted(minval, valtype)
       $ maxfval = pack.get_attribute_value_formatted(maxval, valtype)
       $ name = pack.get_attribute_name(attr)
+      $ desc = pack.get_attribute_description(attr)
       <tr>
         <td>$pack.get_attribute_id(attr)</td>
         <td>
           <a name="$name.replace(' ', '_')" class="item_${type}_attr" href="${qurl(att = name)}">$name</a>
         </td>
         <td>
-          $if "description_string" in attr:
+          $if desc:
               $ mmstr = " {0}-{1} ".format(minfval, maxfval)
-              $:pack.get_attribute_description(attr).replace("\n", "<br/>").replace("%s1", mmstr)
+              $:desc.replace("\n", "<br/>").replace("%s1", mmstr)
         </td>
         <td>$valtype</td>
         <td>$pack.get_attribute_class(attr)</td>
       </tr>
   </table>
+  <i><a href="$qurl(wikitext = 1)">Download as wikitext</a></i>
 </div>
 <div id="footer">
   Valve says I should link to <a href="http://steampowered.com">this</a>.

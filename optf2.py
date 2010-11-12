@@ -498,10 +498,11 @@ class attrib_dump:
     def GET(self):
         try:
             pack = steam.tf2.backpack()
+            query = web.input()
             if not pack.get_item_schema_attributes():
                 raise Exception
 
-            attachment_check = web.input().get("att")
+            attachment_check = query.get("att")
             if attachment_check:
                 items = pack.get_items(from_schema = True)
                 attached_items = []
@@ -515,6 +516,12 @@ class attrib_dump:
                             break
 
                 return templates.schema_dump(pack, process_attributes(attached_items, pack), [], attachment_check)
+
+            if query.get("wikitext"):
+                web.header("Content-Type", "text/plain; charset=UTF-8")
+                return web.template.render(template_dir,
+                                           globals = render_globals).attrib_wiki_dump(pack)
+
             return templates.attrib_dump(pack)
         except:
             return templates.error("Couldn't load attributes")
