@@ -500,6 +500,21 @@ class attrib_dump:
             pack = steam.tf2.backpack()
             if not pack.get_item_schema_attributes():
                 raise Exception
+
+            attachment_check = web.input().get("att")
+            if attachment_check:
+                items = pack.get_items(from_schema = True)
+                attached_items = []
+
+                for item in items:
+                    attrs = pack.get_item_attributes(item)
+                    for attr in attrs:
+                        attr_name = pack.get_attribute_name(attr)
+                        if attachment_check == attr_name:
+                            attached_items.append(item)
+                            break
+
+                return templates.schema_dump(pack, process_attributes(attached_items, pack), [], attachment_check)
             return templates.attrib_dump(pack)
         except:
             return templates.error("Couldn't load attributes")

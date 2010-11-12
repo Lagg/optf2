@@ -3,6 +3,7 @@ $var title: $product_name - All Item Attributes
 
 <div id="header">
   <h2>All item attributes</h2>
+  <h5>Click on an attribute name to see the items it is attached to.</h5>
 </div>
 <div id="content">
   $ attribs = pack.get_item_schema_attributes()
@@ -15,10 +16,11 @@ $var title: $product_name - All Item Attributes
       $ maxval = pack.get_attribute_value_max(attr)
       $ minfval = pack.get_attribute_value_formatted(minval, valtype)
       $ maxfval = pack.get_attribute_value_formatted(maxval, valtype)
+      $ name = pack.get_attribute_name(attr)
       <tr>
         <td>$pack.get_attribute_id(attr)</td>
         <td>
-          <span class="item_${type}_attr">$pack.get_attribute_name(attr)</span>
+          <a name="$name.replace(' ', '_')" class="item_${type}_attr" href="${qurl(att = name)}">$name</a>
         </td>
         <td>
           $if "description_string" in attr:

@@ -1,8 +1,8 @@
 body { background: #303030; color: white; font-family: Arial, Helvetica, sans-serif; font-size: 11px; }
 
-.item_negative_attr { font-weight: bold; color: #ff0000; }
-.item_positive_attr { font-weight: bold; color: #1a82ff; }
-.item_neutral_attr { font-weight: bold; color: white; }
+.item_negative_attr, .item_negative_attr:visited { font-weight: bold; color: #ff0000; }
+.item_positive_attr, .item_positive_attr:visited { font-weight: bold; color: #1a82ff; }
+.item_neutral_attr, .item_neutral_attr:visited { font-weight: bold; color: white; }
 
 .unique_name { color: #ffd700; font-weight: bold; }
 .community_name { color: #87d459; font-weight: bold; }
