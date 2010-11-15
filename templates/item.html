@@ -40,6 +40,8 @@ $var title: $product_name - $usern $item["optf2_title_name"]
       <div class="item_${pack.get_attribute_type(attr)}_attr">
         $if "optf2_gift_from" in item and pack.get_attribute_name(attr) == "gifter account id":
             Gift from <a href="${virtual_root}user/${item['optf2_gift_from']}">$item["optf2_gift_from_persona"]</a>
+        $elif "optf2_gift_content" in item and pack.get_attribute_name(attr) == "referenced item def":
+            Contains <a href="${virtual_root}item/from_schema/${item['optf2_gift_content_id']}">$item["optf2_gift_content"]</a>
         $else:
             $:desc
       </div>

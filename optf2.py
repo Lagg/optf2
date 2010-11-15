@@ -400,11 +400,12 @@ def process_attributes(items, pack):
             if pack.get_attribute_name(attr) == "referenced item def":
                 sival = int(pack.get_attribute_value(attr))
                 sitem = pack.get_item_by_schema_id(sival)
-                sidesc = "an invalid item"
+                item["optf2_gift_content"] = "an invalid item"
 
                 if item:
-                    sidesc = '<a href="{0}item/from_schema/{1:d}">{2}</a>'.format(virtual_root, sival, pack.get_item_name(sitem))
-                attr["description_string"] = 'Contains ' + sidesc
+                    item["optf2_gift_content"] = pack.get_item_name(sitem)
+                    item["optf2_gift_content_id"] = sival
+                attr["description_string"] = 'Contains ' + item["optf2_gift_content"]
 
             # The minicrit attribute has the dalokohs bar
             # description string
