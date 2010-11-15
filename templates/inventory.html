@@ -1,4 +1,4 @@
-$def with (user, pack, isvalve, items, views, filter_classes, sortby, baditems)
+$def with (user, pack, isvalve, items, views, filter_classes, sortby, baditems, stats)
 $ usern = user.get_persona()
 $ profileurl = user.get_profile_url()
 $ realn = user.get_real_name()
@@ -110,6 +110,8 @@ $def insert_cell(pack, item, user, sortby, invalid = False):
           view
       $else:
           views
+      <br/>
+      $stats["weapons"] weapons | $stats["hats"] hats | $stats["misc"] misc ($stats["total"] total)
     </div>
   </div>
   <div class="toolbox" style="right: 0px;">

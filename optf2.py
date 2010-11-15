@@ -338,6 +338,30 @@ def filter_items_by_class(items, pack, theclass):
                 break
     return filtered_items
 
+def get_item_stats(items, pack):
+    """ Returns a dict of various backpack stats """
+    stats = {"weapons": 0,
+             "misc": 0,
+             "hats": 0,
+             "total": 0}
+
+    for item in items:
+        if not item: continue
+
+        slot = pack.get_item_slot(item)
+        iclass = pack.get_item_class(item)
+
+        stats["total"] += 1
+
+        if slot == "primary" or slot == "melee" or slot == "secondary":
+            if iclass.find("token") == -1:
+                stats["weapons"] += 1
+        elif slot == "head" and iclass.find("token") == -1:
+            stats["hats"] += 1
+        elif slot == "misc":
+            stats["misc"] += 1
+    return stats
+
 def process_attributes(items, pack):
     """ Filters attributes for the item list,
     optf2-specific keys are prefixed with optf2_ """
@@ -665,6 +689,7 @@ class pack_fetch:
                 items = filter_items_by_class(items, pack, sortclass)
 
             process_attributes(items, pack)
+            stats = get_item_stats(items, pack)
 
             filter_classes = get_equippable_classes(items, pack)
 
@@ -721,7 +746,11 @@ class pack_fetch:
                           persona = user.get_persona(), valve = isvalve,
                           count = views)
 
-        return templates.inventory(user, pack, isvalve, items, views, filter_classes, sortby, baditems)
+        if sortby == "time":
+            items.reverse()
+            baditems.reverse()
+
+        return templates.inventory(user, pack, isvalve, items, views, filter_classes, sortby, baditems, stats)
 
     def GET(self, sid):
         return self._get_page_for_sid(sid)
@@ -752,6 +781,7 @@ class index:
         return templates.index(profile_form(), countlist)
     def POST(self):
         user = web.input().get("User")
+        if user.endswith('/'): user = user[:-1]
         if user: raise web.seeother(virtual_root + "user/" + os.path.basename(user))
         else: return templates.error("Don't do that")
 
