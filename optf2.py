@@ -17,7 +17,7 @@ OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 """
 
 try:
-    import steam.user, steam.tf2, steam, os, json, urllib2
+    import steam, os, json, urllib2
     import socket
     from time import time
     import cPickle as pickle
@@ -173,25 +173,25 @@ def cache_not_stale(row):
     return (int(time()) - row["last_refresh"]) < cache_pack_refresh_interval
 
 def refresh_profile_cache(sid):
-    user = steam.user.profile(sid)
+    user = steam.profile(sid)
     summary = user.get_summary_object()
 
     try:
         db_obj.insert("profile_cache", id64 = user.get_id64(),
                       last_refresh = int(time()),
-                      profile = pickle.dumps(summary))
+                      profile = buffer(pickle.dumps(summary)))
     except:
         db_obj.update("profile_cache", id64 = user.get_id64(),
                       last_refresh = int(time()),
-                      profile = pickle.dumps(summary),
+                      profile = buffer(pickle.dumps(summary)),
                       where = "id64 = $id64", vars = {"id64": user.get_id64()})
 
     return user
 
 def load_profile_cached(sid, stale = False):
-    user = steam.user.profile()
+    user = steam.profile()
     if not sid.isdigit():
-        sid = user.get_id64_from_sid(sid.encode("ascii"))
+        sid = user.get_id64_from_sid(sid.encode("ascii", "replace"))
         if not sid:
             return refresh_profile_cache(sid)
 
@@ -219,11 +219,11 @@ def refresh_pack_cache(user, pack):
     pack.load_pack(user)
     try:
         db_obj.insert("backpack_cache", id64 = user.get_id64(), last_refresh = int(time()),
-                      backpack = pickle.dumps(pack.get_pack_object()))
+                      backpack = buffer(pickle.dumps(pack.get_pack_object())))
     except:
         db_obj.update("backpack_cache", where = "id64 = $id64", vars = {"id64": user.get_id64()},
                       last_refresh = int(time()),
-                      backpack = pickle.dumps(pack.get_pack_object()))
+                      backpack = buffer(pickle.dumps(pack.get_pack_object())))
 
 def load_pack_cached(user, pack, stale = False):
     if cache_pack:
@@ -411,12 +411,12 @@ def process_attributes(items, pack):
                                                            1197960265728))
                 try:
                     user = load_profile_cached(item["optf2_gift_from"], stale = True)
-                    item["optf2_gift_from_persona"] = user.get_persona().decode("utf-8")
+                    item["optf2_gift_from_persona"] = user.get_persona()
                     attr["description_string"] = "Gift from " + item["optf2_gift_from_persona"]
                 except:
                     item["optf2_gift_from_persona"] = "this user"
 
-            attr["description_string"] = attr["description_string"].replace("\n", "<br/>")
+            attr["description_string"] = web.websafe(attr["description_string"]).replace("\n", "<br/>")
             item["optf2_attrs"].append(deepcopy(attr))
 
         quality_str = pack.get_item_quality(item)["str"]
@@ -480,7 +480,7 @@ class schema_dump:
     def GET(self):
         try:
             query = web.input()
-            pack = steam.tf2.backpack()
+            pack = steam.backpack()
             items = pack.get_items(from_schema = True)
 
             if "sortclass" in query:
@@ -497,7 +497,7 @@ class attrib_dump:
 
     def GET(self):
         try:
-            pack = steam.tf2.backpack()
+            pack = steam.backpack()
             query = web.input()
             if not pack.get_item_schema_attributes():
                 raise Exception
@@ -576,7 +576,7 @@ class pack_item:
 
         try:
             idl = iid.split('/')
-            pack = steam.tf2.backpack()
+            pack = steam.backpack()
             user = None
             if idl[0] != "from_schema":
                 user = load_profile_cached(idl[0], stale = True)
@@ -598,13 +598,11 @@ class persona:
         callback = web.input().get("jsonp")
 
         try:
-            user = steam.user.profile(id)
+            user = steam.profile(id)
             persona = user.get_persona()
             realname = user.get_real_name()
-            if persona:
-                theobject["persona"] = persona.decode("utf-8")
-            if realname:
-                theobject["realname"] = realname.decode("utf-8")
+            theobject["persona"] = persona
+            theobject["realname"] = realname
             theobject["id64"] = str(user.get_id64())
             theobject["avatarurl"] = user.get_avatar_url(user.AVATAR_SMALL)
         except: pass
@@ -625,7 +623,7 @@ class pack_fetch:
             return templates.error("Need an ID")
         try:
             user = load_profile_cached(sid)
-        except steam.user.ProfileError:
+        except steam.ProfileError:
             search = json.loads(user_completion().GET(sid))
             nuser = None
             for result in search:
@@ -648,7 +646,7 @@ class pack_fetch:
             else:
                 return templates.error("Bad profile name")
 
-        pack = steam.tf2.backpack()
+        pack = steam.backpack()
         query = web.input()
         sortby = query.get("sort", "cell")
         sortclass = query.get("sortclass")
@@ -683,9 +681,9 @@ class pack_fetch:
                             filledpos.append(bpos)
                         else:
                             items.remove(bitem)
-        except steam.tf2.TF2Error as E:
+        except steam.TF2Error as E:
             return templates.error("Failed to load backpack ({0})".format(E))
-        except steam.user.ProfileError as E:
+        except steam.ProfileError as E:
             return templates.error("Failed to load profile ({0})".format(E))
         except:
             return templates.error("Failed to load backpack")
@@ -712,12 +710,12 @@ class pack_fetch:
 
         try:
             db_obj.insert("unique_views", id64 = user.get_id64(),
-                          persona = user.get_persona().decode("utf-8"), valve = isvalve,
+                          persona = user.get_persona(), valve = isvalve,
                           count = views)
         except:
             db_obj.update("unique_views", where = "id64 = $id64",
                           vars = {"id64": user.get_id64()},
-                          persona = user.get_persona().decode("utf-8"), valve = isvalve,
+                          persona = user.get_persona(), valve = isvalve,
                           count = views)
 
         return templates.inventory(user, pack, isvalve, items, views, filter_classes, sortby, baditems)
@@ -729,7 +727,7 @@ class pack_feed:
     def GET(self, sid):
         try:
             user = load_profile_cached(sid, stale = True)
-            pack = steam.tf2.backpack()
+            pack = steam.backpack()
             load_pack_cached(user, pack)
             items = pack.get_items()
             process_attributes(items, pack)
