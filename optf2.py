@@ -305,7 +305,10 @@ def sort_items(items, pack, sortby):
         if sortby == "cell":
             newitems = []
             lastpos = -1
-            ipos = pack.get_item_position(items[0])
+            if items:
+                ipos = pack.get_item_position(items[0])
+            else:
+                return []
             if ipos > 1:
                 for i in range(1, ipos):
                     newitems.append(None)
