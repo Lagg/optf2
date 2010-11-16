@@ -303,26 +303,13 @@ def sort_items(items, pack, sortby):
     if itemcmp:
         items.sort(cmp = itemcmp)
         if sortby == "cell":
-            newitems = []
-            lastpos = -1
-            if items:
-                ipos = pack.get_item_position(items[0])
-            else:
-                return []
-            if ipos > 1:
-                for i in range(1, ipos):
-                    newitems.append(None)
+            newitems = [None] * backpack_padded_size
             for item in items:
-                if lastpos == -1:
-                    lastpos = pack.get_item_position(item)
-                else:
-                    for i in range(lastpos, pack.get_item_position(item) - 1):
-                        newitems.append(None)
-                newitems.append(deepcopy(item))
-                lastpos = pack.get_item_position(item)
-            if lastpos < backpack_padded_size:
-                for i in range(lastpos, backpack_padded_size):
-                    newitems.append(None)
+                pos = pack.get_item_position(item) - 1
+                try:
+                    if pos > -1 and newitems[pos] == None:
+                        newitems[pos] = deepcopy(item)
+                except IndexError: pass
             return newitems
     return items
 
@@ -684,24 +671,28 @@ class pack_fetch:
 
             items = pack.get_items()
 
-            items = sort_items(items, pack, sortby)
-
             if sortclass:
                 items = filter_items_by_class(items, pack, sortclass)
 
             process_attributes(items, pack)
             stats = get_item_stats(items, pack)
 
+            baditems = get_invalid_pos_items(items, pack)
+
+            items = sort_items(items, pack, sortby)
+
             filter_classes = get_equippable_classes(items, pack)
 
-            baditems = get_invalid_pos_items(items, pack)
             badpos = []
             filledpos = []
             for bitem in baditems:
                 if bitem in items:
                     bpos = pack.get_item_position(bitem)
                     if bpos in filledpos or bpos not in badpos:
-                        items.remove(bitem)
+                        if sortby == "cell":
+                            items[items.index(bitem)] = None
+                        else:
+                            items.remove(bitem)
                         if bpos > 0:
                             badpos.append(bpos)
                     else:
