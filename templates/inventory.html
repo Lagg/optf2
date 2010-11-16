@@ -62,7 +62,7 @@ $def insert_cell(pack, item, user, sortby, invalid = False):
               </div>
         $for attr in item["optf2_attrs"]:
               <div class="item_${pack.get_attribute_type(attr)}_attr">
-                $:pack.format_attribute_description(attr)
+                $:pack.format_attribute_description(attr).replace("\n", "<br/>")
               </div>
         $if item["optf2_untradeable"]:
               <div class="item_neutral_attr">

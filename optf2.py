@@ -431,7 +431,7 @@ def process_attributes(items, pack):
                 except:
                     item["optf2_gift_from_persona"] = "this user"
 
-            attr["description_string"] = web.websafe(attr["description_string"]).replace("\n", "<br/>")
+            attr["description_string"] = web.websafe(attr["description_string"])
             item["optf2_attrs"].append(deepcopy(attr))
 
         quality_str = pack.get_item_quality(item)["str"]

@@ -43,7 +43,7 @@ $var title: $product_name - $usern $item["optf2_title_name"]
         $elif "optf2_gift_content" in item and pack.get_attribute_name(attr) == "referenced item def":
             Contains <a href="${virtual_root}item/from_schema/${item['optf2_gift_content_id']}">$item["optf2_gift_content"]</a>
         $else:
-            $:desc
+            $:desc.replace("\n", "<br/>")
       </div>
   $if item["optf2_untradeable"]:
       <div class="item_neutral_attr">
