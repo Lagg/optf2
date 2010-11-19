@@ -22,6 +22,16 @@ $def insert_cell(pack, item, user, sortby, invalid = False):
       $ item_link = virtual_root + "item/%lu/%lu" % (user.get_id64(), pack.get_item_id(item))
       $ item_id = pack.get_item_id(item)
       $ quality = pack.get_item_quality(item)["str"]
+      $ equippedstr = ""
+      $ quantity = pack.get_item_quantity(item)
+      $ equipped = (len(pack.get_item_equipped_classes(item)) > 0)
+      $if equipped:
+          $ equippedstr = "Equipped "
+      $if quantity > 1:
+          $if not equipped:
+              $ equippedstr += "{0}".format(quantity)
+          $else:
+              $ equippedstr += "({0})".format(quantity)
       $if pack.get_item_position(item) <= -1:
           $ cell_class = "item_cell_undropped"
       $else:
@@ -49,8 +59,8 @@ $def insert_cell(pack, item, user, sortby, invalid = False):
             <img src="${static_prefix}gift_icon.png" class="gift_icon${icon_suffix}"  alt="Gift"/>
         $if "optf2_color" in item and sortby == "cell":
             <span class="paint_splotch" style="background: $item['optf2_color'];">&nbsp;</span>
-        $if len(pack.get_item_equipped_classes(item)) > 0:
-            <span class="equipped">Equipped</span>
+        $if equippedstr:
+            <span class="equipped">$equippedstr</span>
         $if sortby == "cell":
             <div class="item_attribs" style="top: 105px;">
               $:insert_name(pack, item)

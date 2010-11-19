@@ -72,6 +72,11 @@ $var title: $product_name - $usern $item["optf2_title_name"]
         $else:
             No
       </div>
+      $ quantity = pack.get_item_quantity(item)
+      $if quantity > 1:
+          <div class="item_neutral_attr">
+            Uses: $quantity
+          </div>
   $else:
       <div class="item_neutral_attr">
         $ schema_id = pack.get_item_schema_id(item);
