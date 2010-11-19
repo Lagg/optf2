@@ -27,11 +27,15 @@ $var title: $product_name - All Items
           $ painty = '<span style="color: {0}; font-weight: bold;">Painted</span>'.format(painty)
       <div class="item_cell" id="s${item_id}" onclick="item_open('$item_link', '$item_id');">
         $:item["optf2_cell_name"]
-        <div class="item_level">Level $pack.get_item_level(item) $:painty $pack.get_item_type(item)</div>
+        <div class="item_level">Level $item["optf2_level"] $:painty $pack.get_item_type(item)</div>
         <a class="item_link" href="$item_link">
           <img class="item_image_small" src="$pack.get_item_image(item, pack.ITEM_IMAGE_SMALL)" alt="$pack.get_item_name(item)"/>
         </a>
         <div class="item_attribs">
+          $if item["optf2_description"]:
+              <div class="item_neutral_attr" style="font-weight: normal;">
+                $item["optf2_description"]
+              </div>
           $for attr in item["optf2_attrs"]:
               <div class="item_${pack.get_attribute_type(attr)}_attr">
                 $:pack.format_attribute_description(attr).replace("\n", "<br/>")

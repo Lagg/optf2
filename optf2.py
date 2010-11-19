@@ -358,7 +358,17 @@ def process_attributes(items, pack):
         attrs = pack.get_item_attributes(item)
         item["optf2_untradeable"] = pack.is_item_untradeable(item)
         item["optf2_attrs"] = []
-        item["optf2_description"] = pack.get_item_custom_description(item)
+        item["optf2_description"] = pack.get_item_description(item)
+        min_level = pack.get_item_min_level(item)
+        max_level = pack.get_item_max_level(item)
+        custom_desc = pack.get_item_custom_description(item)
+
+        if custom_desc: item["optf2_description"] = custom_desc
+
+        if min_level == max_level:
+            item["optf2_level"] = str(min_level)
+        else:
+            item["optf2_level"] = str(min_level) + "-" + str(max_level)
 
         for attr in attrs:
             desc = pack.get_attribute_description(attr)
