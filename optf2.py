@@ -393,6 +393,7 @@ def process_attributes(items, pack):
                     item["optf2_gift_content"] = pack.get_item_name(sitem)
                     item["optf2_gift_content_id"] = sival
                 attr["description_string"] = 'Contains ' + item["optf2_gift_content"]
+                attr["hidden"] = False
 
             if pack.get_attribute_name(attr) == "set item tint RGB":
                 raw_rgb = int(pack.get_attribute_value(attr))
