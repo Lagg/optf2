@@ -373,18 +373,8 @@ def process_attributes(items, pack):
         for attr in attrs:
             desc = pack.get_attribute_description(attr)
 
-            if pack.get_attribute_name(attr) == "always tradable":
-                continue
-
             if pack.get_attribute_name(attr) == "cannot trade":
                 item["optf2_untradeable"] = True
-                continue
-
-            if desc.find("Attrib_") != -1:
-                continue
-
-            # Another bogus description string
-            if pack.get_attribute_name(attr) == "noise maker":
                 continue
 
             # Workaround until Valve gives sane values
@@ -404,25 +394,15 @@ def process_attributes(items, pack):
                     item["optf2_gift_content_id"] = sival
                 attr["description_string"] = 'Contains ' + item["optf2_gift_content"]
 
-            # The minicrit attribute has the dalokohs bar
-            # description string
-            if pack.get_attribute_name(attr) == "lunchbox adds minicrits":
-                attr["description_string"] = "While under the effects, damage done and damage taken will be Mini-Crits."
-
-            # The GRU have the crit-o-cola mini-crit
-            # attribute attached for some reason.
-            if (pack.get_item_schema_id(item) == 239 and
-                pack.get_attribute_name(attr) == "lunchbox adds minicrits"):
-                continue
-
             if pack.get_attribute_name(attr) == "set item tint RGB":
-                if attr.has_key("float_value") and pack.get_item_class(item) != "tool":
-                    raw_rgb = int(attr["float_value"])
+                raw_rgb = int(pack.get_attribute_value(attr))
+                # Set to purple for team colored paint (placeholder)
+                if pack.get_item_schema_id(item) != 5023 and raw_rgb == 1:
+                    item_color = "#FF00FF"
                 else:
-                    raw_rgb = int(pack.get_attribute_value(attr))
-                item_color = "#{0:X}{1:X}{2:X}".format((raw_rgb >> 16) & 0xFF,
-                                                        (raw_rgb >> 8) & 0xFF,
-                                                        (raw_rgb) & 0xFF)
+                    item_color = "#{0:X}{1:X}{2:X}".format((raw_rgb >> 16) & 0xFF,
+                                                           (raw_rgb >> 8) & 0xFF,
+                                                           (raw_rgb) & 0xFF)
                 item["optf2_color"] = item_color
                 continue
 
@@ -441,7 +421,10 @@ def process_attributes(items, pack):
                 except:
                     item["optf2_gift_from_persona"] = "this user"
 
-            attr["description_string"] = web.websafe(attr["description_string"])
+            if "description_string" in attr and not pack.is_attribute_hidden(attr):
+                attr["description_string"] = web.websafe(attr["description_string"])
+            else:
+                continue
             item["optf2_attrs"].append(deepcopy(attr))
 
         quality_str = pack.get_item_quality(item)["str"]
