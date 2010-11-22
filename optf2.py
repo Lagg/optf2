@@ -162,15 +162,21 @@ steam.set_api_key(api_key)
 steam.set_language(language)
 
 db_schema = ["CREATE TABLE IF NOT EXISTS search_count (id64 INTEGER, ip TEXT, count INTEGER DEFAULT 1)",
-             "CREATE TABLE IF NOT EXISTS backpack_cache (id64 INTEGER PRIMARY KEY, backpack BLOB, last_refresh DATE)",
-             "CREATE TABLE IF NOT EXISTS profile_cache (id64 INTEGER PRIMARY KEY, profile BLOB, last_refresh DATE)",
-             "CREATE TABLE IF NOT EXISTS unique_views (id64 INTEGER PRIMARY KEY, count INTEGER DEFAULT 1, persona TEXT, valve BOOLEAN)"]
+             "CREATE TABLE IF NOT EXISTS profile_cache (id64 INTEGER PRIMARY KEY, profile BLOB, timestamp DATE)",
+             "CREATE TABLE IF NOT EXISTS unique_views (id64 INTEGER PRIMARY KEY, count INTEGER DEFAULT 1, persona TEXT, valve BOOLEAN)",
+             "CREATE TABLE IF NOT EXISTS items (id64 INTEGER PRIMARY KEY, owner INTEGER, sid INTEGER, level INTEGER, untradeable BOOLEAN, token INTEGER, quality INTEGER, custom_name TEXT, custom_desc TEXT, attributes BLOB, quantity INTEGER DEFAULT 1)",
+             "CREATE TABLE IF NOT EXISTS backpacks (id64 INTEGER, backpack BLOB, timestamp INTEGER)"]
 db_obj = web.database(dbn = "sqlite", db = os.path.join(steam.get_cache_dir(), "optf2.db"))
 for s in db_schema:
     db_obj.query(s)
 
+pack = steam.backpack()
+
 def cache_not_stale(row):
-    return (int(time()) - row["last_refresh"]) < cache_pack_refresh_interval
+    if row and "timestamp" in row:
+        return (int(time()) - row["timestamp"]) < cache_pack_refresh_interval
+    else:
+        return False
 
 def refresh_profile_cache(sid):
     user = steam.profile(sid)
@@ -178,11 +184,11 @@ def refresh_profile_cache(sid):
 
     try:
         db_obj.insert("profile_cache", id64 = user.get_id64(),
-                      last_refresh = int(time()),
+                      timestamp = int(time()),
                       profile = buffer(pickle.dumps(summary)))
     except:
         db_obj.update("profile_cache", id64 = user.get_id64(),
-                      last_refresh = int(time()),
+                      timestamp = int(time()),
                       profile = buffer(pickle.dumps(summary)),
                       where = "id64 = $id64", vars = {"id64": user.get_id64()})
 
@@ -197,7 +203,7 @@ def load_profile_cached(sid, stale = False):
 
     if cache_pack:
         try:
-            prow = db_obj.select("profile_cache", what = "profile, last_refresh",
+            prow = db_obj.select("profile_cache", what = "profile, timestamp",
                                  where = "id64 = $id64", vars = {"id64": int(sid)})[0]
             pfile = StringIO(str(prow["profile"]))
 
@@ -215,36 +221,100 @@ def load_profile_cached(sid, stale = False):
     else:
         return refresh_profile_cache(sid)
 
-def refresh_pack_cache(user, pack):
+def db_pack_is_new(lastpack, newpack):
+    return (len(lastpack) <= 0 or
+            sorted(pickle.loads(str(lastpack[0]["backpack"]))) != sorted(newpack))
+
+def refresh_pack_cache(user):
     pack.load_pack(user)
+    ts = int(time())
+
+    with db_obj.transaction():
+        backpack_items = []
+        for item in pack.get_items():
+            backpack_items.append(pack.get_item_id(item))
+            db_obj.query("INSERT OR IGNORE INTO items (id64) VALUES ($id64)", vars = {"id64": pack.get_item_id(item)})
+            db_obj.update("items", where = "id64 = $id64", vars = {"id64": pack.get_item_id(item)},
+                          owner = user.get_id64(),
+                          sid = pack.get_item_schema_id(item),
+                          level = pack.get_item_level(item),
+                          untradeable = pack.is_item_untradeable(item),
+                          token = pack.get_item_inventory_token(item),
+                          quality = pack.get_item_quality(item)["id"],
+                          custom_name = pack.get_item_custom_name(item),
+                          custom_desc = pack.get_item_custom_description(item),
+                          attributes = buffer(pickle.dumps(pack.get_item_attributes(item))),
+                          quantity = pack.get_item_quantity(item))
+
+        lastpack = list(db_obj.select("backpacks", what = "backpack",
+                                      where="id64 = $id64",
+                                      vars = {"id64": user.get_id64()},
+                                      order = "timestamp DESC", limit = 1))
+        if db_pack_is_new(lastpack, backpack_items):
+            db_obj.insert("backpacks", id64 = user.get_id64(),
+                          backpack = buffer(pickle.dumps(backpack_items)),
+                          timestamp = ts)
+        elif len(lastpack) > 0:
+            db_obj.update("backpacks", where = "id64 = $id64 AND timestamp = (SELECT MAX(timestamp) FROM backpacks where id64 = $id64)",
+                          timestamp = ts, vars = {"id64": user.get_id64()})
+        return True
+    return False
+
+def db_fetch_pack_for_user(user, date = None):
+    """ Returns None if a backpack couldn't be found """
+    packrow = db_obj.select("backpacks",
+                            where = "id64 = $id64",
+                            order = "timestamp DESC",
+                            vars = {"id64": user.get_id64()})
+    for pack in packrow:
+        if not date:
+            return pack
+        if packrow["timestamp"] == date:
+            return pack
+
+def db_to_itemobj(dbitem):
+    theitem = {"id": dbitem["id64"],
+               "owner": dbitem["owner"],
+               "defindex": dbitem["sid"],
+               "level": dbitem["level"],
+               "quantity": dbitem["quantity"],
+               "flag_cannot_trade": dbitem["untradeable"],
+               "inventory": dbitem["token"],
+               "quality": dbitem["quality"],
+               "custom_name": dbitem["custom_name"],
+               "custom_desc": dbitem["custom_desc"],
+               "attributes": {"attribute": pickle.loads(str(dbitem["attributes"]))}}
+    return theitem
+
+def db_fetch_item_for_id(iid):
     try:
-        db_obj.insert("backpack_cache", id64 = user.get_id64(), last_refresh = int(time()),
-                      backpack = buffer(pickle.dumps(pack.get_pack_object())))
-    except:
-        db_obj.update("backpack_cache", where = "id64 = $id64", vars = {"id64": user.get_id64()},
-                      last_refresh = int(time()),
-                      backpack = buffer(pickle.dumps(pack.get_pack_object())))
+        itemrow = list(db_obj.select("items",
+                                     where = "id64 = $id64",
+                                     vars = {"id64": iid}))[0]
+        return db_to_itemobj(itemrow)
+    except IndexError:
+        return None
 
-def load_pack_cached(user, pack, stale = False):
-    if cache_pack:
-        try:
-            packrow = db_obj.select("backpack_cache", what = "backpack, last_refresh", where = "id64 = $uid64",
-                                    vars = {"uid64": user.get_id64()})[0]
-            packfile = StringIO(str(packrow["backpack"]))
+def load_pack_cached(user, stale = False):
+    packresult = []
+    thepack = db_fetch_pack_for_user(user)
+    if not stale:
+        if not cache_not_stale(thepack):
+            try:
+                refresh_pack_cache(user)
+            except urllib2.URLError:
+                pass
+            thepack = db_fetch_pack_for_user(user)
+    if thepack:
+        with db_obj.transaction():
+            for item in pickle.loads(str(thepack["backpack"])):
+                dbitem = db_obj.select("items", where = "id64 = $id64",
+                                       vars =  {"id64": item})[0]
+                theitem = db_to_itemobj(dbitem)
+                packresult.append(deepcopy(theitem))
+        return packresult
 
-            if stale or cache_not_stale(packrow):
-                pack.load_pack_file(packfile)
-            else:
-                try:
-                    refresh_pack_cache(user, pack)
-                except urllib2.URLError:
-                    pack.load_pack_file(packfile)
-        except IndexError:
-            refresh_pack_cache(user, pack)
-    else:
-        pack.load_pack(user)
-
-def get_invalid_pos_items(items, pack):
+def get_invalid_pos_items(items):
     poslist = []
     invalid_items = []
     for item in items:
@@ -259,7 +329,7 @@ def get_invalid_pos_items(items, pack):
 
     return invalid_items
 
-def sort_items(items, pack, sortby):
+def sort_items(items, sortby):
     itemcmp = None
     def defcmp(x, y):
         if x < y:
@@ -313,7 +383,7 @@ def sort_items(items, pack, sortby):
             return newitems
     return items
 
-def filter_items_by_class(items, pack, theclass):
+def filter_items_by_class(items, theclass):
     filtered_items = []
 
     for item in items:
@@ -325,7 +395,7 @@ def filter_items_by_class(items, pack, theclass):
                 break
     return filtered_items
 
-def get_item_stats(items, pack):
+def get_item_stats(items):
     """ Returns a dict of various backpack stats """
     stats = {"weapons": 0,
              "misc": 0,
@@ -349,7 +419,7 @@ def get_item_stats(items, pack):
             stats["misc"] += 1
     return stats
 
-def process_attributes(items, pack):
+def process_attributes(items):
     """ Filters attributes for the item list,
     optf2-specific keys are prefixed with optf2_ """
 
@@ -470,7 +540,7 @@ def process_attributes(items, pack):
 
     return items
 
-def get_equippable_classes(items, pack):
+def get_equippable_classes(items):
     """ Returns a set of classes that can equip this
     item """
 
@@ -489,15 +559,14 @@ class schema_dump:
     def GET(self):
         try:
             query = web.input()
-            pack = steam.backpack()
             items = pack.get_items(from_schema = True)
 
             if "sortclass" in query:
-                items = filter_items_by_class(items, pack, query["sortclass"])
+                items = filter_items_by_class(items, query["sortclass"])
 
-            filter_classes = get_equippable_classes(items, pack)
+            filter_classes = get_equippable_classes(items)
 
-            return templates.schema_dump(pack, process_attributes(items, pack), filter_classes)
+            return templates.schema_dump(pack, process_attributes(items), filter_classes)
         except:
             return templates.error("Couldn't load schema")
 
@@ -506,7 +575,6 @@ class attrib_dump:
 
     def GET(self):
         try:
-            pack = steam.backpack()
             query = web.input()
             if not pack.get_item_schema_attributes():
                 raise Exception
@@ -524,7 +592,7 @@ class attrib_dump:
                             attached_items.append(item)
                             break
 
-                return templates.schema_dump(pack, process_attributes(attached_items, pack), [], attachment_check)
+                return templates.schema_dump(pack, process_attributes(attached_items), [], attachment_check)
 
             if query.get("wikitext"):
                 web.header("Content-Type", "text/plain; charset=UTF-8")
@@ -569,37 +637,30 @@ class user_completion:
 
 class pack_item:
     def GET(self, iid):
-        def item_get(idl):
-            if idl[0] == "from_schema":
-                item = pack.get_item_by_schema_id(int(idl[1]))
-            else:
-                item = pack.get_item_by_id(int(idl[1]))
-                if not item:
-                    try: refresh_pack_cache(user, pack)
-                    except urllib2.URLError: pass
-                item = pack.get_item_by_id(int(idl[1]))
-
+        def item_get(id64):
+            item = db_fetch_item_for_id(id64)
             if not item:
-                raise Exception("Item not found")
+                item = pack.get_item_by_schema_id(int(id64))
             return item
 
         try:
-            idl = iid.split('/')
-            pack = steam.backpack()
             user = None
-            if idl[0] != "from_schema":
-                user = load_profile_cached(idl[0], stale = True)
-                load_pack_cached(user, pack, stale = True)
+            item_outdated = False
+            idl = iid.split('/')
+            if len(idl) == 1:
+                idl.append(idl[0])
+            theitem = item_get(idl[1])
+            if "owner" in theitem:
+                user = load_profile_cached(str(theitem["owner"]), stale = True)
+                if user:
+                    backpack = db_fetch_pack_for_user(user)
+                    if backpack and pack.get_item_id(theitem) not in pickle.loads(str(backpack["backpack"])):
+                        item_outdated = True
 
-            try: idl[1] = int(idl[1])
-            except: raise Exception("Item ID must be an integer")
-
-            item = process_attributes([item_get(idl)], pack)[0]
-        except Exception as E:
-            eid64 = None
-            if user: eid64 = user.get_id64()
-            return templates.item_error_notfound(eid64, idl[1])
-        return templates.item(user, item, pack)
+            item = process_attributes([theitem])[0]
+        except Exception:
+            return templates.item_error_notfound(idl[1])
+        return templates.item(user, item, pack, item_outdated)
 
 class persona:
     def GET(self, id):
@@ -655,27 +716,24 @@ class pack_fetch:
             else:
                 return templates.error("Bad profile name")
 
-        pack = steam.backpack()
         query = web.input()
         sortby = query.get("sort", "cell")
         sortclass = query.get("sortclass")
 
         try:
-            load_pack_cached(user, pack)
-
-            items = pack.get_items()
+            items = load_pack_cached(user)
 
             if sortclass:
-                items = filter_items_by_class(items, pack, sortclass)
+                items = filter_items_by_class(items, sortclass)
 
-            process_attributes(items, pack)
-            stats = get_item_stats(items, pack)
+            process_attributes(items)
+            stats = get_item_stats(items)
 
-            baditems = get_invalid_pos_items(items, pack)
+            baditems = get_invalid_pos_items(items)
 
-            items = sort_items(items, pack, sortby)
+            items = sort_items(items, sortby)
 
-            filter_classes = get_equippable_classes(items, pack)
+            filter_classes = get_equippable_classes(items)
 
             badpos = []
             filledpos = []
@@ -703,32 +761,26 @@ class pack_fetch:
             return templates.error("Failed to load backpack")
 
         isvalve = (user.get_primary_group() == valve_group_id)
-        count = 1
-        try:
-            count = db_obj.select("search_count", where = "id64 = $id64 AND ip = $ip",
-                                  vars = {"id64": user.get_id64(),
-                                          "ip": web.ctx.ip})[0]["count"]
+        views = 1
+        with db_obj.transaction():
+            uid64 = user.get_id64()
+            ipaddr = web.ctx.ip
 
-            db_obj.query("""UPDATE search_count SET count = count + 1
-                                                    WHERE id64 = $id64 AND ip = $ip """,
-                         vars = {"id64": user.get_id64(), "ip": web.ctx.ip})
-        except:
-            db_obj.insert("search_count", id64 = user.get_id64(),
-                          ip = web.ctx.ip)
+            count = list(db_obj.select("search_count", where = "id64 = $id64 AND ip = $ip",
+                                       vars = {"ip": ipaddr, "id64": uid64}))
+            if len(count) <= 0:
+                db_obj.query("INSERT INTO search_count (id64, ip) VALUES ($id64, $ip)",
+                             vars = {"id64": uid64, "ip": ipaddr})
+            else:
+                db_obj.query("UPDATE search_count SET count = count + 1 WHERE id64 = $id64 AND ip = $ip",
+                             vars = {"id64": uid64, "ip": ipaddr})
 
-        try:
-            views = db_obj.query("SELECT COUNT(*) AS unique_views FROM search_count WHERE id64 = $id64",
-                                 vars = {"id64": user.get_id64()})[0]["unique_views"]
-        except:
-            views = 1
-
-        try:
-            db_obj.insert("unique_views", id64 = user.get_id64(),
-                          persona = user.get_persona(), valve = isvalve,
-                          count = views)
-        except:
+            views = db_obj.query("SELECT COUNT(*) AS views FROM search_count WHERE id64 = $id64",
+                                 vars = {"id64": uid64})[0]["views"]
+            db_obj.query("INSERT OR IGNORE INTO unique_views (id64) VALUES ($id64)",
+                         vars = {"id64": uid64})
             db_obj.update("unique_views", where = "id64 = $id64",
-                          vars = {"id64": user.get_id64()},
+                          vars = {"id64": uid64},
                           persona = user.get_persona(), valve = isvalve,
                           count = views)
 
@@ -745,10 +797,8 @@ class pack_feed:
     def GET(self, sid):
         try:
             user = load_profile_cached(sid, stale = True)
-            pack = steam.backpack()
-            load_pack_cached(user, pack)
-            items = pack.get_items()
-            process_attributes(items, pack)
+            items = load_pack_cached(user)
+            process_attributes(items)
         except Exception as E:
             return templates.error(str(E))
         web.header("Content-Type", "application/rss+xml")

@@ -1,4 +1,4 @@
-$def with (user, item, pack)
+$def with (user, item, pack, outdated)
 $ qitem = pack.get_item_quality(item)
 $if not user:
     $ usern = "Schema"
@@ -17,7 +17,7 @@ $var title: $product_name - $usern $item["optf2_title_name"]
         $ urlpart = "user/{0}".format(plink_user)
         $ idpart = pack.get_item_id(item)
     <a href="${virtual_root}${urlpart}">$usern</a> $:item["optf2_dedicated_name"]
-    <a href="${virtual_root}item/${plink_user}/${idpart}">
+    <a href="${virtual_root}item/${idpart}">
       <img src="${static_prefix}plink_icon.png" alt="Permalink" title="Permalink"/>
     </a>
   </h1>
@@ -44,7 +44,7 @@ $var title: $product_name - $usern $item["optf2_title_name"]
         $if "optf2_gift_from" in item and pack.get_attribute_name(attr) == "gifter account id":
             Gift from <a href="${virtual_root}user/${item['optf2_gift_from']}">$item["optf2_gift_from_persona"]</a>
         $elif "optf2_gift_content" in item and pack.get_attribute_name(attr) == "referenced item def":
-            Contains <a href="${virtual_root}item/from_schema/${item['optf2_gift_content_id']}">$item["optf2_gift_content"]</a>
+            Contains <a href="${virtual_root}item/${item['optf2_gift_content_id']}">$item["optf2_gift_content"]</a>
         $else:
             $:desc.replace("\n", "<br/>")
       </div>
@@ -79,6 +79,10 @@ $var title: $product_name - $usern $item["optf2_title_name"]
       $if quantity > 1:
           <div class="item_neutral_attr">
             Uses: $quantity
+          </div>
+      $if outdated:
+          <div class="item_negative_attr" style="font-weight: normal">
+            This item is out of date, it may have been deleted from $usern backpack.
           </div>
   $else:
       <div class="item_neutral_attr">

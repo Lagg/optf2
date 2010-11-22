@@ -19,7 +19,7 @@ $var title: $product_name - All Items
 <div id="content">
   <div id="backpack">
   $for item in items:
-      $ item_link = "{0}item/from_schema/{1}".format(virtual_root, pack.get_item_schema_id(item))
+      $ item_link = "{0}item/{1}".format(virtual_root, pack.get_item_schema_id(item))
       $ qitem = pack.get_item_quality(item)["str"]
       $ painty = item.get("optf2_color", "")
       $ item_id = pack.get_item_schema_id(item)

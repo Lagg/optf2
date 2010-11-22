@@ -1,11 +1,8 @@
-$def with (id64, item)
+$def with (item)
 $var title: $product_name - Item Error
 
 <div id="header">
   <h2>Item #$item not found.</h2>
   <a href="$instance.fullpath">Try again</a> or
-  $if id64:
-      <a href="${virtual_root}user/${id64}">back to backpack</a>
-  $else:
-      <a href="${virtual_root}">back to index</a>
+  <a href="${virtual_root}">back to index</a>
 </div>

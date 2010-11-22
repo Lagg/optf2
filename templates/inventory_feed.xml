@@ -9,7 +9,7 @@ $def with (user, pack, items)
   $items.reverse()
   $for item in items:
       <item>
-        $ permalink = "{0}{1}item/{2}/{3}".format(instance.homedomain, virtual_root, user.get_id64(), pack.get_item_id(item))
+        $ permalink = "{0}{1}item/{2}".format(instance.homedomain, virtual_root, pack.get_item_id(item))
         $ level = pack.get_item_level(item)
         $ type = pack.get_item_type(item)
         $ name = pack.get_item_custom_name(item)
