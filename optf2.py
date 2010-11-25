@@ -819,7 +819,7 @@ class index:
         user = web.input().get("User")
         if user.endswith('/'): user = user[:-1]
         if user: raise web.seeother(virtual_root + "user/" + os.path.basename(user))
-        else: return templates.error("Don't do that")
+        else: return web.seeother(virtual_root)
 
 if enable_fastcgi:
     web.wsgi.runwsgi = lambda func, addr=None: web.wsgi.runfcgi(func, addr)
