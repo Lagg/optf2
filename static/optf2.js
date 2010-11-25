@@ -48,7 +48,11 @@ function item_open_success(data, status, xhr) {
 }
 
 function item_open(item_url, item_id) {
-    $("#s" + item_id).prepend("<div id=\"loading_" + item_id + "\"><b>Loading...</b></div>");
+    var loading_id = "loading_" + item_id;
+    var cell_id = $("#s" + item_id);
+    if (cell_id.find("#" + loading_id).length <= 0) {
+        cell_id.prepend("<div id=\"" + loading_id + "\"><b>Loading...</b></div>");
+    }
     var oldcontent = $("body").find(".dedicated_item");
     var reallyoldcontent = null;
     for (var i = 0; i < oldcontent.length; i++) {
@@ -60,7 +64,7 @@ function item_open(item_url, item_id) {
     }
 
     if (reallyoldcontent) {
-        $(reallyoldcontent).dialog({open: function(e, u) { $("#loading_" + item_id).remove(); }});
+        $(reallyoldcontent).dialog({open: function(e, u) { $("#" + loading_id).remove(); }});
     } else {
         $.get(item_url, item_open_success, {}, "html");
     }
