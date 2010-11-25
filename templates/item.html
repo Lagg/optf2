@@ -30,7 +30,7 @@ $var title: $product_name - $usern $item["optf2_title_name"]
   $ item_wiki_url = wiki_url + encode_url(pack.get_item_name(item))
   <div class="item_neutral_attr" style="font-weight: normal;">
     $ level = pack.get_item_level(item)
-    $if level == 0:
+    $if not user and level == 0:
       $ level = item["optf2_level"]
     Level $level $pack.get_item_type(item)
   </div>
