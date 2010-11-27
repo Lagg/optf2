@@ -469,7 +469,7 @@ def process_attributes(items):
                 raw_rgb = int(pack.get_attribute_value(attr))
                 # Set to purple for team colored paint (placeholder)
                 if pack.get_item_schema_id(item) != 5023 and raw_rgb == 1:
-                    item_color = "#FF00FF"
+                    item_color = 'url("{0}team_splotch.png")'.format(static_prefix)
                 else:
                     item_color = "#{0:X}{1:X}{2:X}".format((raw_rgb >> 16) & 0xFF,
                                                            (raw_rgb >> 8) & 0xFF,
@@ -522,6 +522,8 @@ def process_attributes(items):
         color = item.get("optf2_color")
         paint_job = ""
         if color:
+            if color.startswith("url"):
+                color = "#FF00FF"
             paint_job = '<span style="color: {0}; font-weight: bold;">Painted</span>'.format(color)
         item["optf2_dedicated_name"] = "{0} {1} {2}".format(paint_job, prefix, item_name)
 

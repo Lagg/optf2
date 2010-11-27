@@ -9,6 +9,8 @@ $def insert_name(pack, item):
     $:item["optf2_cell_name"]
     $ item_color = item.get("optf2_color")
     $if item_color:
+        $if item_color.startswith("url"):
+            $ item_color = "#FF00FF"
         $ painty = '<span style="color: {0}; font-weight: bold;">Painted</span>'.format(item_color)
     $else:
         $ painty = ""

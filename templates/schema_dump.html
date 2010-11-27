@@ -24,6 +24,8 @@ $var title: $product_name - All Items
       $ painty = item.get("optf2_color", "")
       $ item_id = pack.get_item_schema_id(item)
       $if painty:
+          $if painty.startswith("url"):
+              $ painty = "#FF00FF"
           $ painty = '<span style="color: {0}; font-weight: bold;">Painted</span>'.format(painty)
       <div class="item_cell" id="s${item_id}" onclick="item_open('$item_link', '$item_id');">
         $:item["optf2_cell_name"]
