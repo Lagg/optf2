@@ -4,7 +4,7 @@ $if not user:
     $ usern = "Schema"
 $else:
     $ usern = user.get_persona() + "'s"
-$var title: $product_name - $usern $item["optf2_title_name"]
+$var title: $project_name - $usern $item["optf2_title_name"]
 
 <div id="header">
   <h1 class="${qitem['str']}_name">

@@ -50,11 +50,9 @@ api_key = None
 
 language = "en"
 
-# It would be nice of you not to change this
-product_name = "OPTF2"
-
-# Where to get the source code.
-source_url = "http://gitorious.org/steamodd/optf2"
+# It would be nice of you not to change these
+project_name = "OPTF2"
+project_homepage = "http://projects.optf2.com/projects/optf2"
 
 # Cache a player's backpack. Reduces the number of API
 # requests and makes it a lot faster but might make the
@@ -147,8 +145,8 @@ render_globals = {"css_url": css_url,
                   "qualitydict": qualitydict,
                   "particledict": particledict,
                   "instance": web.ctx,
-                  "product_name": product_name,
-                  "source_url": source_url,
+                  "project_name": project_name,
+                  "project_homepage": project_homepage,
                   "wiki_url": "http://wiki.teamfortress.com/wiki/",
                   "news_url": news_url,
                   "qurl": web.http.changequery
@@ -811,14 +809,10 @@ class pack_feed:
 
 class index:
     def GET(self):
-        profile_form = form.Form(
-            form.Textbox("User"),
-            form.Button("View")
-            )
         countlist = db_obj.select("unique_views", order = "count DESC", limit = top_backpack_rows)
-        return templates.index(profile_form(), countlist)
+        return templates.index(countlist)
     def POST(self):
-        user = web.input().get("User")
+        user = web.input().get("user")
         if user.endswith('/'): user = user[:-1]
         if user: raise web.seeother(virtual_root + "user/" + os.path.basename(user))
         else: return web.seeother(virtual_root)

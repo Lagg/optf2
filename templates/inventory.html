@@ -2,7 +2,7 @@ $def with (user, pack, isvalve, items, views, filter_classes, sortby, baditems, 
 $ usern = user.get_persona()
 $ profileurl = user.get_profile_url()
 $ realn = user.get_real_name()
-$var title: $product_name - $usern's Backpack
+$var title: $project_name - $usern's Backpack
 $ perma = "{0}user/{1}".format(virtual_root, user.get_id64())
 $ rss = "{0}feed/{1}".format(virtual_root, user.get_id64())
 $def insert_name(pack, item):

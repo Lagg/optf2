@@ -99,8 +99,8 @@ body { background: #303030; color: white; font-family: Arial, Helvetica, sans-se
 
 #content { height: 100%; text-align: center; }
 
-#userform { text-align: center; }
-#userform table { margin: 30px auto 50px auto; }
+#search_form { text-align: center; }
+#search_form table { margin: 30px auto 50px auto; }
 
 a { color: #cacaca; text-decoration: none; }
 a:hover { text-decoration: underline; }

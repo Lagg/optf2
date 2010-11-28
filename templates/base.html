@@ -6,7 +6,7 @@ $def with (content)
   <head>
     <title>$:content.title</title>
     <link rel="stylesheet" type="text/css" href="$css_url"/>
-    <meta name="generator" content="$product_name"/>
+    <meta name="generator" content="$project_name"/>
     <meta name="keywords" content="tf2, team fortress 2, steam, steam api, backpack, backpack viewer"/>
     <link rel="stylesheet" type="text/css" href="${static_prefix}juicss/jquery-ui-1.8.5.custom.css"/>
     <link rel="shortcut icon" type="image/png" href="${static_prefix}optf2_icon.png"/>
@@ -16,7 +16,7 @@ $def with (content)
   </head>
   <body>
     <div id="navbar">
-      <a href="$virtual_root">$product_name</a>
+      <a href="$virtual_root">$project_name</a>
       <a href="${virtual_root}schema_dump">Item List</a>
       <a href="${virtual_root}attrib_dump">Attribute List</a>
       $if news_url:

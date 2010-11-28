@@ -4,7 +4,7 @@ $def with (user, pack, items)
 <rss version="2.0">
   <channel>
     <title>$user.get_persona()'s TF2 Backpack</title>
-    <generator>$product_name</generator>
+    <generator>$project_name</generator>
     <link>${instance.homedomain}${virtual_root}</link>
   $items.reverse()
   $for item in items:

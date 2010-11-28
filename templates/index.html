@@ -1,5 +1,5 @@
-$def with (profile_form, countlist)
-$var title: $product_name
+$def with (countlist)
+$var title: $project_name
 
 <script type="text/javascript"><!--
 function completion_magic (req, resp) {
@@ -14,7 +14,7 @@ function completion_magic (req, resp) {
   });
 }
 $$(document).ready(function() {
-$$("#User").autocomplete({
+$$("#user").autocomplete({
   minLength: 2,
   source: completion_magic
 })});
@@ -23,10 +23,13 @@ $$("#User").autocomplete({
 <div id="logo">
   <img src="${static_prefix}optf2_logo.png" alt="Logo"/>
 </div>
-<form id="userform" method="post" action="${virtual_root}">
-  $if not profile_form.valid:
-      <p>Bad profile given</p>
-  $:profile_form.render()
+<form id="search_form" method="post" action="${virtual_root}">
+  <table>
+    <tr>
+      <td><input type="text" id="user" name="user"/></td>
+      <td><input type="submit" id="submit" name="submit" value="Search"/></td>
+    </tr>
+  </table>
 </form>
 <table id="search_table">
   <tr id="search_title"><td colspan="2"><b>Top Backpacks</b></td></tr>
