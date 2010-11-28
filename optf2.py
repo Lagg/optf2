@@ -101,6 +101,7 @@ urls = (
     virtual_root + "attrib_dump", "attrib_dump",
     virtual_root + "schema_dump", "schema_dump",
     virtual_root + "about", "about",
+    virtual_root + "(.+)", "pack_fetch",
     virtual_root, "index"
     )
 
