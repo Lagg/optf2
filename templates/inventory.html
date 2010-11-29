@@ -17,10 +17,7 @@ $def insert_name(pack, item):
     <div class="item_level">Level $pack.get_item_level(item) $:painty $pack.get_item_type(item)</div>
 $def insert_cell(pack, item, user, sortby, invalid = False):
       $if not item:
-          $if sortby == "cell":
-              $ return '<div class="item_cell" style="width: 90px; height: 90px;"></div>'
-          $else:
-              $ return '<div class="item_cell"></div>'
+          $ return '<div class="item_cell minimal_cell"></div>'
       $ item_link = "{0}item/{1}".format(virtual_root, pack.get_item_id(item))
       $ item_id = pack.get_item_id(item)
       $ quality = pack.get_item_quality(item)["str"]
@@ -38,36 +35,23 @@ $def insert_cell(pack, item, user, sortby, invalid = False):
           $ cell_class = "item_cell_undropped"
       $else:
           $ cell_class = "item_cell"
-      $if sortby == "cell":
-          <div class="$cell_class ${quality}_cell minimal_cell" id="s${item_id}" onclick="item_open('${item_link}', '$item_id');">
-      $else:
-          $ style_extra = ""
-          $if invalid:
-              $ style_extra = 'style="border-color: #ff0000;"'
-          <div class="$cell_class" id="s${item_id}" $:style_extra  onclick="item_open('${item_link}', '$item_id');">
-            $:insert_name(pack, item)
+      <div class="$cell_class ${quality}_cell minimal_cell" id="s${item_id}" onclick="item_open('${item_link}', '$item_id');">
         <a class="item_link" href="$item_link">
           <img class="item_image_small" src="$pack.get_item_image(item, pack.ITEM_IMAGE_SMALL)" alt="$pack.get_item_name(item)"/>
         </a>
-        $if sortby == "cell":
-            $ icon_suffix = "_minimal"
-        $else:
-            $ icon_suffix = ""
+        $ icon_suffix = "_minimal"
         $if pack.get_item_custom_name(item):
             <img src="${static_prefix}name_tag.png" class="name_icon${icon_suffix}" alt="Named"/>
         $if pack.get_item_custom_description(item):
             <img src="${static_prefix}desc_tag.png" class="desc_icon${icon_suffix}"  alt="Described"/>
         $if "optf2_gift_from" in item:
             <img src="${static_prefix}gift_icon.png" class="gift_icon${icon_suffix}"  alt="Gift"/>
-        $if "optf2_color" in item and sortby == "cell":
+        $if "optf2_color" in item:
             <span class="paint_splotch" style="background: $item['optf2_color'];">&nbsp;</span>
         $if equippedstr:
             <span class="equipped">$equippedstr</span>
-        $if sortby == "cell":
-            <div class="item_attribs" style="top: 105px;">
-              $:insert_name(pack, item)
-        $else:
-            <div class="item_attribs">
+        <div class="item_attribs" style="top: 105px;">
+          $:insert_name(pack, item)
         $if item["optf2_description"]:
               <div class="item_neutral_attr" style="font-weight: normal;">
                 $item["optf2_description"]
@@ -129,9 +113,9 @@ $def insert_cell(pack, item, user, sortby, invalid = False):
   <div class="toolbox" style="right: 0px;">
   <div class="sortlinks">
     Sort:
-    <a href="$qurl(sort = 'time')">Time</a>
+    <a href="$qurl(sort = None)">Default</a>
+    | <a href="$qurl(sort = 'time')">Time</a>
     | <a href="$qurl(sort = 'serial')">Serial</a>
-    | <a href="$qurl(sort = 'cell')" style="color: #7f7061; font-weight: bold;">Backpack</a>
     | <a href="$qurl(sort = 'level')">Level</a>
     | <a href="$qurl(sort = 'name')">Name</a>
     | <a href="$qurl(sort = 'slot')">Type</a>
@@ -150,25 +134,20 @@ $def insert_cell(pack, item, user, sortby, invalid = False):
 <div id="content">
   $if len(items) <= 0 and len(baditems) <= 0:
       <h2>Empty!</h2>
-  $if sortby == "cell":
-      <div id="backpack" style="width: 1090px;">
-  $else:
-      <div id="backpack">
+  <div id="backpack" style="width: 1090px;">
   $ cell_count = 0
   $ x_count = 0
   $if len(baditems) > 0:
       $for item in baditems:
           $:insert_cell(pack, item, user, sortby, invalid = True)
-      $if sortby == "cell":
-          <div style="clear: both; margin-bottom: 20px;">&nbsp;</div>
+      <div style="clear: both; margin-bottom: 20px;">&nbsp;</div>
   $for item in items:
-      $if sortby == "cell":
-          $if cell_count >= 50:
-              <div style="clear: both; margin: 10px 0 10px 0;">&nbsp;</div>
-              $ cell_count = 0
-          $if x_count >= 10:
-              <span style="clear: both; margin: 0;">&nbsp;</span>
-              $ x_count = 0
+      $if cell_count >= 50:
+          <div style="clear: both; margin: 10px 0 10px 0;">&nbsp;</div>
+          $ cell_count = 0
+      $if x_count >= 10:
+          <span style="clear: both; margin: 0;">&nbsp;</span>
+          $ x_count = 0
       $ cell_count += 1
       $ x_count += 1
       $:insert_cell(pack, item, user, sortby)

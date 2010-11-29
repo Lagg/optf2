@@ -338,6 +338,9 @@ def sort_items(items, sortby):
         elif x == y:
             return 0
 
+    if sortby == "time":
+        items.reverse()
+
     if sortby == "serial":
         def itemcmp(x, y):
             return defcmp(pack.get_item_id(x),
@@ -371,15 +374,18 @@ def sort_items(items, sortby):
 
     if itemcmp:
         items.sort(cmp = itemcmp)
-        if sortby == "cell":
-            newitems = [None] * backpack_padded_size
-            for item in items:
-                pos = pack.get_item_position(item) - 1
-                try:
-                    if pos > -1 and newitems[pos] == None:
-                        newitems[pos] = deepcopy(item)
-                except IndexError: pass
-            return newitems
+    if sortby == "cell":
+        newitems = [None] * backpack_padded_size
+        for item in items:
+            pos = pack.get_item_position(item) - 1
+            try:
+                if pos > -1 and newitems[pos] == None:
+                    newitems[pos] = deepcopy(item)
+            except IndexError: pass
+        return newitems
+    else:
+        if len(items) < backpack_padded_size:
+            items += ([None] * (backpack_padded_size - len(items)))
     return items
 
 def filter_items_by_class(items, theclass):
@@ -724,6 +730,7 @@ class pack_fetch:
         try:
             items = load_pack_cached(user)
 
+            filter_classes = get_equippable_classes(items)
             if sortclass:
                 items = filter_items_by_class(items, sortclass)
 
@@ -734,26 +741,15 @@ class pack_fetch:
 
             items = sort_items(items, sortby)
 
-            filter_classes = get_equippable_classes(items)
-
-            badpos = []
-            filledpos = []
             for bitem in baditems:
                 if bitem in items:
                     bpos = pack.get_item_position(bitem)
-                    if bpos in filledpos or bpos not in badpos:
-                        if sortby == "cell":
-                            items[items.index(bitem)] = None
-                        else:
-                            items.remove(bitem)
-                        if bpos > 0:
-                            badpos.append(bpos)
+                    if bpos > 0 and sortby == "cell":
+                        items[items.index(bitem)] = None
                     else:
-                        if sortby == "cell":
-                            items[items.index(bitem)] = None
-                            filledpos.append(bpos)
-                        else:
-                            items.remove(bitem)
+                        items.remove(bitem)
+                        items.append(None)
+
         except steam.TF2Error as E:
             return templates.error("Failed to load backpack ({0})".format(E))
         except steam.ProfileError as E:
@@ -784,10 +780,6 @@ class pack_fetch:
                           vars = {"id64": uid64},
                           persona = user.get_persona(), valve = isvalve,
                           count = views)
-
-        if sortby == "time":
-            items.reverse()
-            baditems.reverse()
 
         return templates.inventory(user, pack, isvalve, items, views, filter_classes, sortby, baditems, stats)
 
