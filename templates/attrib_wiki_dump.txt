@@ -23,4 +23,8 @@ $for attr in pack.get_item_schema_attributes():
     |$pack.get_attribute_class(attr)
 |}
 
+== See Also ==
+* [[Items]]
+
 [[Category:Items]]
+[[Category:Lists]]
