@@ -6,6 +6,11 @@ $def with (user, pack, items)
     <title>$user.get_persona()'s TF2 Backpack</title>
     <generator>$project_name</generator>
     <link>${instance.homedomain}${virtual_root}</link>
+    <image>
+      <link>${instance.homedomain}${virtual_root}</link>
+      <url>${instance.homedomain}${static_prefix}optf2_icon.png</url>
+      <title>$project_name</title>
+    </image>
   $items.reverse()
   $for item in items:
       <item>
@@ -13,12 +18,14 @@ $def with (user, pack, items)
         $ level = pack.get_item_level(item)
         $ type = pack.get_item_type(item)
         $ name = pack.get_item_custom_name(item)
+        $ image = pack.get_item_image(item, pack.ITEM_IMAGE_SMALL)
         $if not name:
             $ name = pack.get_item_name(item)
         <description>Level $level $type</description>
         <title>$:item["optf2_feed_name"]</title>
         <link>$permalink</link>
         <guid isPermaLink="true">$permalink</guid>
+        <enclosure type="image/png" length="0" url="$image"/>
       </item>
   </channel>
 </rss>
