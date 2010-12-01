@@ -10,6 +10,10 @@ $def with (content)
     <meta name="keywords" content="tf2, team fortress 2, steam, steam api, backpack, backpack viewer"/>
     <link rel="stylesheet" type="text/css" href="${static_prefix}juicss/jquery-ui-1.8.5.custom.css"/>
     <link rel="shortcut icon" type="image/png" href="${static_prefix}optf2_icon.png"/>
+    $ rss_url = instance.env.get("optf2_rss_url")
+    $ rss_title = instance.env.get("optf2_rss_title")
+    $if rss_url:
+        <link rel="alternate" title="$rss_title" href="$rss_url" type="application/rss+xml"/>
     <script type="text/javascript" src="${static_prefix}jquery-1.4.2.min.js"></script>
     <script type="text/javascript" src="${static_prefix}jquery-ui-1.8.5.custom.min.js"></script>
     <script type="text/javascript" src="${static_prefix}optf2.js"></script>

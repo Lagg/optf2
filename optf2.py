@@ -781,6 +781,8 @@ class pack_fetch:
                           persona = user.get_persona(), valve = isvalve,
                           count = views)
 
+        web.ctx.env["optf2_rss_url"] = "{0}feed/{1}".format(virtual_root, uid64)
+        web.ctx.env["optf2_rss_title"] = "{0}'s Backpack".format(user.get_persona())
         return templates.inventory(user, pack, isvalve, items, views, filter_classes, sortby, baditems, stats)
 
     def GET(self, sid):
