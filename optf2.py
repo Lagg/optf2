@@ -109,10 +109,10 @@ urls = (
 # if the user is a Valve employee)
 valve_group_id = 103582791429521412
 
-qualitydict = {"unique": "The ", "community": "Community ",
-               "developer": "Legendary ", "normal": "",
-               "selfmade": "My ", "vintage": "Vintage ",
-               "rarity4": "Unusual "}
+qualitydict = {"unique": "The",
+               "developer": "Legendary",
+               "normal": "",
+               "selfmade": "My"}
 
 # I don't like this either but Valve didn't expose them
 # through the API
@@ -143,7 +143,6 @@ render_globals = {"css_url": css_url,
                   "static_prefix": static_prefix,
                   "encode_url": web.urlquote,
                   "len": len,
-                  "qualitydict": qualitydict,
                   "particledict": particledict,
                   "instance": web.ctx,
                   "project_name": project_name,
@@ -505,7 +504,7 @@ def process_attributes(items):
 
         quality_str = pack.get_item_quality(item)["str"]
         pretty_quality_str = pack.get_item_quality(item)["prettystr"]
-        prefix = qualitydict.get(quality_str, "")
+        prefix = qualitydict.get(quality_str, pretty_quality_str)
         custom_name = pack.get_item_custom_name(item)
         item_name = pack.get_item_name(item)
 
