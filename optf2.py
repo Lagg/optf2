@@ -807,8 +807,9 @@ class index:
         return templates.index(countlist)
     def POST(self):
         user = web.input().get("user")
-        if user.endswith('/'): user = user[:-1]
-        if user: raise web.seeother(virtual_root + "user/" + os.path.basename(user))
+        if user:
+            if user.endswith('/'): user = user[:-1]
+            raise web.seeother(virtual_root + "user/" + os.path.basename(user))
         else: return web.seeother(virtual_root)
 
 if enable_fastcgi:
