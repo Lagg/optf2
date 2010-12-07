@@ -31,7 +31,7 @@ $var title: $project_name - All Items
         $:item["optf2_cell_name"]
         <div class="item_level">Level $item["optf2_level"] $:painty $pack.get_item_type(item)</div>
         <a class="item_link" href="$item_link">
-          <img class="item_image_small" src="$pack.get_item_image(item, pack.ITEM_IMAGE_SMALL)" alt="$pack.get_item_name(item)"/>
+          <img class="item_image_small" src="$item['optf2_image_url']" alt="$pack.get_item_name(item)"/>
         </a>
         <div class="item_attribs">
           $if item["optf2_description"]:

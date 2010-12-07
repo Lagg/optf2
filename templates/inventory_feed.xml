@@ -18,7 +18,7 @@ $def with (user, pack, items)
         $ level = pack.get_item_level(item)
         $ type = pack.get_item_type(item)
         $ name = pack.get_item_custom_name(item)
-        $ image = pack.get_item_image(item, pack.ITEM_IMAGE_SMALL)
+        $ image = item['optf2_image_url']
         $if not name:
             $ name = pack.get_item_name(item)
         <description>Level $level $type</description>

@@ -423,6 +423,11 @@ def get_item_stats(items):
             stats["misc"] += 1
     return stats
 
+def absolute_url(relative_url):
+    domain = web.ctx.homedomain
+    if domain.endswith('/'): domain = domain[:-1]
+    return domain + relative_url
+
 def process_attributes(items):
     """ Filters attributes for the item list,
     optf2-specific keys are prefixed with optf2_ """
@@ -433,6 +438,8 @@ def process_attributes(items):
         item["optf2_untradeable"] = pack.is_item_untradeable(item)
         item["optf2_attrs"] = []
         item["optf2_description"] = pack.get_item_description(item)
+        item["optf2_image_url"] = pack.get_item_image(item, pack.ITEM_IMAGE_SMALL)
+        item["optf2_image_url_large"] = pack.get_item_image(item, pack.ITEM_IMAGE_LARGE)
         min_level = pack.get_item_min_level(item)
         max_level = pack.get_item_max_level(item)
         custom_desc = pack.get_item_custom_description(item)
@@ -471,13 +478,23 @@ def process_attributes(items):
 
             if pack.get_attribute_name(attr) == "set item tint RGB":
                 raw_rgb = int(pack.get_attribute_value(attr))
-                # Set to purple for team colored paint (placeholder)
+                # Set to purple for team colored paint
                 if pack.get_item_schema_id(item) != 5023 and raw_rgb == 1:
                     item_color = 'url("{0}team_splotch.png")'.format(static_prefix)
                 else:
                     item_color = "#{0:X}{1:X}{2:X}".format((raw_rgb >> 16) & 0xFF,
                                                            (raw_rgb >> 8) & 0xFF,
                                                            (raw_rgb) & 0xFF)
+
+                # Workaround until the icons for colored paint cans are correct
+                schema_paintcan = pack.get_item_by_schema_id(pack.get_item_schema_id(item))
+                if (schema_paintcan and
+                    schema_paintcan.get("name", "").startswith("Paint Can") and
+                    raw_rgb != 1 and raw_rgb != 0):
+                    paintcan_url = "{0}item_icons/Paint_Can_{1}.png".format(static_prefix,
+                                                                            item_color[1:])
+                    item["optf2_image_url"] = absolute_url(paintcan_url)
+                    item["optf2_image_url_large"] = absolute_url(paintcan_url)
                 item["optf2_color"] = item_color
                 continue
 

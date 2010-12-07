@@ -37,7 +37,7 @@ $def insert_cell(pack, item, user, sortby, invalid = False):
           $ cell_class = "item_cell"
       <div class="$cell_class ${quality}_cell minimal_cell" id="s${item_id}" onclick="item_open('${item_link}', '$item_id');">
         <a class="item_link" href="$item_link">
-          <img class="item_image_small" src="$pack.get_item_image(item, pack.ITEM_IMAGE_SMALL)" alt="$pack.get_item_name(item)"/>
+          <img class="item_image_small" src="$item['optf2_image_url']" alt="$pack.get_item_name(item)"/>
         </a>
         $ icon_suffix = "_minimal"
         $if pack.get_item_custom_name(item):
