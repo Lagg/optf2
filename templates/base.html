@@ -26,6 +26,11 @@ $def with (content)
       $if news_url:
           <a href="$news_url">News</a>
       <a href="${virtual_root}about">About</a>
+      $ user = get_openid()
+      $if not user:
+          <a id="loginlink" href="${virtual_root}openid"><img src="${static_prefix}openid_login.png" alt="Sign in with Steam"/></a>
+      $else:
+          <a id="accountlink" href="${virtual_root}user/${user.get_id64()}">$user.get_persona()</a>
     </div>
     $:content
   </body>

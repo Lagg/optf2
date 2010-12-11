@@ -17,6 +17,11 @@ OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 """
 
 try:
+    import sys, logging
+    from openid.consumer import consumer
+    from openid.store import sqlstore
+    import sqlite3
+    import hmac, hashlib
     import steam, os, json, urllib2
     import socket
     from time import time
@@ -88,6 +93,12 @@ news_url = "http://agg.optf2.com/log/?cat=5"
 # for the padded cell sort
 backpack_padded_size = 200
 
+# The cache directory, this will
+# have sensitive data in it that
+# shouldn't be publicly accessible
+
+cache_file_dir = "/tmp/steamodd"
+
 # End of configuration stuff
 
 socket.setdefaulttimeout(5)
@@ -101,6 +112,7 @@ urls = (
     virtual_root + "attrib_dump", "attrib_dump",
     virtual_root + "schema_dump", "schema_dump",
     virtual_root + "about", "about",
+    virtual_root + "openid", "openid_consume",
     virtual_root + "(.+)", "pack_fetch",
     virtual_root, "index"
     )
@@ -152,21 +164,63 @@ render_globals = {"css_url": css_url,
                   "qurl": web.http.changequery
                   }
 
+web.config.session_parameters["timeout"] = 86400
+web.config.session_parameters["cookie_name"] = "optf2_session_id"
+
 app = web.application(urls, globals())
 templates = web.template.render(template_dir, base = "base",
                                 globals = render_globals)
 
 steam.set_api_key(api_key)
 steam.set_language(language)
+steam.set_cache_dir(cache_file_dir)
 
-db_schema = ["CREATE TABLE IF NOT EXISTS search_count (id64 INTEGER, ip TEXT, count INTEGER DEFAULT 1)",
-             "CREATE TABLE IF NOT EXISTS profile_cache (id64 INTEGER PRIMARY KEY, profile BLOB, timestamp DATE)",
-             "CREATE TABLE IF NOT EXISTS unique_views (id64 INTEGER PRIMARY KEY, count INTEGER DEFAULT 1, persona TEXT, valve BOOLEAN)",
-             "CREATE TABLE IF NOT EXISTS items (id64 INTEGER PRIMARY KEY, owner INTEGER, sid INTEGER, level INTEGER, untradeable BOOLEAN, token INTEGER, quality INTEGER, custom_name TEXT, custom_desc TEXT, attributes BLOB, quantity INTEGER DEFAULT 1)",
-             "CREATE TABLE IF NOT EXISTS backpacks (id64 INTEGER, backpack BLOB, timestamp INTEGER)"]
-db_obj = web.database(dbn = "sqlite", db = os.path.join(steam.get_cache_dir(), "optf2.db"))
-for s in db_schema:
-    db_obj.query(s)
+logging.basicConfig(filename = os.path.join(steam.get_cache_dir(), "optf2.log"), level = logging.DEBUG)
+
+db_path = os.path.join(steam.get_cache_dir(), "optf2.db")
+db_obj = None
+
+if not os.path.exists(db_path):
+    db_schema = ["CREATE TABLE IF NOT EXISTS search_count (id64 INTEGER, ip TEXT, count INTEGER DEFAULT 1)",
+                 "CREATE TABLE IF NOT EXISTS profile_cache (id64 INTEGER PRIMARY KEY, profile BLOB, timestamp DATE)",
+                 "CREATE TABLE IF NOT EXISTS unique_views (id64 INTEGER PRIMARY KEY, count INTEGER DEFAULT 1, persona TEXT, valve BOOLEAN)",
+                 "CREATE TABLE IF NOT EXISTS items (id64 INTEGER PRIMARY KEY, owner INTEGER, sid INTEGER, level INTEGER, untradeable BOOLEAN, token INTEGER, quality INTEGER, custom_name TEXT, custom_desc TEXT, attributes BLOB, quantity INTEGER DEFAULT 1)",
+                 "CREATE TABLE IF NOT EXISTS backpacks (id64 INTEGER, backpack BLOB, timestamp INTEGER)",
+                 "CREATE TABLE IF NOT EXISTS sessions (session_id CHAR(128) UNIQUE NOT NULL, atime timestamp NOT NULL default current_timestamp, data TEXT)"]
+    db_obj = web.database(dbn = "sqlite", db = db_path)
+    for s in db_schema:
+        db_obj.query(s)
+    sqlstore.SQLiteStore(sqlite3.connect(db_path)).createTables()
+else:
+    db_obj = web.database(dbn = "sqlite", db = db_path)
+
+session = web.session.Session(app, web.session.DBStore(db_obj, "sessions"))
+
+openid_secret = os.path.join(steam.get_cache_dir(), "oid_super_secret")
+if not os.path.exists(openid_secret):
+    secretfile = file(openid_secret, "wb+")
+    secretfile.write(os.urandom(32))
+    secretfile.close()
+openid_secret = file(openid_secret, "rb").read()
+
+def make_openid_hash(url):
+    return hmac.new(openid_secret, url, hashlib.sha1).hexdigest()
+
+def check_openid_hash(thehash):
+    strs = thehash.split(',')
+    if len(strs) == 2 and strs[0] == make_openid_hash(strs[1]):
+        return True
+    session.kill()
+    return False
+
+def openid_get_id():
+    thehash = session.get("identity_hash")
+    if thehash and check_openid_hash(thehash):
+        hashurl = thehash.split(',')[1]
+        if hashurl.endswith('/'): hashurl = hashurl[:-1]
+        return load_profile_cached(os.path.basename(hashurl))
+    return None
+render_globals["get_openid"] = openid_get_id
 
 pack = steam.backpack()
 
@@ -576,6 +630,12 @@ def get_equippable_classes(items):
 
     return valid_classes
 
+def internalerror():
+    exctype, value = sys.exc_info()[:2]
+    logging.error(str(exctype) + ": " + str(value))
+    return web.internalerror(templates.error("Unknown error, " + project_name + " may be down for maintenance"))
+if not web.config.debug: app.internalerror = internalerror
+
 class schema_dump:
     """ Dumps everything in the schema in a pretty way """
 
@@ -828,6 +888,26 @@ class index:
             if user.endswith('/'): user = user[:-1]
             raise web.seeother(virtual_root + "user/" + os.path.basename(user))
         else: return web.seeother(virtual_root)
+
+class openid_consume:
+    def GET(self):
+        openid_store = sqlstore.SQLiteStore(sqlite3.connect(db_path))
+
+        openid = consumer.Consumer(session, openid_store)
+        openid_realm = web.ctx.homedomain
+        openid_return_url = openid_realm + virtual_root + "openid"
+        auth = openid.begin("http://steamcommunity.com/openid/")
+        openid_auth_url = auth.redirectURL(openid_realm, return_to = openid_return_url)
+
+        if web.input().get("openid.return_to"):
+            openid_return_url = openid_realm + virtual_root + "openid"
+            response = openid.complete(web.input(), openid_return_url)
+            if not response.identity_url: return templates.error("Login Error")
+            session["identity_hash"] = make_openid_hash(response.identity_url) + "," + response.identity_url
+
+            raise web.seeother(virtual_root + "user/" + os.path.basename(response.identity_url))
+        else:
+            raise web.seeother(openid_auth_url)
 
 if enable_fastcgi:
     web.wsgi.runwsgi = lambda func, addr=None: web.wsgi.runfcgi(func, addr)
