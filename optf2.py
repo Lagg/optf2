@@ -536,9 +536,9 @@ def process_attributes(items):
                 if pack.get_item_schema_id(item) != 5023 and raw_rgb == 1:
                     item_color = 'url("{0}team_splotch.png")'.format(static_prefix)
                 else:
-                    item_color = "#{0:X}{1:X}{2:X}".format((raw_rgb >> 16) & 0xFF,
-                                                           (raw_rgb >> 8) & 0xFF,
-                                                           (raw_rgb) & 0xFF)
+                    item_color = "#{0:02X}{1:02X}{2:02X}".format((raw_rgb >> 16) & 0xFF,
+                                                                 (raw_rgb >> 8) & 0xFF,
+                                                                 (raw_rgb) & 0xFF)
 
                 # Workaround until the icons for colored paint cans are correct
                 schema_paintcan = pack.get_item_by_schema_id(pack.get_item_schema_id(item))
