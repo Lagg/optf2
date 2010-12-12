@@ -17,7 +17,7 @@ OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 """
 
 try:
-    import sys, logging
+    import logging, traceback
     from openid.consumer import consumer
     from openid.store import sqlstore
     import sqlite3
@@ -631,8 +631,7 @@ def get_equippable_classes(items):
     return valid_classes
 
 def internalerror():
-    exctype, value = sys.exc_info()[:2]
-    logging.error(str(exctype) + ": " + str(value))
+    logging.error(traceback.format_exc())
     return web.internalerror(templates.error("Unknown error, " + project_name + " may be down for maintenance"))
 if not web.config.debug: app.internalerror = internalerror
 
