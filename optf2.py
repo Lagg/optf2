@@ -902,7 +902,8 @@ class openid_consume:
         if web.input().get("openid.return_to"):
             openid_return_url = openid_realm + virtual_root + "openid"
             response = openid.complete(web.input(), openid_return_url)
-            if not response.identity_url: return templates.error("Login Error")
+            if response.status != consumer.SUCCESS or not response.identity_url:
+                return templates.error("Login Error")
             session["identity_hash"] = make_openid_hash(response.identity_url) + "," + response.identity_url
 
             raise web.seeother(virtual_root + "user/" + os.path.basename(response.identity_url))
