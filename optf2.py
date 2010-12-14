@@ -122,9 +122,7 @@ urls = (
 valve_group_id = 103582791429521412
 
 qualitydict = {"unique": "The",
-               "developer": "Legendary",
-               "normal": "",
-               "selfmade": "My"}
+               "normal": ""}
 
 # I don't like this either but Valve didn't expose them
 # through the API
