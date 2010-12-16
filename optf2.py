@@ -192,7 +192,8 @@ if not os.path.exists(db_path):
 else:
     db_obj = web.database(dbn = "sqlite", db = db_path)
 
-session = web.session.Session(app, web.session.DBStore(db_obj, "sessions"))
+store = web.session.DBStore(db_obj, "sessions")
+session = web.session.Session(app, store)
 
 openid_secret = os.path.join(steam.get_cache_dir(), "oid_super_secret")
 if not os.path.exists(openid_secret):
@@ -893,8 +894,10 @@ class openid_consume:
         openid = consumer.Consumer(session, openid_store)
         openid_realm = web.ctx.homedomain
         openid_return_url = openid_realm + virtual_root + "openid"
-        auth = openid.begin("http://steamcommunity.com/openid/")
-        openid_auth_url = auth.redirectURL(openid_realm, return_to = openid_return_url)
+        try:
+            auth = openid.begin("http://steamcommunity.com/openid/")
+            openid_auth_url = auth.redirectURL(openid_realm, return_to = openid_return_url)
+        except: return templates.error("Can't connect to Steam")
 
         if web.input().get("openid.return_to"):
             openid_return_url = openid_realm + virtual_root + "openid"
