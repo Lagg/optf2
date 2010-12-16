@@ -6,25 +6,14 @@ $def with (pack)
 !class="header"|Description
 !class="header"|Value Type
 !class="header"|Class
+!class="header" width="10%"|Notes
 $for attr in pack.get_item_schema_attributes():
     $ desc = pack.get_attribute_description(attr)
     $ name = pack.get_attribute_name(attr)
-    $ attrtypefmt = "[[File:Pictogram {0}.png|16px]]"
-    $ attrtypeimg = attrtypefmt.format("neutral")
     $ attrtype = pack.get_attribute_type(attr)
-    $if attrtype == "negative": $ attrtypeimg = attrtypefmt.format("minus")
-    $elif attrtype == "positive": $ attrtypeimg = attrtypefmt.format("plus")
+    $ notes = ""
     $if desc: $ desc = desc.replace("\n", "<br/>").replace("%s1", "n")
+    $if not desc or desc.find("Attrib_") != -1: $ notes = "Hidden or unused"
     |-
-    |$pack.get_attribute_id(attr)
-    |$attrtypeimg [${instance.homedomain}$qurl(att = name) $name]
-    |<nowiki>$desc</nowiki>
-    |$pack.get_attribute_value_type(attr)
-    |$pack.get_attribute_class(attr)
+    {{Item Attribute|id=$pack.get_attribute_id(attr)|name=$name|description=$desc|value-type=$pack.get_attribute_value_type(attr)|class=$pack.get_attribute_class(attr)|effect-type=$attrtype|notes=$notes}}
 |}
-
-== See Also ==
-* [[Items]]
-
-[[Category:Items]]
-[[Category:Lists]]
