@@ -1,4 +1,4 @@
-import web, config, steam
+import web, config, steam, database
 from copy import deepcopy
 
 qualitydict = {"unique": "The",

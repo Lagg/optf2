@@ -29,7 +29,6 @@ try:
     steam.set_api_key(config.api_key)
     steam.set_language(config.language)
     steam.set_cache_dir(config.cache_file_dir)
-    web.ctx.pack = steam.backpack()
     import database, itemtools
 except ImportError as E:
     print(str(E))
@@ -104,12 +103,12 @@ def openid_get_id():
     return None
 render_globals["get_openid"] = openid_get_id
 
-pack = web.ctx.pack
-
 def internalerror():
     logging.error(traceback.format_exc())
     return web.internalerror(templates.error("Unknown error, " + config.project_name + " may be down for maintenance"))
 if not web.config.debug: app.internalerror = internalerror
+
+pack = steam.backpack()
 
 class schema_dump:
     """ Dumps everything in the schema in a pretty way """
