@@ -1,6 +1,6 @@
 import socket, web, os
 from openid.store import sqlstore
-    
+
 # You probably want this to be
 # an absolute path if you're not running the built-in server
 template_dir = "templates/"
