@@ -20,101 +20,31 @@ try:
     import logging, traceback
     from openid.consumer import consumer
     from openid.store import sqlstore
-    import sqlite3
     import hmac, hashlib
     import steam, os, json, urllib2
-    import socket
     from time import time
     import cPickle as pickle
     from cStringIO import StringIO
     import web
     from web import form
     from copy import deepcopy
+    import config
 except ImportError as E:
     print(str(E))
     raise SystemExit
 
-# Configuration stuff
-
-# You probably want this to be
-# an absolute path if you're not running the built-in server
-template_dir = "templates/"
-
-# Most links to other viewer pages will
-# be prefixed with this.
-virtual_root = "/"
-
-css_url = "/static/style.css"
-
-# The url to prefix URLs
-# pointing to static data with
-# e.g. class icons
-static_prefix = "/static/"
-
-api_key = None
-
-language = "en"
-
-# It would be nice of you not to change these
-project_name = "OPTF2"
-project_homepage = "http://projects.optf2.com/projects/optf2"
-
-# Cache a player's backpack. Reduces the number of API
-# requests and makes it a lot faster but might make the
-# database big
-cache_pack = True
-
-# Refresh cache every x seconds.
-cache_pack_refresh_interval = 30
-
-# How many rows to show for the top viewed backpacks table
-top_backpack_rows = 10
-
-# Turn on debugging (prints a backtrace and other info
-# instead of returning an internal server error)
-web.config.debug = False
-
-# Enables fastcgi support with flup, be sure to have it
-# installed.
-enable_fastcgi = False
-
-# These stop the script name from showing up
-# in URLs after a redirect. Remove them
-# if they cause problems.
-os.environ["SCRIPT_NAME"] = ''
-os.environ["REAL_SCRIPT_NAME"] = ''
-
-# The link to the news page/changelog
-# set this to None if you don't want
-# this shown. (Not recommended)
-news_url = "http://agg.optf2.com/log/?cat=5"
-
-# The max size of the backpack. Used
-# for the padded cell sort
-backpack_padded_size = 200
-
-# The cache directory, this will
-# have sensitive data in it that
-# shouldn't be publicly accessible
-
-cache_file_dir = "/tmp/steamodd"
-
-# End of configuration stuff
-
-socket.setdefaulttimeout(5)
-
 urls = (
-    virtual_root + "comp/(.+)", "user_completion",
-    virtual_root + "user/(.*)", "pack_fetch",
-    virtual_root + "feed/(.+)", "pack_feed",
-    virtual_root + "item/(.+)", "pack_item",
-    virtual_root + "persona/(.+)", "persona",
-    virtual_root + "attrib_dump", "attrib_dump",
-    virtual_root + "schema_dump", "schema_dump",
-    virtual_root + "about", "about",
-    virtual_root + "openid", "openid_consume",
-    virtual_root + "(.+)", "pack_fetch",
-    virtual_root, "index"
+    config.virtual_root + "comp/(.+)", "user_completion",
+    config.virtual_root + "user/(.*)", "pack_fetch",
+    config.virtual_root + "feed/(.+)", "pack_feed",
+    config.virtual_root + "item/(.+)", "pack_item",
+    config.virtual_root + "persona/(.+)", "persona",
+    config.virtual_root + "attrib_dump", "attrib_dump",
+    config.virtual_root + "schema_dump", "schema_dump",
+    config.virtual_root + "about", "about",
+    config.virtual_root + "openid", "openid_consume",
+    config.virtual_root + "(.+)", "pack_fetch",
+    config.virtual_root, "index"
     )
 
 # The 64 bit ID of the Valve group (this is how I check
@@ -148,49 +78,31 @@ particledict = {0: "Invalid Particle",
                 19: "Circling Heart"}
 
 # These should stay explicit
-render_globals = {"css_url": css_url,
-                  "virtual_root": virtual_root,
-                  "static_prefix": static_prefix,
+render_globals = {"css_url": config.css_url,
+                  "virtual_root": config.virtual_root,
+                  "static_prefix": config.static_prefix,
                   "encode_url": web.urlquote,
                   "len": len,
                   "particledict": particledict,
                   "instance": web.ctx,
-                  "project_name": project_name,
-                  "project_homepage": project_homepage,
+                  "project_name": config.project_name,
+                  "project_homepage": config.project_homepage,
                   "wiki_url": "http://wiki.teamfortress.com/wiki/",
-                  "news_url": news_url,
+                  "news_url": config.news_url,
                   "qurl": web.http.changequery
                   }
 
-web.config.session_parameters["timeout"] = 86400
-web.config.session_parameters["cookie_name"] = "optf2_session_id"
-
 app = web.application(urls, globals())
-templates = web.template.render(template_dir, base = "base",
+templates = web.template.render(config.template_dir, base = "base",
                                 globals = render_globals)
 
-steam.set_api_key(api_key)
-steam.set_language(language)
-steam.set_cache_dir(cache_file_dir)
+steam.set_api_key(config.api_key)
+steam.set_language(config.language)
+steam.set_cache_dir(config.cache_file_dir)
 
 logging.basicConfig(filename = os.path.join(steam.get_cache_dir(), "optf2.log"), level = logging.DEBUG)
 
-db_path = os.path.join(steam.get_cache_dir(), "optf2.db")
-db_obj = None
-
-if not os.path.exists(db_path):
-    db_schema = ["CREATE TABLE IF NOT EXISTS search_count (id64 INTEGER, ip TEXT, count INTEGER DEFAULT 1)",
-                 "CREATE TABLE IF NOT EXISTS profile_cache (id64 INTEGER PRIMARY KEY, profile BLOB, timestamp DATE)",
-                 "CREATE TABLE IF NOT EXISTS unique_views (id64 INTEGER PRIMARY KEY, count INTEGER DEFAULT 1, persona TEXT, valve BOOLEAN)",
-                 "CREATE TABLE IF NOT EXISTS items (id64 INTEGER PRIMARY KEY, owner INTEGER, sid INTEGER, level INTEGER, untradeable BOOLEAN, token INTEGER, quality INTEGER, custom_name TEXT, custom_desc TEXT, attributes BLOB, quantity INTEGER DEFAULT 1)",
-                 "CREATE TABLE IF NOT EXISTS backpacks (id64 INTEGER, backpack BLOB, timestamp INTEGER)",
-                 "CREATE TABLE IF NOT EXISTS sessions (session_id CHAR(128) UNIQUE NOT NULL, atime timestamp NOT NULL default current_timestamp, data TEXT)"]
-    db_obj = web.database(dbn = "sqlite", db = db_path)
-    for s in db_schema:
-        db_obj.query(s)
-    sqlstore.SQLiteStore(sqlite3.connect(db_path)).createTables()
-else:
-    db_obj = web.database(dbn = "sqlite", db = db_path)
+db_obj = config.database_obj
 
 store = web.session.DBStore(db_obj, "sessions")
 session = web.session.Session(app, store)
@@ -225,7 +137,7 @@ pack = steam.backpack()
 
 def cache_not_stale(row):
     if row and "timestamp" in row:
-        return (int(time()) - row["timestamp"]) < cache_pack_refresh_interval
+        return (int(time()) - row["timestamp"]) < config.cache_pack_refresh_interval
     else:
         return False
 
@@ -252,7 +164,7 @@ def load_profile_cached(sid, stale = False):
         if not sid:
             return refresh_profile_cache(sid)
 
-    if cache_pack:
+    if config.cache_pack:
         try:
             prow = db_obj.select("profile_cache", what = "profile, timestamp",
                                  where = "id64 = $id64", vars = {"id64": int(sid)})[0]
@@ -284,7 +196,7 @@ def refresh_pack_cache(user):
         backpack_items = []
         for item in pack.get_items():
             backpack_items.append(pack.get_item_id(item))
-            db_obj.query("INSERT OR IGNORE INTO items (id64) VALUES ($id64)", vars = {"id64": pack.get_item_id(item)})
+            db_obj.query("INSERT IGNORE INTO items (id64) VALUES ($id64)", vars = {"id64": pack.get_item_id(item)})
             db_obj.update("items", where = "id64 = $id64", vars = {"id64": pack.get_item_id(item)},
                           owner = user.get_id64(),
                           sid = pack.get_item_schema_id(item),
@@ -306,8 +218,10 @@ def refresh_pack_cache(user):
                           backpack = buffer(pickle.dumps(backpack_items)),
                           timestamp = ts)
         elif len(lastpack) > 0:
-            db_obj.update("backpacks", where = "id64 = $id64 AND timestamp = (SELECT MAX(timestamp) FROM backpacks where id64 = $id64)",
-                          timestamp = ts, vars = {"id64": user.get_id64()})
+            lastts = db_obj.select("backpacks", what = "MAX(timestamp) AS ts", where = "id64 = $id64",
+                                   vars = {"id64": user.get_id64()})[0]["ts"]
+            db_obj.update("backpacks", where = "id64 = $id64 AND timestamp = $ts",
+                          timestamp = ts, vars = {"id64": user.get_id64(), "ts": lastts})
         return True
     return False
 
@@ -427,17 +341,21 @@ def sort_items(items, sortby):
     if itemcmp:
         items.sort(cmp = itemcmp)
     if sortby == "cell":
-        newitems = [None] * backpack_padded_size
+        newitems = [None] * config.backpack_padded_size
         for item in items:
             pos = pack.get_item_position(item) - 1
             try:
+                if pos > config.backpack_padded_size:
+                    while pos > config.backpack_padded_size:
+                        newitems += ([None] * 100)
+                        config.backpack_padded_size += 100
                 if pos > -1 and newitems[pos] == None:
                     newitems[pos] = deepcopy(item)
             except IndexError: pass
         return newitems
     else:
-        if len(items) < backpack_padded_size:
-            items += ([None] * (backpack_padded_size - len(items)))
+        if len(items) < config.backpack_padded_size:
+            items += ([None] * (config.backpack_padded_size - len(items)))
     return items
 
 def filter_items_by_class(items, theclass):
@@ -533,7 +451,7 @@ def process_attributes(items):
                 raw_rgb = int(pack.get_attribute_value(attr))
                 # Set to purple for team colored paint
                 if pack.get_item_schema_id(item) != 5023 and raw_rgb == 1:
-                    item_color = 'url("{0}team_splotch.png")'.format(static_prefix)
+                    item_color = 'url("{0}team_splotch.png")'.format(config.static_prefix)
                 else:
                     item_color = "#{0:02X}{1:02X}{2:02X}".format((raw_rgb >> 16) & 0xFF,
                                                                  (raw_rgb >> 8) & 0xFF,
@@ -544,7 +462,7 @@ def process_attributes(items):
                 if (schema_paintcan and
                     schema_paintcan.get("name", "").startswith("Paint Can") and
                     raw_rgb != 1 and raw_rgb != 0):
-                    paintcan_url = "{0}item_icons/Paint_Can_{1}.png".format(static_prefix,
+                    paintcan_url = "{0}item_icons/Paint_Can_{1}.png".format(config.static_prefix,
                                                                             item_color[1:])
                     item["optf2_image_url"] = absolute_url(paintcan_url)
                     item["optf2_image_url_large"] = absolute_url(paintcan_url)
@@ -631,7 +549,7 @@ def get_equippable_classes(items):
 
 def internalerror():
     logging.error(traceback.format_exc())
-    return web.internalerror(templates.error("Unknown error, " + project_name + " may be down for maintenance"))
+    return web.internalerror(templates.error("Unknown error, " + config.project_name + " may be down for maintenance"))
 if not web.config.debug: app.internalerror = internalerror
 
 class schema_dump:
@@ -677,7 +595,7 @@ class attrib_dump:
 
             if query.get("wikitext"):
                 web.header("Content-Type", "text/plain; charset=UTF-8")
-                return web.template.render(template_dir,
+                return web.template.render(config.template_dir,
                                            globals = render_globals).attrib_wiki_dump(pack)
 
             return templates.attrib_dump(pack)
@@ -848,14 +766,14 @@ class pack_fetch:
 
             views = db_obj.query("SELECT COUNT(*) AS views FROM search_count WHERE id64 = $id64",
                                  vars = {"id64": uid64})[0]["views"]
-            db_obj.query("INSERT OR IGNORE INTO unique_views (id64) VALUES ($id64)",
+            db_obj.query("INSERT IGNORE INTO unique_views (id64) VALUES ($id64)",
                          vars = {"id64": uid64})
             db_obj.update("unique_views", where = "id64 = $id64",
                           vars = {"id64": uid64},
                           persona = user.get_persona(), valve = isvalve,
                           count = views)
 
-        web.ctx.env["optf2_rss_url"] = "{0}feed/{1}".format(virtual_root, uid64)
+        web.ctx.env["optf2_rss_url"] = "{0}feed/{1}".format(config.virtual_root, uid64)
         web.ctx.env["optf2_rss_title"] = "{0}'s Backpack".format(user.get_persona())
         return templates.inventory(user, pack, isvalve, items, views, filter_classes, sortby, baditems, stats)
 
@@ -871,46 +789,46 @@ class pack_feed:
         except Exception as E:
             return templates.error(str(E))
         web.header("Content-Type", "application/rss+xml")
-        return web.template.render(template_dir,
+        return web.template.render(config.template_dir,
                                    globals = render_globals).inventory_feed(user,
                                                                             pack,
                                                                             items)
 
 class index:
     def GET(self):
-        countlist = db_obj.select("unique_views", order = "count DESC", limit = top_backpack_rows)
+        countlist = db_obj.select("unique_views", order = "count DESC", limit = config.top_backpack_rows)
         return templates.index(countlist)
     def POST(self):
         user = web.input().get("user")
         if user:
             if user.endswith('/'): user = user[:-1]
-            raise web.seeother(virtual_root + "user/" + os.path.basename(user))
-        else: return web.seeother(virtual_root)
+            raise web.seeother(config.virtual_root + "user/" + os.path.basename(user))
+        else: return web.seeother(config.virtual_root)
 
 class openid_consume:
     def GET(self):
-        openid_store = sqlstore.SQLiteStore(sqlite3.connect(db_path))
+        openid_store = sqlstore.MySQLStore(db_obj._db_cursor().connection)
 
         openid = consumer.Consumer(session, openid_store)
         openid_realm = web.ctx.homedomain
-        openid_return_url = openid_realm + virtual_root + "openid"
+        openid_return_url = openid_realm + config.virtual_root + "openid"
         try:
             auth = openid.begin("http://steamcommunity.com/openid/")
             openid_auth_url = auth.redirectURL(openid_realm, return_to = openid_return_url)
         except: return templates.error("Can't connect to Steam")
 
         if web.input().get("openid.return_to"):
-            openid_return_url = openid_realm + virtual_root + "openid"
+            openid_return_url = openid_realm + config.virtual_root + "openid"
             response = openid.complete(web.input(), openid_return_url)
             if response.status != consumer.SUCCESS or not response.identity_url:
                 return templates.error("Login Error")
             session["identity_hash"] = make_openid_hash(response.identity_url) + "," + response.identity_url
 
-            raise web.seeother(virtual_root + "user/" + os.path.basename(response.identity_url))
+            raise web.seeother(config.virtual_root + "user/" + os.path.basename(response.identity_url))
         else:
             raise web.seeother(openid_auth_url)
 
-if enable_fastcgi:
+if config.enable_fastcgi:
     web.wsgi.runwsgi = lambda func, addr=None: web.wsgi.runfcgi(func, addr)
 
 if __name__ == "__main__":
