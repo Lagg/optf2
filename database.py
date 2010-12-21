@@ -94,8 +94,8 @@ def refresh_pack_cache(user):
                                          vars = {"id64": user.get_id64()})[0]["ts"]
             database_obj.update("backpacks", where = "id64 = $id64 AND timestamp = $ts",
                                 timestamp = ts, vars = {"id64": user.get_id64(), "ts": lastts})
-        return True
-    return False
+        return pack.get_items()
+    return None
 
 def fetch_pack_for_user(user, date = None):
     """ Returns None if a backpack couldn't be found """
@@ -138,7 +138,7 @@ def load_pack_cached(user, stale = False):
     if not stale:
         if not cache_not_stale(thepack):
             try:
-                refresh_pack_cache(user)
+                return refresh_pack_cache(user)
             except urllib2.URLError:
                 pass
             thepack = fetch_pack_for_user(user)
