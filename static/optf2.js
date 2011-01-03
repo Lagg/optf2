@@ -1,5 +1,11 @@
 $(document).ready(function(){
     $(".item_link").removeAttr("href");
+    var cells = $(".item_cell");
+    cells.each(function() {
+        $(this).click(function() {
+            item_open("/item/" + this.id.slice(1), this.id.slice(1));
+        })
+    })
 });
 
 function item_image_resize(img, iw, ih, w, h) {
