@@ -35,11 +35,11 @@ function item_open_success(data, status, xhr) {
     var dialog_width = 850;
     var dialog_height = 700;
 
-    if ($(document).height() < dialog_height) {
-        dialog_height = $(document).height() - dialog_title.height();
+    if ($(window).height() < dialog_height) {
+        dialog_height = $(window).height();
     }
-    if ($(document).width() < dialog_width) {
-        dialog_width = $(document).width();
+    if ($(window).width() < dialog_width) {
+        dialog_width = $(window).width();
     }
 
     $("#loading_" + dialog_content.find("#item_id").html()).remove();
