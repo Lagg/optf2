@@ -1,6 +1,6 @@
 $(document).ready(function(){
     $(".item_link").removeAttr("href");
-    var cells = $(".item_cell");
+    var cells = $(".item_cell, .item_cell_undropped");
     cells.each(function() {
         $(this).click(function() {
             item_open(this.id.slice(1));
