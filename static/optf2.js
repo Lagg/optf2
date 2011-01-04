@@ -3,7 +3,7 @@ $(document).ready(function(){
     var cells = $(".item_cell");
     cells.each(function() {
         $(this).click(function() {
-            item_open("/item/" + this.id.slice(1), this.id.slice(1));
+            item_open(this.id.slice(1));
         });
     });
 });
@@ -53,7 +53,8 @@ function item_open_success(data, status, xhr) {
     });
 }
 
-function item_open(item_url, item_id) {
+function item_open(item_id) {
+    var item_url = "/item/" + item_id;
     var loading_id = "loading_" + item_id;
     var cell_id = $("#s" + item_id);
     if (cell_id.find("#" + loading_id).length <= 0) {

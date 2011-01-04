@@ -217,6 +217,8 @@ class pack_item:
             item = itemtools.process_attributes([theitem])[0]
         except Exception:
             return templates.item_error_notfound(idl[1])
+        except urllib2.URLError:
+            return templates.error("Couldn't connect to Steam")
         return templates.item(user, item, pack, item_outdated)
 
 class persona:
@@ -250,6 +252,8 @@ class pack_fetch:
             return templates.error("Need an ID")
         try:
             user = database.load_profile_cached(sid)
+        except urllib2.URLError:
+            return templates.error("Couldn't connect to Steam")
         except steam.ProfileError:
             search = json.loads(user_completion().GET(sid))
             nuser = None
