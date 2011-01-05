@@ -20,7 +20,6 @@ body { background: #303030; color: white; font-family: Arial, Helvetica, sans-se
     width: 150px;
     height: 150px;
     padding: 10px;
-    padding-left: 0;
     text-align: center;
     float: left;
     position: relative;
@@ -41,16 +40,13 @@ body { background: #303030; color: white; font-family: Arial, Helvetica, sans-se
 .selfmade_cell { border-color: #79be50; }
 .vintage_cell { border-color: #6186c5; }
 .rarity4_cell { border-color: #a965d9; }
-.minimal_cell { width: 90px; height: 90px; }
-.gift_icon { position: absolute; bottom: 55px; left: 5px; bottom: 55px; }
-.desc_icon { position: absolute; bottom: 30px; left: 5px; }
-.name_icon { position: absolute; bottom: 5px; left: 5px; }
-.gift_icon_minimal { position: absolute; right: 55px; top: 5px; }
-.desc_icon_minimal { position: absolute; right: 30px; top: 5px; }
-.name_icon_minimal { position: absolute; right: 5px; top: 5px; }
+.minimal_cell { width: 95px; height: 95px; padding: 0; }
+.gift_icon_minimal { position: absolute; right: 53px; top: 3px; }
+.desc_icon_minimal { position: absolute; right: 27px; top: 3px; }
+.name_icon_minimal { position: absolute; right: 2px; top: 3px; }
 .paint_splotch {
     position: absolute;
-    top: 8px; left: 8px;
+    top: 6px; left: 6px;
     font-weight: bold;
     width: 10px;
     height: 10px;
@@ -111,7 +107,7 @@ a:visited { text-decoration: none; color: #a9a9a9; }
 #status_offline { color: #808080; }
 #status_snooze, #status_away, #status_busy { color: #2fb3ff; }
 
-#navbar { background: #606060; text-align: left; max-width: 100%; padding: 8px; margin-bottom: 15px; position: relative; }
+#navbar { background: #606060; text-align: left; max-width: 100%; padding: 8px; margin-bottom: 15px; position: relative; border: 1px solid black; }
 #navbar a { padding: 8px 4px 8px 4px; color: white; margin-left: 16px; }
 #navbar a:hover { background: #535353; text-decoration: none; }
 #navbar #loginlink, #navbar #loginlink:hover { position: absolute; right: 3px; top: 3px; padding: 0; margin: 0; background: #606060; }
@@ -125,7 +121,7 @@ img { border: 0; }
     width: 800px;
     height: 600px;
 }
-.item_image_small { max-width: 90px; max-height: 90px; }
+.item_image_small { max-width: 86px; max-height: 86px; margin: 5px; }
 #item_image_large { float: left; width: 512px; height: 512px; }
 #item_attrs {
     float: right;
@@ -138,7 +134,7 @@ img { border: 0; }
 #item_attrs div { padding: 4px; }
 #stat_vertrule { float: left; }
 
-#backpack { width: 98%; margin: 0 auto 0 auto; }
+#backpack { width: 90%; margin: 0 auto 0 auto; }
 
 .row_odd { background: #555555; }
 .row_even { background: #777777; }
@@ -151,30 +147,47 @@ img { border: 0; }
 
 #header { text-align: center; clear: both; }
 
-.toolbox {
-    border: 1px solid #000000;
-    background: #505050;
-    padding: 5px;
-    position: absolute;
-    height: 90px;
-    width: 350px;
-    -moz-border-radius: 10px;
-    -webkit-border-radius: 10px;
-    border-radius: 10px;
-    overflow: hidden;
-}
-
-#statbox {
-    top: 10px;
-    text-align: left;
-    position: absolute;
-    left: 70px;
-    padding-left: 10px;
-}
-
-#avatar { top: 15px; position: absolute; width: 64px; height: 64px; left: 10px; }
+#avatar { top: 2px; position: absolute; width: 32px; height: 32px; left: 10px; }
 
 .sortlinks { margin: 10px auto 10px auto; width: 350px; text-align: left; }
 .sortlinks img { padding: 0 5px 0 5px; }
 
 #logo { width: 389px; height: 126px; margin: 50px auto 50px auto; }
+
+.dropdown-menu {
+    text-align: left;
+    margin: 5px;
+    position: relative;
+    cursor: pointer;
+    background-color: #303030;
+    background-image: url("dropdown_arrow.png");
+    background-position: 100% 50%;
+    background-repeat: no-repeat;
+    padding: 5px 20px 5px 5px;
+}
+.dropdown-menu:hover { background-color: #202020; }
+.dropdown-menu a { color: white; display: block; padding: 5px; width: 100%; height: 100%; text-decoration: none; }
+.dropdown-menu ul {
+    border: 1px solid white;
+    border-bottom: 0;
+    display: none;
+    background: black;
+    padding: 0;
+    position: absolute;
+    top: 12px;
+    list-style-type: none;
+    z-index: 30;
+    min-width: 100px;
+}
+.dropdown-menu ul li { text-align: left; border-bottom: 1px solid white; }
+.dropdown-menu ul li:hover { background: #404040; }
+.dropdown-menu:hover ul { display: block; }
+
+.toolbar { background: #505050; position: relative; border: 1px solid black; padding: 5px; }
+.tool {
+    text-align: left;
+    padding: 2px 20px 0 20px;
+    float: left;
+    border-right: 1px solid white;
+    height: 34px;
+}

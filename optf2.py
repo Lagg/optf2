@@ -64,7 +64,8 @@ render_globals = {"css_url": config.css_url,
                   "project_homepage": config.project_homepage,
                   "wiki_url": "http://wiki.teamfortress.com/wiki/",
                   "news_url": config.news_url,
-                  "qurl": web.http.changequery
+                  "qurl": web.http.changequery,
+                  "sorted": sorted
                   }
 
 app = web.application(urls, globals())

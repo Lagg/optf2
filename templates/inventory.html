@@ -50,7 +50,7 @@ $def insert_cell(pack, item, user, sortby, invalid = False):
             <span class="paint_splotch" style="background: $item['optf2_color'];">&nbsp;</span>
         $if equippedstr:
             <span class="equipped">$equippedstr</span>
-        <div class="item_attribs" style="top: 105px;">
+        <div class="item_attribs" style="top: 90px;">
           $:insert_name(pack, item)
         $if item["optf2_description"]:
               <div class="item_neutral_attr" style="font-weight: normal;">
@@ -67,26 +67,20 @@ $def insert_cell(pack, item, user, sortby, invalid = False):
         </div>
       </div>
 
-<div id="header" style="position: relative; margin: 20px auto 0 auto; width: 750px; height: 120px;">
+<div id="header" style="position: relative;">
+  <div class="toolbar" style="width: 1040px; margin: 0 auto 15px auto; height: 36px;">
   $ cgame = user.get_current_game()
   $ cstatus = user.get_status()
   $if isvalve:
       $ name_suffix = '<img src="{0}valve.png" alt="Valve" title="Valve Employee"/>'.format(static_prefix)
   $else: $ name_suffix = ''
-  <div class="toolbox" style="left: 0;">
-    <div id="avatar">
+    <div class="tool" style="padding-right: 0; border: 0;">
       <a href="$profileurl">
-        <img src="$user.get_avatar_url(user.AVATAR_MEDIUM)" alt="$realn" title="$realn"/>
+        <img src="$user.get_avatar_url(user.AVATAR_SMALL)" alt="$realn" title="$realn"/>
       </a>
     </div>
-    <div id="statbox">
+    <div class="tool" style="padding-left: 5px;">
       <b><a href="$profileurl">$usern</a> $:name_suffix</b>
-      <a href="$perma" rel="bookmark">
-        <img src="${static_prefix}plink_icon.png" alt="Permalink" title="Permalink"/>
-      </a>
-      <a href="$rss">
-        <img src="${static_prefix}feed_icon.png" alt="RSS" title="Subscribe to an RSS feed of this backpack"/>
-      </a>
       <div id="status_$cstatus">
         $if cgame:
             Playing \
@@ -101,6 +95,8 @@ $def insert_cell(pack, item, user, sortby, invalid = False):
         $else:
             $cstatus
       </div>
+    </div>
+    <div class="tool">
       $views
       $if views == 1:
           view
@@ -109,32 +105,46 @@ $def insert_cell(pack, item, user, sortby, invalid = False):
       <br/>
       $stats["weapons"] weapons | $stats["hats"] hats | $stats["misc"] misc ($stats["total"] total)
     </div>
-  </div>
-  <div class="toolbox" style="right: 0px;">
-  <div class="sortlinks">
-    Sort:
-    <a href="$qurl(sort = None)">Default</a>
-    | <a href="$qurl(sort = 'time')">Time</a>
-    | <a href="$qurl(sort = 'serial')">Serial</a>
-    | <a href="$qurl(sort = 'level')">Level</a>
-    | <a href="$qurl(sort = 'name')">Name</a>
-    | <a href="$qurl(sort = 'slot')">Type</a>
-    | <a href="$qurl(sort = 'class')">Class</a>
-  </div>
-  <div class="sortlinks">
-    Filter:
-    <a href="$qurl(sortclass = None)"><img src="${static_prefix}tf_icon.png" alt="All" title="All"/></a>
-    $for k in filter_classes:
-        <a href="$qurl(sortclass = k)">
-          <img src="${static_prefix}${k}_icon.png" alt="${k}" title="${k}"/>
-        </a>
-  </div>
+    <div class="tool" style="border-right: 0;">
+      <div class="dropdown-menu" style="float: left;">
+        <b>Sort</b>
+        <ul>
+          <li><a href="$qurl(sort = None)">Default</a></li>
+          <li><a href="$qurl(sort = 'time')">Time</a></li>
+          <li><a href="$qurl(sort = 'serial')">Serial</a></li>
+          <li><a href="$qurl(sort = 'level')">Level</a></li>
+          <li><a href="$qurl(sort = 'name')">Name</a></li>
+          <li><a href="$qurl(sort = 'slot')">Type</a></li>
+          <li><a href="$qurl(sort = 'class')">Class</a></li>
+        </ul>
+      </div>
+      <div class="dropdown-menu" style="float: left;">
+        <b>Filter</b>
+        <ul>
+          <li><a href="$qurl(sortclass = None)"><img src="${static_prefix}tf_icon.png" alt="All" title="All"/> All</a></li>
+          $for k in sorted(filter_classes):
+              <li>
+                <a href="$qurl(sortclass = k)">
+                  <img src="${static_prefix}${k}_icon.png" alt="${k}" title="${k}"/> $k
+                </a>
+              </li>
+        </ul>
+      </div>
+    </div>
+    <div class="tool" style="float: right; border-right: none;">
+      <a href="$perma" rel="bookmark">
+        <img src="${static_prefix}plink_icon.png" alt="Permalink" title="Link to this page"/>
+      </a>
+      <a href="$rss">
+        <img src="${static_prefix}feed_icon.png" alt="RSS" title="Subscribe to an RSS feed of this backpack"/>
+      </a>
+    </div>
   </div>
 </div>
 <div id="content">
   $if len(items) <= 0 and len(baditems) <= 0:
       <h2>Empty!</h2>
-  <div id="backpack" style="width: 1090px;">
+  <div id="backpack" style="width: 1040px;">
   $ cell_count = 0
   $ x_count = 0
   $if len(baditems) > 0:
