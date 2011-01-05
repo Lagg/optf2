@@ -7,13 +7,7 @@ $ perma = "{0}user/{1}".format(virtual_root, user.get_id64())
 $ rss = "{0}feed/{1}".format(virtual_root, user.get_id64())
 $def insert_name(pack, item):
     $:item["optf2_cell_name"]
-    $ item_color = item.get("optf2_color")
-    $if item_color:
-        $if item_color.startswith("url"):
-            $ item_color = "#FF00FF"
-        $ painty = '<span style="color: {0}; font-weight: bold;">Painted</span>'.format(item_color)
-    $else:
-        $ painty = ""
+    $ painty = item.get("optf2_painted_text", "")
     <div class="item_level">Level $pack.get_item_level(item) $:painty $pack.get_item_type(item)</div>
 $def insert_cell(pack, item, user, sortby, invalid = False):
       $if not item:

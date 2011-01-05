@@ -269,7 +269,10 @@ def process_attributes(items):
         if color:
             if color.startswith("url"):
                 color = "#FF00FF"
-            paint_job = '<span style="color: {0}; font-weight: bold;">Painted</span>'.format(color)
+                paint_job = '<span><b style="color: #B8383B;">Pain</b><b style="color: #5885A2;">ted</b></span>'
+            else:
+                paint_job = '<span style="color: {0}; font-weight: bold;">Painted</span>'.format(color)
+        item["optf2_painted_text"] = paint_job
         item["optf2_dedicated_name"] = "{0} {1} {2}".format(paint_job, prefix, item_name)
 
         if color:
@@ -282,7 +285,6 @@ def process_attributes(items):
             paint_job = ""
         if prefix:
             prefix = qualitydict.get(quality_str, pretty_quality_str)
-
         item["optf2_feed_name"] = "{0} {1} {2}".format(prefix, item_name, paint_job)
 
     return items

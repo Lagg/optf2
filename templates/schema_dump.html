@@ -21,12 +21,8 @@ $var title: $project_name - All Items
   $for item in items:
       $ item_link = "{0}item/{1}".format(virtual_root, pack.get_item_schema_id(item))
       $ qitem = pack.get_item_quality(item)["str"]
-      $ painty = item.get("optf2_color", "")
+      $ painty = item.get("optf2_painted_text", "")
       $ item_id = pack.get_item_schema_id(item)
-      $if painty:
-          $if painty.startswith("url"):
-              $ painty = "#FF00FF"
-          $ painty = '<span style="color: {0}; font-weight: bold;">Painted</span>'.format(painty)
       <div class="item_cell" id="s${item_id}">
         $:item["optf2_cell_name"]
         <div class="item_level">Level $item["optf2_level"] $:painty $pack.get_item_type(item)</div>
