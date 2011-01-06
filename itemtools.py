@@ -98,9 +98,9 @@ def sort(items, sortby):
         items.sort(cmp = itemcmp)
     if sortby == "cell":
         cursize = config.backpack_padded_size
-        newitems = [None] * cursize
+        newitems = [None] * (cursize + 1)
         for item in items:
-            pos = pack.get_item_position(item) - 1
+            pos = pack.get_item_position(item)
             try:
                 if pos > cursize:
                     while pos > cursize:
@@ -109,6 +109,7 @@ def sort(items, sortby):
                 if pos > -1 and newitems[pos] == None:
                     newitems[pos] = deepcopy(item)
             except IndexError: pass
+        del newitems[0]
         return newitems
     else:
         if len(items) < config.backpack_padded_size:
