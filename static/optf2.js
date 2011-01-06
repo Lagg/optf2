@@ -1,9 +1,34 @@
+var deftop;
+
 $(document).ready(function(){
     $(".item_link").removeAttr("href");
     var cells = $(".item_cell, .item_cell_undropped");
     cells.each(function() {
         $(this).click(function() {
             item_open(this.id.slice(1));
+        });
+        $(this).hover(function() {
+            var attribs = $(this).find(".item_attribs");
+            if (attribs.length) {
+                var scrollh = $(document).scrollTop();
+                /* When a browser supports something simple yet non-standard like
+                   window.innerHeight, IE has to be ULTRA non-standard.
+                */
+                var windowh = window.innerHeight;
+                if (typeof(window) != "number") {
+                    windowh = document.documentElement.clientHeight;
+                }
+                var offsety = attribs.offset().top;
+                var threshold = (scrollh + windowh);
+                var posbottom = (offsety + attribs.height());
+
+                if (posbottom > threshold) {
+                    deftop = attribs.css("top");
+                    attribs.css("top", -attribs.height() - 15);
+                } else {
+                    attribs.css("top", deftop);
+                }
+            }
         });
     });
 });
