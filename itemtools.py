@@ -30,6 +30,28 @@ particledict = {0: "Invalid Particle",
 
 pack = steam.backpack()
 
+def generate_full_item_name(item, ignore_qdict = False):
+    """ Ignores the values in qualitydict if ignore_qdict is True """
+    quality_str = pack.get_item_quality(item)["str"]
+    pretty_quality_str = pack.get_item_quality(item)["prettystr"]
+    custom_name = pack.get_item_custom_name(item)
+    item_name = pack.get_item_name(item)
+
+    if ignore_qdict:
+        prefix = pretty_quality_str + " "
+    else:
+        prefix = qualitydict.get(quality_str, pretty_quality_str) + " "
+
+    if item_name.find("The ") != -1 and pack.is_item_prefixed(item):
+        item_name = item_name[4:]
+
+    if custom_name or (not pack.is_item_prefixed(item) and quality_str == "unique"):
+        prefix = ""
+    if custom_name:
+        item_name = custom_name
+
+    return prefix + item_name
+
 def absolute_url(relative_url):
     domain = web.ctx.homedomain
     if domain.endswith('/'): domain = domain[:-1]
@@ -77,8 +99,8 @@ def sort(items, sortby):
                           pack.get_item_level(y))
     elif sortby == "name":
         def itemcmp(x, y):
-            return defcmp(pack.get_item_quality(x)["str"] + " " + pack.get_item_name(x),
-                          pack.get_item_quality(y)["str"] + " " + pack.get_item_name(y))
+            return defcmp(generate_full_item_name(x),
+                          generate_full_item_name(y))
     elif sortby == "slot":
         def itemcmp(x, y):
             return defcmp(pack.get_item_slot(x), pack.get_item_slot(y))
@@ -245,26 +267,11 @@ def process_attributes(items):
             item["optf2_attrs"].append(deepcopy(attr))
 
         quality_str = pack.get_item_quality(item)["str"]
-        pretty_quality_str = pack.get_item_quality(item)["prettystr"]
-        prefix = qualitydict.get(quality_str, pretty_quality_str)
-        custom_name = pack.get_item_custom_name(item)
-        item_name = pack.get_item_name(item)
+        full_qdict_name = generate_full_item_name(item)
+        full_default_name = generate_full_item_name(item, True)
 
-        if item_name.find("The ") != -1 and pack.is_item_prefixed(item):
-            item_name = item_name[4:]
+        item["optf2_cell_name"] = '<div class="{0}_name item_name">{1}</div>'.format(quality_str, full_qdict_name)
 
-        if custom_name or (not pack.is_item_prefixed(item) and quality_str == "unique"):
-            prefix = ""
-        if custom_name:
-            item_name = custom_name
-
-        item["optf2_cell_name"] = '<div class="{0}_name item_name">{1} {2}</div>'.format(
-            quality_str, prefix, item_name)
-
-        if custom_name or (not pack.is_item_prefixed(item) and quality_str == "unique"):
-            prefix = ""
-        else:
-            prefix = pretty_quality_str
         color = item.get("optf2_color")
         paint_job = ""
         if color:
@@ -274,19 +281,17 @@ def process_attributes(items):
             else:
                 paint_job = '<span style="color: {0}; font-weight: bold;">Painted</span>'.format(color)
         item["optf2_painted_text"] = paint_job
-        item["optf2_dedicated_name"] = "{0} {1} {2}".format(paint_job, prefix, item_name)
+        item["optf2_dedicated_name"] = "{0} {1}".format(paint_job, full_default_name)
 
         if color:
             paint_job = "Painted"
-        item["optf2_title_name"] = "{0} {1} {2}".format(paint_job, prefix, item_name)
+        item["optf2_title_name"] = "{0} {1}".format(paint_job, full_default_name)
 
         if color:
             paint_job = "(Painted)"
         else:
             paint_job = ""
-        if prefix:
-            prefix = qualitydict.get(quality_str, pretty_quality_str)
-        item["optf2_feed_name"] = "{0} {1} {2}".format(prefix, item_name, paint_job)
+        item["optf2_feed_name"] = "{0} {1}".format(full_qdict_name, paint_job)
 
     return items
 
