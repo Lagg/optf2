@@ -66,20 +66,34 @@ def refresh_pack_cache(user):
 
     with database_obj.transaction():
         backpack_items = []
+        data = []
+        thequery = web.db.SQLQuery("INSERT INTO items (id64, " +
+                                   "owner, sid, level, untradeable, " +
+                                   "token, quality, custom_name, " +
+                                   "custom_desc, attributes, quantity) VALUES ")
         for item in pack.get_items():
             backpack_items.append(pack.get_item_id(item))
-            database_obj.query("INSERT IGNORE INTO items (id64) VALUES ($id64)", vars = {"id64": pack.get_item_id(item)})
-            database_obj.update("items", where = "id64 = $id64", vars = {"id64": pack.get_item_id(item)},
-                                owner = user.get_id64(),
-                                sid = pack.get_item_schema_id(item),
-                                level = pack.get_item_level(item),
-                                untradeable = pack.is_item_untradeable(item),
-                                token = pack.get_item_inventory_token(item),
-                                quality = pack.get_item_quality(item)["id"],
-                                custom_name = pack.get_item_custom_name(item),
-                                custom_desc = pack.get_item_custom_description(item),
-                                attributes = buffer(pickle.dumps(pack.get_item_attributes(item))),
-                                quantity = pack.get_item_quantity(item))
+
+            row = [pack.get_item_id(item), user.get_id64(), pack.get_item_schema_id(item),
+                   pack.get_item_level(item), pack.is_item_untradeable(item),
+                   pack.get_item_inventory_token(item), pack.get_item_quality(item)["id"],
+                   pack.get_item_custom_name(item), pack.get_item_custom_description(item),
+                   pickle.dumps(pack.get_item_attributes(item)), pack.get_item_quantity(item)]
+
+            d = []
+            for col in row: d.append(web.db.SQLParam(col))
+            data.append('(' + web.db.SQLQuery.join(d, ', ') + ')')
+
+        thequery += web.db.SQLQuery.join(data, ', ')
+        thequery += (" ON DUPLICATE KEY UPDATE id64=VALUES(id64), " +
+                     "owner=VALUES(owner), sid=VALUES(sid), level=VALUES(level), " +
+                     "untradeable=VALUES(untradeable), token=VALUES(token), " +
+                     "quality=VALUES(quality), custom_name=VALUES(custom_name), " +
+                     "custom_desc=VALUES(custom_desc), attributes=VALUES(attributes), " +
+                     "quantity=VALUES(quantity)")
+
+        if len(data) > 0:
+            database_obj.query(thequery)
 
         lastpack = list(database_obj.select("backpacks", what = "backpack",
                                             where="id64 = $id64",
