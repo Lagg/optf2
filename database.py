@@ -80,9 +80,7 @@ def refresh_pack_cache(user):
                    pack.get_item_custom_name(item), pack.get_item_custom_description(item),
                    pickle.dumps(pack.get_item_attributes(item)), pack.get_item_quantity(item)]
 
-            d = []
-            for col in row: d.append(web.db.SQLParam(col))
-            data.append('(' + web.db.SQLQuery.join(d, ', ') + ')')
+            data.append('(' + web.db.SQLQuery.join([web.db.SQLParam(ival) for ival in row], ', ') + ')')
 
         thequery += web.db.SQLQuery.join(data, ', ')
         thequery += (" ON DUPLICATE KEY UPDATE id64=VALUES(id64), " +
@@ -158,9 +156,16 @@ def load_pack_cached(user, stale = False):
             thepack = fetch_pack_for_user(user)
     if thepack:
         with database_obj.transaction():
-            for item in pickle.loads(str(thepack["backpack"])):
-                dbitem = database_obj.select("items", where = "id64 = $id64",
-                                       vars =  {"id64": item})[0]
-                theitem = db_to_itemobj(dbitem)
+            query = web.db.SQLQuery("SELECT * FROM items WHERE id64=")
+            items = pickle.loads(str(thepack["backpack"]))
+            dbitems = []
+
+            query += web.db.SQLQuery.join([web.db.SQLParam(id64) for id64 in items], " OR id64=")
+
+            if len(items) > 0:
+                dbitems = database_obj.query(query)
+
+            for item in dbitems:
+                theitem = db_to_itemobj(item)
                 packresult.append(deepcopy(theitem))
         return packresult
