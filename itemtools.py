@@ -50,7 +50,10 @@ def generate_full_item_name(item, ignore_qdict = False):
     if custom_name:
         item_name = custom_name
 
-    return prefix + item_name
+    if ignore_qdict and (quality_str == "unique" or quality_str == "normal"):
+        return item_name
+    else:
+        return prefix + item_name
 
 def absolute_url(relative_url):
     domain = web.ctx.homedomain
