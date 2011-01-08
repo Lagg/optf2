@@ -109,17 +109,24 @@ def refresh_pack_cache(user):
         return pack.get_items()
     return None
 
-def fetch_pack_for_user(user, date = None):
-    """ Returns None if a backpack couldn't be found """
-    packrow = database_obj.select("backpacks",
-                                  where = "id64 = $id64",
-                                  order = "timestamp DESC",
-                                  vars = {"id64": user.get_id64()})
+def fetch_pack_for_user(user, date = None, tl_size = None):
+    """ Returns None if a backpack couldn't be found, returns
+    tl_size rows from the timeline
+    """
+    packrow = list(database_obj.select("backpacks",
+                                       where = "id64 = $id64",
+                                       order = "timestamp DESC",
+                                       limit = tl_size,
+                                       vars = {"id64": user.get_id64()}))
+
+    if tl_size: return packrow
+
     for pack in packrow:
         if not date:
             return pack
-        if packrow["timestamp"] == date:
+        if str(pack["timestamp"]) == str(date):
             return pack
+    if len(packrow) > 0: return packrow[0]
 
 def db_to_itemobj(dbitem):
     theitem = {"id": dbitem["id64"],
@@ -144,10 +151,10 @@ def fetch_item_for_id(iid):
     except IndexError:
         return None
 
-def load_pack_cached(user, stale = False):
+def load_pack_cached(user, stale = False, date = None):
     packresult = []
-    thepack = fetch_pack_for_user(user)
-    if not stale:
+    thepack = fetch_pack_for_user(user, date = date)
+    if not stale and not date:
         if not cache_not_stale(thepack):
             try:
                 return refresh_pack_cache(user)

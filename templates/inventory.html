@@ -1,4 +1,4 @@
-$def with (user, pack, isvalve, items, views, filter_classes, sortby, baditems, stats)
+$def with (user, pack, isvalve, items, views, filter_classes, sortby, baditems, stats, timestamps)
 $ usern = user.get_persona()
 $ profileurl = user.get_profile_url()
 $ realn = user.get_real_name()
@@ -122,6 +122,14 @@ $def insert_cell(pack, item, user, sortby, invalid = False):
                   <img src="${static_prefix}${k}_icon.png" alt="${k}" title="${k}"/> $k
                 </a>
               </li>
+        </ul>
+      </div>
+      <div class="dropdown-menu" style="float: left;">
+        <b>Timeline</b>
+        <ul style="min-width: 170px;">
+          <li><a href="$qurl(time = None)">Now</a></li>
+          $for ts in timestamps:
+              <li><a href="$qurl(time = ts[0])">$ts[1]</a></li>
         </ul>
       </div>
     </div>

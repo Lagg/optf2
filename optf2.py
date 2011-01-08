@@ -30,6 +30,7 @@ try:
     steam.set_language(config.language)
     steam.set_cache_dir(config.cache_file_dir)
     import database, itemtools
+    import time
 except ImportError as E:
     print(str(E))
     raise SystemExit
@@ -65,7 +66,8 @@ render_globals = {"css_url": config.css_url,
                   "wiki_url": "http://wiki.teamfortress.com/wiki/",
                   "news_url": config.news_url,
                   "qurl": web.http.changequery,
-                  "sorted": sorted
+                  "sorted": sorted,
+                  "iurl": web.input
                   }
 
 app = web.application(urls, globals())
@@ -281,9 +283,15 @@ class pack_fetch:
         query = web.input()
         sortby = query.get("sort", "cell")
         sortclass = query.get("sortclass")
+        packtime = query.get("time")
 
         try:
-            items = database.load_pack_cached(user)
+            items = database.load_pack_cached(user, date = packtime)
+
+            timestamps = []
+            for ts in database.fetch_pack_for_user(user, tl_size = 10):
+                prettyts = time.ctime(ts["timestamp"])
+                timestamps.append([ts["timestamp"], prettyts])
 
             filter_classes = itemtools.get_equippable_classes(items)
             if sortclass:
@@ -338,7 +346,7 @@ class pack_fetch:
 
         web.ctx.env["optf2_rss_url"] = "{0}feed/{1}".format(config.virtual_root, uid64)
         web.ctx.env["optf2_rss_title"] = "{0}'s Backpack".format(user.get_persona())
-        return templates.inventory(user, pack, isvalve, items, views, filter_classes, sortby, baditems, stats)
+        return templates.inventory(user, pack, isvalve, items, views, filter_classes, sortby, baditems, stats, timestamps)
 
     def GET(self, sid):
         return self._get_page_for_sid(sid)
