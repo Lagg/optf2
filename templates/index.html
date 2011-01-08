@@ -2,22 +2,7 @@ $def with (countlist)
 $var title: $project_name
 
 <script type="text/javascript"><!--
-function completion_magic (req, resp) {
-  var finalcomp = new Array ();
-  $$.getJSON ("${virtual_root}comp/" + req.term, function (data, status) {
-    for (var i = 0; i < data.length; i++) {
-        finalcomp.push({label: data[i]["persona"], value: data[i]["id"]});
-    }
-
-    resp (finalcomp.slice (0, 20));
-
-  });
-}
-$$(document).ready(function() {
-$$("#user").autocomplete({
-  minLength: 2,
-  source: completion_magic
-})});
+$$(document).ready(function() { autocomplete_attach("#user"); });
 --></script>
 
 <div id="logo">

@@ -79,12 +79,13 @@ function item_open_success(data, status, xhr) {
 }
 
 function item_open(item_id) {
-    var item_url = "/item/" + item_id;
+    var item_url = virtual_root + "item/" + item_id;
     var loading_id = "loading_" + item_id;
     var cell_id = $("#s" + item_id);
-    if (cell_id.find("#" + loading_id).length <= 0) {
-        cell_id.prepend("<div id=\"" + loading_id + "\"><b>Loading...</b></div>");
+    if (cell_id.find("#" + loading_id).length > 0) {
+        return;
     }
+    cell_id.prepend("<div id=\"" + loading_id + "\"><b>Loading...</b></div>");
     var oldcontent = $("body").find(".dedicated_item");
     var reallyoldcontent = null;
     for (var i = 0; i < oldcontent.length; i++) {
@@ -100,4 +101,27 @@ function item_open(item_id) {
     } else {
         $.get(item_url, item_open_success, {}, "html");
     }
+}
+
+function autocomplete_magic(req, resp) {
+  var finalcomp = new Array ();
+  $.getJSON (virtual_root + "comp/" + req.term, function (data, status) {
+      for (var i = 0; i < data.length; i++) {
+          itemdata = data[i]
+          itemlabel = itemdata["persona"];
+          if (itemdata["id_type"] == "id") {
+              itemlabel += " (" + itemdata["id"] + ')';
+          }
+          finalcomp.push({label: itemlabel, value: itemdata["id"]});
+      }
+
+      resp (finalcomp.slice (0, 20));
+  });
+}
+
+function autocomplete_attach(uid) {
+    $("#user").autocomplete({
+        minLength: 2,
+        source: autocomplete_magic
+    });
 }
