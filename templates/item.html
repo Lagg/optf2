@@ -5,7 +5,11 @@ $if not user:
 $else:
     $ usern = user.get_persona() + "'s"
 $var title: $project_name - $usern $item["optf2_title_name"]
-
+$def generate_class_icon_link(classes):
+    $for ec in classes:
+        <a href="${wiki_url + ec}">
+          <img src="${static_prefix}${ec}_icon.png" title="$ec" alt="$ec"/>
+        </a>&nbsp;
 <div id="header">
   <h1 class="${qitem['str']}_name">
     $if not user:
@@ -68,10 +72,7 @@ $var title: $project_name - $usern $item["optf2_title_name"]
         $ equipped = pack.get_item_equipped_classes(item)
         Equipped: \
         $if len(equipped) > 0:
-            $for ec in equipped:
-                <a href="${wiki_url + ec}">
-                  <img src="${static_prefix}${ec}_icon.png" title="$ec" alt="$ec"/>
-                </a>&nbsp;
+            $:generate_class_icon_link(equipped)
         $else:
             No
       </div>
@@ -88,6 +89,14 @@ $var title: $project_name - $usern $item["optf2_title_name"]
       <div class="item_neutral_attr">
         $ schema_id = pack.get_item_schema_id(item);
         ID: <span id="item_id">$schema_id</span>
+      </div>
+      <div class="item_neutral_attr">
+        $ equipable = pack.get_item_equipable_classes(item)
+        Classes: \
+        $if len(equipable) <= 0 or not equipable[0]:
+            Not equipable
+        $else:
+            $:generate_class_icon_link(equipable)
       </div>
   <br/><a href="$item_wiki_url">Official TF2 Wiki Article</a>
   </div>
