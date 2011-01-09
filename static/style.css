@@ -17,9 +17,8 @@ body { background: #303030; color: white; font-family: Arial, Helvetica, sans-se
     border: 1px solid #000000;
     margin: 3px;
     background: #3c352e;
-    width: 150px;
-    height: 150px;
-    padding: 10px;
+    width: 95px;
+    height: 95px;
     text-align: center;
     float: left;
     position: relative;
@@ -40,10 +39,9 @@ body { background: #303030; color: white; font-family: Arial, Helvetica, sans-se
 .selfmade_cell { border-color: #79be50; }
 .vintage_cell { border-color: #6186c5; }
 .rarity4_cell { border-color: #a965d9; }
-.minimal_cell { width: 95px; height: 95px; padding: 0; }
-.gift_icon_minimal { position: absolute; right: 53px; top: 3px; }
-.desc_icon_minimal { position: absolute; right: 27px; top: 3px; }
-.name_icon_minimal { position: absolute; right: 2px; top: 3px; }
+.gift_icon { position: absolute; right: 53px; top: 3px; }
+.desc_icon { position: absolute; right: 27px; top: 3px; }
+.name_icon { position: absolute; right: 2px; top: 3px; }
 .paint_splotch {
     position: absolute;
     top: 6px; left: 6px;
@@ -76,7 +74,7 @@ body { background: #303030; color: white; font-family: Arial, Helvetica, sans-se
 .item_cell:hover .item_attribs, .item_cell_undropped:hover .item_attribs {
     display: block;
     position: absolute;
-    top: 170px;
+    top: 90px;
     min-width: 15em;
     background: black;
     -moz-border-radius: 10px;

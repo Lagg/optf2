@@ -29,22 +29,21 @@ $def insert_cell(pack, item, user, sortby, invalid = False):
           $ cell_class = "item_cell_undropped"
       $else:
           $ cell_class = "item_cell"
-      <div class="$cell_class ${quality}_cell minimal_cell" id="s${item_id}">
+      <div class="$cell_class ${quality}_cell" id="s${item_id}">
         <a class="item_link" href="$item_link">
           <img class="item_image_small" src="$item['optf2_image_url']" alt="$pack.get_item_name(item)"/>
         </a>
-        $ icon_suffix = "_minimal"
         $if pack.get_item_custom_name(item):
-            <img src="${static_prefix}name_tag.png" class="name_icon${icon_suffix}" alt="Named"/>
+            <img src="${static_prefix}name_tag.png" class="name_icon" alt="Named"/>
         $if pack.get_item_custom_description(item):
-            <img src="${static_prefix}desc_tag.png" class="desc_icon${icon_suffix}"  alt="Described"/>
+            <img src="${static_prefix}desc_tag.png" class="desc_icon"  alt="Described"/>
         $if "optf2_gift_from" in item:
-            <img src="${static_prefix}gift_icon.png" class="gift_icon${icon_suffix}"  alt="Gift"/>
+            <img src="${static_prefix}gift_icon.png" class="gift_icon"  alt="Gift"/>
         $if "optf2_color" in item:
             <span class="paint_splotch" style="background: $item['optf2_color'];">&nbsp;</span>
         $if equippedstr:
             <span class="equipped">$equippedstr</span>
-        <div class="item_attribs" style="top: 90px;">
+        <div class="item_attribs">
           $:insert_name(pack, item)
         $if item["optf2_description"]:
               <div class="item_neutral_attr" style="font-weight: normal;">
