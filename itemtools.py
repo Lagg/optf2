@@ -208,23 +208,26 @@ def process_attributes(items):
                 item["optf2_untradeable"] = True
                 continue
 
+            # Contained item is a schema id, this is an incredibly
+            # ugly hack but I'm too stubborn to make DB changes for this
+            if pack.get_attribute_name(attr) == "referenced item def":
+                giftcontents = pack.get_attribute_value(attr)
+
+                if not isinstance(giftcontents, dict):
+                    giftcontents = pack.get_item_by_schema_id(int(giftcontents))
+
+                item["optf2_gift_content"] = generate_full_item_name(giftcontents)
+                item["optf2_gift_content_id"] = pack.get_item_schema_id(giftcontents)
+                item["optf2_gift_quality"] = pack.get_item_quality(giftcontents)["str"]
+
+                attr["description_string"] = 'Contains ' + item["optf2_gift_content"]
+                attr["hidden"] = False
+
             # Workaround until Valve gives sane values
             if (pack.get_attribute_value_type(attr) != "date" and
                 attr["value"] > 1000000000 and
                 "float_value" in attr):
                 attr["value"] = attr["float_value"]
-
-            # Contained item is a schema id
-            if pack.get_attribute_name(attr) == "referenced item def":
-                sival = int(pack.get_attribute_value(attr))
-                sitem = pack.get_item_by_schema_id(sival)
-                item["optf2_gift_content"] = "an invalid item"
-
-                if item:
-                    item["optf2_gift_content"] = pack.get_item_name(sitem)
-                    item["optf2_gift_content_id"] = sival
-                attr["description_string"] = 'Contains ' + item["optf2_gift_content"]
-                attr["hidden"] = False
 
             if pack.get_attribute_name(attr) == "set item tint RGB":
                 raw_rgb = int(pack.get_attribute_value(attr))

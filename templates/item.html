@@ -48,7 +48,8 @@ $def generate_class_icon_link(classes):
         $if "optf2_gift_from" in item and pack.get_attribute_name(attr) == "gifter account id":
             Gift from <a href="${virtual_root}user/${item['optf2_gift_from']}">$item["optf2_gift_from_persona"]</a>
         $elif "optf2_gift_content" in item and pack.get_attribute_name(attr) == "referenced item def":
-            Contains <a href="${virtual_root}item/${item['optf2_gift_content_id']}">$item["optf2_gift_content"]</a>
+            Contains <span class="${item['optf2_gift_quality']}_name">$item["optf2_gift_content"]</span>
+            <a href="${virtual_root}item/${item['optf2_gift_content_id']}">(more)</a>
         $else:
             $:desc.replace("\n", "<br/>")
       </div>

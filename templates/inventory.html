@@ -52,7 +52,10 @@ $def insert_cell(pack, item, user, sortby, invalid = False):
               </div>
         $for attr in item["optf2_attrs"]:
               <div class="item_${pack.get_attribute_type(attr)}_attr">
-                $:pack.format_attribute_description(attr).replace("\n", "<br/>")
+                $if "optf2_gift_content" in item and pack.get_attribute_name(attr) == "referenced item def":
+                    Contains <span class="${item['optf2_gift_quality']}_name">$item["optf2_gift_content"]</span>
+                $else:
+                    $:pack.format_attribute_description(attr).replace("\n", "<br/>")
               </div>
         $if item["optf2_untradeable"]:
               <div class="item_neutral_attr">

@@ -67,18 +67,31 @@ def refresh_pack_cache(user):
     with database_obj.transaction():
         backpack_items = []
         data = []
+        packitems = pack.get_items()
         thequery = web.db.SQLQuery("INSERT INTO items (id64, " +
                                    "owner, sid, level, untradeable, " +
                                    "token, quality, custom_name, " +
                                    "custom_desc, attributes, quantity) VALUES ")
-        for item in pack.get_items():
+        for item in packitems:
             backpack_items.append(pack.get_item_id(item))
+            attribs = pack.get_item_attributes(item)
+
+            # Replace gift contents sid with item dict
+            contents = pack.get_item_contents(item)
+            if contents:
+                for attr in attribs:
+                    # referenced item def
+                    if pack.get_attribute_id(attr) == 194:
+                        attr["value"] = deepcopy(contents)
+                        break
+            if "attributes" in item:
+                item["attributes"]["attribute"] = deepcopy(attribs)
 
             row = [pack.get_item_id(item), user.get_id64(), pack.get_item_schema_id(item),
                    pack.get_item_level(item), pack.is_item_untradeable(item),
                    pack.get_item_inventory_token(item), pack.get_item_quality(item)["id"],
                    pack.get_item_custom_name(item), pack.get_item_custom_description(item),
-                   pickle.dumps(pack.get_item_attributes(item)), pack.get_item_quantity(item)]
+                   pickle.dumps(attribs), pack.get_item_quantity(item)]
 
             data.append('(' + web.db.SQLQuery.join([web.db.SQLParam(ival) for ival in row], ', ') + ')')
 
@@ -106,7 +119,7 @@ def refresh_pack_cache(user):
                                          vars = {"id64": user.get_id64()})[0]["ts"]
             database_obj.update("backpacks", where = "id64 = $id64 AND timestamp = $ts",
                                 timestamp = ts, vars = {"id64": user.get_id64(), "ts": lastts})
-        return pack.get_items()
+        return packitems
     return None
 
 def fetch_pack_for_user(user, date = None, tl_size = None):
