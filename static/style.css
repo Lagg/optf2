@@ -26,9 +26,9 @@ body { background: #303030; color: white; font-family: Arial, Helvetica, sans-se
     cursor: pointer;
     /* Yes I'm using non-standard properties. Better than wasting bandwidth
        with corner images */
-    -moz-border-radius: 15px;
-    -webkit-border-radius: 15px;
-    border-radius: 15px;
+    -moz-border-radius: 13px;
+    -webkit-border-radius: 13px;
+    border-radius: 13px;
 }
 .item_cell_undropped { background: #302323; }
 
