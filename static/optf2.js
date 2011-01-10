@@ -1,11 +1,10 @@
-var deftop;
-
 $(document).ready(function(){
     $(".item_link").removeAttr("href");
     var cells = $(".item_cell, .item_cell_undropped");
 
     cells.hover(function() {
         var attribs = $(this).find(".item_attribs");
+        attribs.show();
         if (attribs.length) {
             var scrollh = $(document).scrollTop();
             /* When a browser supports something simple yet non-standard like
@@ -20,12 +19,20 @@ $(document).ready(function(){
             var posbottom = (offsety + attribs.height());
 
             if (posbottom > threshold) {
-                deftop = attribs.css("top");
+                this.deftop = attribs.css("top");
                 attribs.css("top", -attribs.height() - 17);
             } else {
-                attribs.css("top", deftop);
+                attribs.css("top", this.deftop);
             }
         }
+    }, function() {
+        attribs = $(this).find(".item_attribs");
+        attribs.css("top", this.deftop);
+        attribs.hide();
+    });
+
+    $(document).scroll(function() {
+        $(".item_attribs").hide();
     });
 
     cells.click(function() {
