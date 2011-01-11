@@ -27,6 +27,8 @@ $var title: $project_name - All Items
         <a class="item_link" href="$item_link">
           <img class="item_image_small" src="$item['optf2_image_url']" alt="$pack.get_item_name(item)"/>
         </a>
+        $if "optf2_color" in item:
+            <span class="paint_splotch" style="background: $item['optf2_color'];">&nbsp;</span>
         <div class="item_attribs">
           $:item["optf2_cell_name"]
           <div class="item_level">Level $item["optf2_level"] $:painty $pack.get_item_type(item)</div>
