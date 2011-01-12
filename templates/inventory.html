@@ -1,4 +1,4 @@
-$def with (user, pack, isvalve, items, views, filter_classes, sortby, baditems, stats, timestamps)
+$def with (user, pack, isvalve, items, views, filter_classes, sortby, baditems, stats, timestamps, filter_qualities)
 $ usern = user.get_persona()
 $ profileurl = user.get_profile_url()
 $ realn = user.get_real_name()
@@ -25,10 +25,8 @@ $def insert_cell(pack, item, user, sortby, invalid = False):
               $ equippedstr += "{0}".format(quantity)
           $else:
               $ equippedstr += "({0})".format(quantity)
-      $if pack.get_item_position(item) <= -1:
-          $ cell_class = "item_cell_undropped"
-      $else:
-          $ cell_class = "item_cell"
+      $ cell_class = "item_cell"
+      $if pack.get_item_position(item) <= -1: $ cell_class += " undropped"
       <div class="$cell_class ${quality}_cell" id="s${item_id}">
         <a class="item_link" href="$item_link">
           <img class="item_image_small" src="$item['optf2_image_url']" alt="$pack.get_item_name(item)"/>
@@ -115,15 +113,27 @@ $def insert_cell(pack, item, user, sortby, invalid = False):
         </ul>
       </div>
       <div class="dropdown-menu" style="float: left;">
-        <b>Filter</b>
+        <b>Class</b>
         <ul>
           <li><a href="$qurl(sortclass = None)"><img src="${static_prefix}tf_icon.png" alt="All" title="All"/> All</a></li>
-          $for k in sorted(filter_classes):
+          $for k in filter_classes:
               <li>
                 <a href="$qurl(sortclass = k)">
                   <img src="${static_prefix}${k}_icon.png" alt="${k}" title="${k}"/> $k
                 </a>
               </li>
+        </ul>
+      </div>
+      <div class="dropdown-menu" style="float: left;">
+        <b>Quality</b>
+        <ul>
+          <li><a href="$qurl(quality = None)">All</a></li>
+          $ qualities = pack.get_qualities()
+          $for q in filter_qualities:
+              $for qid in qualities:
+                  $if qid["id"] == q:
+                      <li><a href="$qurl(quality = qid['id'])"><span class="$qid['str']_name">$qid["prettystr"]</span></a></li>
+                      $ break
         </ul>
       </div>
       <div class="dropdown-menu" style="float: left;">

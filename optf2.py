@@ -66,7 +66,6 @@ render_globals = {"css_url": config.css_url,
                   "wiki_url": "http://wiki.teamfortress.com/wiki/",
                   "news_url": config.news_url,
                   "qurl": web.http.changequery,
-                  "sorted": sorted,
                   "iurl": web.input
                   }
 
@@ -284,6 +283,7 @@ class pack_fetch:
         sortby = query.get("sort", "cell")
         sortclass = query.get("sortclass")
         packtime = query.get("time")
+        filter_quality = query.get("quality")
 
         try:
             items = database.load_pack_cached(user, date = packtime)
@@ -294,8 +294,11 @@ class pack_fetch:
                 timestamps.append([ts["timestamp"], prettyts])
 
             filter_classes = itemtools.get_equippable_classes(items)
+            filter_qualities = itemtools.get_present_qualities(items)
             if sortclass:
                 items = itemtools.filter_by_class(items, sortclass)
+            if filter_quality:
+                items = itemtools.filter_by_quality(items, filter_quality)
 
             itemtools.process_attributes(items)
             stats = itemtools.get_stats(items)
@@ -346,7 +349,9 @@ class pack_fetch:
 
         web.ctx.env["optf2_rss_url"] = "{0}feed/{1}".format(config.virtual_root, uid64)
         web.ctx.env["optf2_rss_title"] = "{0}'s Backpack".format(user.get_persona())
-        return templates.inventory(user, pack, isvalve, items, views, filter_classes, sortby, baditems, stats, timestamps)
+        return templates.inventory(user, pack, isvalve, items, views,
+                                   filter_classes, sortby, baditems,
+                                   stats, timestamps, filter_qualities)
 
     def GET(self, sid):
         return self._get_page_for_sid(sid)

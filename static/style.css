@@ -1,4 +1,4 @@
-body { background: #303030; color: white; font-family: Arial, Helvetica, sans-serif; font-size: 11px; }
+body { background: #202020; color: white; font-family: Arial, Helvetica, sans-serif; font-size: 11px; }
 
 .item_negative_attr, .item_negative_attr:visited { font-weight: bold; color: #ff0000; }
 .item_positive_attr, .item_positive_attr:visited { font-weight: bold; color: #1a82ff; }
@@ -13,7 +13,7 @@ body { background: #303030; color: white; font-family: Arial, Helvetica, sans-se
 .rarity4_name { color: #a965d9; font-weight: bold; }
 .item_name { overflow: hidden; }
 
-.item_cell, .item_cell_undropped {
+.item_cell {
     border: 1px solid #000000;
     margin: 3px;
     background: #3c352e;
@@ -30,7 +30,7 @@ body { background: #303030; color: white; font-family: Arial, Helvetica, sans-se
     -webkit-border-radius: 13px;
     border-radius: 13px;
 }
-.item_cell_undropped { background: #302323; }
+.item_cell[class~=undropped] { background: #302323; }
 
 .unique_cell { border-color: #ffd700; }
 .community_cell { border-color: #87d459; }
@@ -67,11 +67,11 @@ body { background: #303030; color: white; font-family: Arial, Helvetica, sans-se
 }
 .item_attribs { display: none; cursor: default; overflow: hidden; }
 .item_attribs div { padding: 4px; text-align: center; }
-.item_cell:hover, .item_cell_undropped:hover {
+.item_cell:hover {
     background: #5a4e42;
     z-index: 25;
 }
-.item_cell:hover .item_attribs, .item_cell_undropped:hover .item_attribs {
+.item_cell:hover .item_attribs {
     display: block;
     position: absolute;
     top: 92px;

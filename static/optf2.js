@@ -1,6 +1,6 @@
 $(document).ready(function(){
     $(".item_link").removeAttr("href");
-    var cells = $(".item_cell, .item_cell_undropped");
+    var cells = $(".item_cell");
 
     cells.hover(function() {
         var attribs = $(this).find(".item_attribs");
@@ -20,13 +20,13 @@ $(document).ready(function(){
 
             if (posbottom > threshold) {
                 this.deftop = attribs.css("top");
-                attribs.css("top", -attribs.height() - 17);
+                attribs.css("top", (-attribs.height() - 17) + "px");
             } else {
                 attribs.css("top", this.deftop);
             }
         }
     }, function() {
-        attribs = $(this).find(".item_attribs");
+        var attribs = $(this).find(".item_attribs");
         attribs.css("top", this.deftop);
         attribs.hide();
     });

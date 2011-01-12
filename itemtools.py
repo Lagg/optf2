@@ -153,6 +153,15 @@ def filter_by_class(items, theclass):
                 break
     return filtered_items
 
+def filter_by_quality(items, thequality):
+    filtered_items = []
+
+    for item in items:
+        if not item: continue
+        if str(pack.get_item_quality(item)["id"]) == thequality:
+            filtered_items.append(item)
+    return filtered_items
+
 def get_stats(items):
     """ Returns a dict of various backpack stats """
     stats = {"weapons": 0,
@@ -312,4 +321,17 @@ def get_equippable_classes(items):
         classes = pack.get_item_equipable_classes(item)
         if classes[0]: valid_classes |= set(classes)
 
-    return valid_classes
+    return sorted(list(valid_classes))
+
+def get_present_qualities(items):
+    """ Returns a set of qualities that are in this set
+    of items """
+
+    qualities = set()
+
+    for item in items:
+        if not item: continue
+        quality = pack.get_item_quality(item)
+        qualities.add(quality["id"])
+
+    return sorted(list(qualities))
