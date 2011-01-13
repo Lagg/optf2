@@ -323,15 +323,27 @@ def get_equippable_classes(items):
 
     return sorted(list(valid_classes))
 
+def _quality_sort(x, y):
+    px = x["prettystr"]
+    py = y["prettystr"]
+
+    if px < py: return -1
+    elif px > py: return 1
+    else: return 0
+
 def get_present_qualities(items):
-    """ Returns a set of qualities that are in this set
+    """ Returns a sorted list of qualities that are in this set
     of items """
 
     qualities = set()
+    qlist = []
 
     for item in items:
         if not item: continue
         quality = pack.get_item_quality(item)
-        qualities.add(quality["id"])
+        if quality["id"] not in qualities:
+            qualities.add(quality["id"])
+            qlist.append(quality)
 
-    return sorted(list(qualities))
+    qlist.sort(cmp = _quality_sort)
+    return qlist

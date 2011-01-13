@@ -128,12 +128,8 @@ $def insert_cell(pack, item, user, sortby, invalid = False):
         <b>Quality</b>
         <ul>
           <li><a href="$qurl(quality = None)">All</a></li>
-          $ qualities = pack.get_qualities()
           $for q in filter_qualities:
-              $for qid in qualities:
-                  $if qid["id"] == q:
-                      <li><a href="$qurl(quality = qid['id'])"><span class="$qid['str']_name">$qid["prettystr"]</span></a></li>
-                      $ break
+              <li><a href="$qurl(quality = q['id'])"><span class="$q['str']_name">$q["prettystr"]</span></a></li>
         </ul>
       </div>
       <div class="dropdown-menu" style="float: left;">
