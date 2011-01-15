@@ -157,13 +157,16 @@ $def insert_cell(pack, item, user, sortby, invalid = False):
   <div id="backpack" style="width: 1040px;">
   $ cell_count = 0
   $ x_count = 0
+  $ curpage = 1
   $if len(baditems) > 0:
       $for item in baditems:
           $:insert_cell(pack, item, user, sortby, invalid = True)
       <div style="clear: both; margin-bottom: 20px;">&nbsp;</div>
+  <div id="page-${curpage}"></div>
   $for item in items:
       $if cell_count >= 50:
-          <div style="clear: both; margin: 10px 0 10px 0;">&nbsp;</div>
+          $ curpage += 1
+          <div id="page-${curpage}" style="clear: both; margin: 10px 0 10px 0;">&nbsp;</div>
           $ cell_count = 0
       $if x_count >= 10:
           <span style="clear: both; margin: 0;">&nbsp;</span>
