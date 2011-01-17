@@ -284,6 +284,7 @@ class pack_fetch:
         sortclass = query.get("sortclass")
         packtime = query.get("time")
         filter_quality = query.get("quality")
+        page_number = query.get("page")
 
         try:
             items = database.load_pack_cached(user, date = packtime)
@@ -306,6 +307,17 @@ class pack_fetch:
             baditems = itemtools.get_invalid_pos(items)
 
             items = itemtools.sort(items, sortby)
+
+            total_pages = len(items) / 50
+            if len(items) % 50 != 0:
+                total_pages += 1
+
+            try:
+                page_number = int(page_number)
+                pageoffset = page_number * 50
+                if page_number > 0 and pageoffset <= len(items):
+                    items = items[pageoffset - 50:pageoffset]
+            except: pass
 
             for bitem in baditems:
                 if bitem in items:
@@ -351,7 +363,8 @@ class pack_fetch:
         web.ctx.env["optf2_rss_title"] = "{0}'s Backpack".format(user.get_persona())
         return templates.inventory(user, pack, isvalve, items, views,
                                    filter_classes, sortby, baditems,
-                                   stats, timestamps, filter_qualities)
+                                   stats, timestamps, filter_qualities,
+                                   range(1, total_pages + 1))
 
     def GET(self, sid):
         return self._get_page_for_sid(sid)

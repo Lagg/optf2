@@ -1,4 +1,4 @@
-$def with (user, pack, isvalve, items, views, filter_classes, sortby, baditems, stats, timestamps, filter_qualities)
+$def with (user, pack, isvalve, items, views, filter_classes, sortby, baditems, stats, timestamps, filter_qualities, total_pages)
 $ usern = user.get_persona()
 $ profileurl = user.get_profile_url()
 $ realn = user.get_real_name()
@@ -62,7 +62,7 @@ $def insert_cell(pack, item, user, sortby, invalid = False):
       </div>
 
 <div id="header" style="position: relative;">
-  <div class="toolbar" style="width: 1040px; margin: 0 auto 15px auto; height: 36px;">
+  <div class="toolbar" style="width: 1080px; margin: 0 auto 15px auto; height: 36px;">
   $ cgame = user.get_current_game()
   $ cstatus = user.get_status()
   $if isvalve:
@@ -140,6 +140,14 @@ $def insert_cell(pack, item, user, sortby, invalid = False):
               <li><a href="$qurl(time = ts[0])">$ts[1]</a></li>
         </ul>
       </div>
+      <div class="dropdown-menu" style="float: left;">
+        <b>Page</b>
+        <ul>
+          <li><a href="$qurl(page = None)">Show All</a></li>
+          $for p in total_pages:
+              <li><a href="$qurl(page = p)">$p</a></li>
+        </ul>
+      </div>
     </div>
     <div class="tool" style="float: right; border-right: none;">
       <a href="$rss">
@@ -154,16 +162,13 @@ $def insert_cell(pack, item, user, sortby, invalid = False):
   <div id="backpack" style="width: 1040px;">
   $ cell_count = 0
   $ x_count = 0
-  $ curpage = 1
   $if len(baditems) > 0:
       $for item in baditems:
           $:insert_cell(pack, item, user, sortby, invalid = True)
       <div style="clear: both; margin-bottom: 20px;">&nbsp;</div>
-  <div id="page-${curpage}"></div>
   $for item in items:
       $if cell_count >= 50:
-          $ curpage += 1
-          <div id="page-${curpage}" style="clear: both; margin: 10px 0 10px 0;">&nbsp;</div>
+          <div style="clear: both; margin: 10px 0 10px 0;">&nbsp;</div>
           $ cell_count = 0
       $if x_count >= 10:
           <span style="clear: both; margin: 0;">&nbsp;</span>
