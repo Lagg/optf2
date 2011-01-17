@@ -13,17 +13,12 @@ $def generate_class_icon_link(classes):
 <div id="header">
   <h1 class="${qitem['str']}_name">
     $if not user:
-        $ urlpart = "schema_dump"
         $ plink_user = "from_schema"
-        $ idpart = pack.get_item_schema_id(item)
+        $ urlpart = "schema_dump"
     $else:
         $ plink_user = user.get_id64()
         $ urlpart = "user/{0}".format(plink_user)
-        $ idpart = pack.get_item_id(item)
     <a href="${virtual_root}${urlpart}">$usern</a> $:item["optf2_dedicated_name"]
-    <a href="${virtual_root}item/${idpart}">
-      <img src="${static_prefix}plink_icon.png" alt="Permalink" title="Permalink"/>
-    </a>
   </h1>
 </div>
 <div id="content">
@@ -99,7 +94,7 @@ $def generate_class_icon_link(classes):
         $else:
             $:generate_class_icon_link(equipable)
       </div>
-  <br/><a href="$item_wiki_url">Official TF2 Wiki Article</a>
+  <br/><a href="$item_wiki_url">Official TF Wiki Article</a>
   </div>
   </div>
 </div>

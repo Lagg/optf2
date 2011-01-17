@@ -10,16 +10,15 @@ $(document).ready(function(){
             /* When a browser supports something simple yet non-standard like
                window.innerHeight, IE has to be ULTRA non-standard.
             */
-            var windowh = window.innerHeight;
-            if (typeof(window) != "number") {
-                windowh = document.documentElement.clientHeight;
-            }
+            var windowh = document.documentElement.clientHeight;
             var offsety = attribs.offset().top;
             var threshold = (scrollh + windowh);
             var posbottom = (offsety + attribs.height());
+            if (this.deftop == undefined) {
+                this.deftop = attribs.css("top");
+            }
 
             if (posbottom > threshold) {
-                this.deftop = attribs.css("top");
                 attribs.css("top", (-attribs.height() - 17) + "px");
             } else {
                 attribs.css("top", this.deftop);
@@ -47,25 +46,34 @@ function item_image_resize(img, iw, ih, w, h) {
     img.height(ratio * ih);
 }
 
-function item_resize(event, ui) {
+function item_resize_event(event, ui) {
     var item = $(event.target);
     var image = item.find("#item_image_large");
 
-    item.height(ui.size.height);
-    item.width(ui.size.width);
-    item.find("#stat_vertrule").height(ui.size.height);
+    if (ui.size == undefined) {
+        ui.size = {"height":  item.height(),
+                   "width": item.width()};
+    }
 
     item_image_resize(image, image.width(), image.height(),
                       Math.min(ui.size.width - 200, 512),
                       Math.min(ui.size.height - 100, 512));
+
+    item.height(ui.size.height);
+    item.width(image.width() + item.find("#item_attrs").width() + 50);
+    item.find("#stat_vertrule").height(ui.size.height);
 }
 
 function item_open_success(data, status, xhr) {
     var page = $(data);
-    var dialog_title = page.filter("#header");
+    var dialog_title = page.filter("#header").find("h1");
     var dialog_content = page.filter("#content").find("#item_stats");
     var dialog_width = 850;
-    var dialog_height = 700;
+    var dialog_height = 670;
+    var item_id = dialog_content.find("#item_id").html();
+
+    dialog_content.find("#item_attrs").append("<br/><br/><a href=\"" + virtual_root + "item/" + item_id + "\">Link to this item</a>");
+    dialog_title.css({"font-size": "1.6em", "margin": "0", "padding": "0"});
 
     if ($(window).height() < dialog_height) {
         dialog_height = $(window).height();
@@ -74,13 +82,16 @@ function item_open_success(data, status, xhr) {
         dialog_width = $(window).width();
     }
 
-    $("#loading_" + dialog_content.find("#item_id").html()).remove();
+    $("#loading_" + item_id).remove();
 
     $(dialog_content).dialog({
-        resize: item_resize,
+        resize: item_resize_event,
+        open: item_resize_event,
         title: dialog_title,
         width: dialog_width,
         height: dialog_height,
+        minWidth: 250,
+        minHeight: 200,
         modal: true
     });
 }

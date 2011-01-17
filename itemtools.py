@@ -50,6 +50,8 @@ def generate_full_item_name(item, ignore_qdict = False):
     if custom_name:
         item_name = custom_name
 
+    item_name = web.websafe(item_name)
+
     if ignore_qdict and (quality_str == "unique" or quality_str == "normal"):
         return item_name
     else:
