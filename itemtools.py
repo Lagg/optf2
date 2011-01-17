@@ -141,6 +141,9 @@ def sort(items, sortby):
     else:
         if len(items) < config.backpack_padded_size:
             items += ([None] * (config.backpack_padded_size - len(items)))
+        else:
+            remainder = len(items) % 50
+            if remainder != 0: items += ([None] * (50 - remainder))
     return items
 
 def filter_by_class(items, theclass):
