@@ -173,6 +173,7 @@ def load_pack_cached(user, stale = False, date = None):
                 return refresh_pack_cache(user)
             except urllib2.URLError:
                 pass
+            except: pass
             thepack = fetch_pack_for_user(user)
     if thepack:
         with database_obj.transaction():

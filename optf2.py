@@ -288,6 +288,8 @@ class pack_fetch:
 
         try:
             items = database.load_pack_cached(user, date = packtime)
+            if not items and user.get_visibility() != "public":
+                raise steam.ProfileError("Backpack is private")
 
             timestamps = []
             for ts in database.fetch_pack_for_user(user, tl_size = 10):

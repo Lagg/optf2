@@ -65,9 +65,11 @@ $def insert_cell(pack, item, user, sortby, invalid = False):
   <div class="toolbar" style="width: 1080px; margin: 0 auto 15px auto; height: 36px;">
   $ cgame = user.get_current_game()
   $ cstatus = user.get_status()
+  $ name_suffix = ""
   $if isvalve:
       $ name_suffix = '<img src="{0}valve.png" alt="Valve" title="Valve Employee"/>'.format(static_prefix)
-  $else: $ name_suffix = ''
+  $if user.get_visibility() != "public":
+      $ name_suffix += '<span class="item_negative_attr" style="font-weight: normal;"> (private)</span>'
     <div class="tool" style="padding-right: 0; border: 0;">
       <a href="$profileurl">
         <img src="$user.get_avatar_url(user.AVATAR_SMALL)" alt="$realn" title="$realn"/>
