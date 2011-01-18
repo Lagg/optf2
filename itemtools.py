@@ -206,6 +206,7 @@ def process_attributes(items):
         item["optf2_image_url_large"] = pack.get_item_image(item, pack.ITEM_IMAGE_LARGE)
         min_level = pack.get_item_min_level(item)
         max_level = pack.get_item_max_level(item)
+        pb_level = pack.get_item_level(item)
         custom_desc = pack.get_item_custom_description(item)
 
         if custom_desc: item["optf2_description"] = custom_desc
@@ -214,6 +215,8 @@ def process_attributes(items):
             item["optf2_level"] = str(min_level)
         else:
             item["optf2_level"] = str(min_level) + "-" + str(max_level)
+
+        if pb_level != None: item["optf2_level"] = pb_level
 
         for attr in attrs:
             desc = pack.get_attribute_description(attr)

@@ -259,7 +259,7 @@ class pack_fetch:
             user = database.load_profile_cached(sid)
         except urllib2.URLError:
             return templates.error("Couldn't connect to Steam")
-        except steam.ProfileError:
+        except steam.ProfileError as E:
             search = json.loads(user_completion().GET(sid))
             nuser = None
             for result in search:
@@ -280,7 +280,7 @@ class pack_fetch:
                 except:
                     return templates.error("Failed to load user profile")
             else:
-                return templates.error("Bad profile name")
+                return templates.error("Bad profile name ({0})".format(E))
 
         query = web.input()
         sortby = query.get("sort", "cell")
