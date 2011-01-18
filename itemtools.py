@@ -230,9 +230,11 @@ def process_attributes(items):
                 if not isinstance(giftcontents, dict):
                     giftcontents = pack.get_item_by_schema_id(int(giftcontents))
 
+                giftcontents["optf2_gift_container_id"] = pack.get_item_id(item)
                 item["optf2_gift_content"] = generate_full_item_name(giftcontents)
                 item["optf2_gift_content_id"] = pack.get_item_schema_id(giftcontents)
                 item["optf2_gift_quality"] = pack.get_item_quality(giftcontents)["str"]
+                item["optf2_gift_item"] = giftcontents
 
                 attr["description_string"] = 'Contains ' + item["optf2_gift_content"]
                 attr["hidden"] = False

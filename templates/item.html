@@ -44,7 +44,7 @@ $def generate_class_icon_link(classes):
             Gift from <a href="${virtual_root}user/${item['optf2_gift_from']}">$item["optf2_gift_from_persona"]</a>
         $elif "optf2_gift_content" in item and pack.get_attribute_name(attr) == "referenced item def":
             Contains <span class="${item['optf2_gift_quality']}_name">$item["optf2_gift_content"]</span>
-            <a href="${virtual_root}item/${item['optf2_gift_content_id']}">(more)</a>
+            <a href="${virtual_root}item/${pack.get_item_id(item)}?contents=1">(more)</a>
         $else:
             $:desc.replace("\n", "<br/>")
       </div>
@@ -53,9 +53,13 @@ $def generate_class_icon_link(classes):
         Untradeable
       </div>
   $if user:
-      <div class="item_neutral_attr">
-        Serial: <span id="item_id">$pack.get_item_id(item)</span>
-      </div>
+      $ serial = pack.get_item_id(item)
+      $if not serial:
+          <div class="item_positive_attr">Unopened <a href="${virtual_root}item/${item['optf2_gift_container_id']}">Gift</a></div>
+      $else:
+          <div class="item_neutral_attr">
+            Serial: <span id="item_id">$serial</span>
+          </div>
       <div class="item_neutral_attr">
         $ pos = pack.get_item_position(item)
         Position: \

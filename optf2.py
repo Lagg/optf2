@@ -217,6 +217,9 @@ class pack_item:
                         item_outdated = True
 
             item = itemtools.process_attributes([theitem])[0]
+            if web.input().get("contents"):
+                itemcontents = item.get("optf2_gift_item")
+                if itemcontents: item = itemtools.process_attributes([itemcontents])[0]
         except Exception:
             return templates.item_error_notfound(idl[1])
         except urllib2.URLError:
