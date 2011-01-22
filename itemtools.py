@@ -294,23 +294,29 @@ def process_attributes(items):
         quality_str = pack.get_item_quality(item)["str"]
         full_qdict_name = generate_full_item_name(item)
         full_default_name = generate_full_item_name(item, True)
+        is_gift_contents = "optf2_gift_container_id" in item
 
-        item["optf2_cell_name"] = '<div class="{0}_name item_name">{1}</div>'.format(quality_str, full_qdict_name)
+        item["optf2_cell_name"] = '<div class="prefix-{0} item-name">{1}</div>'.format(quality_str, full_qdict_name)
 
         color = item.get("optf2_color")
         paint_job = ""
+        prefix = ""
         if color:
             if color.startswith("url"):
                 color = "#FF00FF"
                 paint_job = '<span><b style="color: #B8383B;">Pain</b><b style="color: #5885A2;">ted</b></span>'
             else:
                 paint_job = '<span style="color: {0}; font-weight: bold;">Painted</span>'.format(color)
+        if is_gift_contents:
+            prefix = '<span class="prefix-giftwrapped">Giftwrapped</span>'
         item["optf2_painted_text"] = paint_job
-        item["optf2_dedicated_name"] = "{0} {1}".format(paint_job, full_default_name)
+        item["optf2_dedicated_name"] = "{0} {1} {2}".format(prefix, paint_job, full_default_name)
 
         if color:
             paint_job = "Painted"
-        item["optf2_title_name"] = "{0} {1}".format(paint_job, full_default_name)
+        if is_gift_contents:
+            prefix = "Giftwrapped"
+        item["optf2_title_name"] = "{0} {1} {2}".format(prefix, paint_job, full_default_name)
 
         if color:
             paint_job = "(Painted)"

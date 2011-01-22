@@ -50,7 +50,7 @@ def load_profile_cached(sid, stale = False):
                     user.load_summary_file(pfile)
                     return user
             return user
-        except IndexError:
+        except:
             return refresh_profile_cache(sid)
     else:
         return refresh_profile_cache(sid)

@@ -23,7 +23,7 @@ $var title: $project_name - All Items
       $ qitem = pack.get_item_quality(item)["str"]
       $ painty = item.get("optf2_painted_text", "")
       $ item_id = pack.get_item_schema_id(item)
-      <div class="item_cell ${qitem}_cell" id="s${item_id}">
+      <div class="item_cell cell-${qitem}" id="s${item_id}">
         <a class="item_link" href="$item_link">
           <img class="item_image_small" src="$item['optf2_image_url']" alt="$pack.get_item_name(item)"/>
         </a>
@@ -31,17 +31,17 @@ $var title: $project_name - All Items
             <span class="paint_splotch" style="background: $item['optf2_color'];">&nbsp;</span>
         <div class="item_attribs">
           $:item["optf2_cell_name"]
-          <div class="item_level">Level $item["optf2_level"] $:painty $pack.get_item_type(item)</div>
+          <div class="item-level">Level $item["optf2_level"] $:painty $pack.get_item_type(item)</div>
           $if item["optf2_description"]:
-              <div class="item_neutral_attr" style="font-weight: normal;">
+              <div class="item-description">
                 $item["optf2_description"]
               </div>
           $for attr in item["optf2_attrs"]:
-              <div class="item_${pack.get_attribute_type(attr)}_attr">
+              <div class="attr-${pack.get_attribute_type(attr)}">
                 $:pack.format_attribute_description(attr).replace("\n", "<br/>")
               </div>
           $if item["optf2_untradeable"]:
-              <div class="item_neutral_attr">
+              <div class="attr-neutral">
                 Untradeable
               </div>
         </div>

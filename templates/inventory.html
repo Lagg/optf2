@@ -8,10 +8,10 @@ $ rss = "{0}feed/{1}".format(virtual_root, user.get_id64())
 $def insert_name(pack, item):
     $:item["optf2_cell_name"]
     $ painty = item.get("optf2_painted_text", "")
-    <div class="item_level">Level $item["optf2_level"] $:painty $pack.get_item_type(item)</div>
+    <div class="item-level">Level $item["optf2_level"] $:painty $pack.get_item_type(item)</div>
 $def insert_cell(pack, item, user, sortby, invalid = False):
       $if not item:
-          $ return '<div class="item_cell minimal_cell"></div>'
+          $ return '<div class="item_cell"></div>'
       $ item_link = "{0}item/{1}".format(virtual_root, pack.get_item_id(item))
       $ item_id = pack.get_item_id(item)
       $ quality = pack.get_item_quality(item)["str"]
@@ -27,16 +27,16 @@ $def insert_cell(pack, item, user, sortby, invalid = False):
               $ equippedstr += "({0})".format(quantity)
       $ cell_class = "item_cell"
       $if pack.get_item_position(item) <= -1: $ cell_class += " undropped"
-      <div class="$cell_class ${quality}_cell" id="s${item_id}">
+      <div class="$cell_class cell-${quality}" id="s${item_id}">
         <a class="item_link" href="$item_link">
           <img class="item_image_small" src="$item['optf2_image_url']" alt="$pack.get_item_name(item)"/>
         </a>
         $if pack.get_item_custom_name(item):
-            <img src="${static_prefix}name_tag.png" class="name_icon" alt="Named"/>
+            <img src="${static_prefix}name_tag.png" class="icon-name" alt="Named"/>
         $if pack.get_item_custom_description(item):
-            <img src="${static_prefix}desc_tag.png" class="desc_icon"  alt="Described"/>
+            <img src="${static_prefix}desc_tag.png" class="icon-desc"  alt="Described"/>
         $if "optf2_gift_from" in item:
-            <img src="${static_prefix}gift_icon.png" class="gift_icon"  alt="Gift"/>
+            <img src="${static_prefix}gift_icon.png" class="icon-gift"  alt="Gift"/>
         $if "optf2_color" in item:
             <span class="paint_splotch" style="background: $item['optf2_color'];">&nbsp;</span>
         $if equippedstr:
@@ -44,18 +44,18 @@ $def insert_cell(pack, item, user, sortby, invalid = False):
         <div class="item_attribs">
           $:insert_name(pack, item)
         $if item["optf2_description"]:
-              <div class="item_neutral_attr" style="font-weight: normal;">
+              <div class="item-description">
                 $item["optf2_description"]
               </div>
         $for attr in item["optf2_attrs"]:
-              <div class="item_${pack.get_attribute_type(attr)}_attr">
+              <div class="attr-${pack.get_attribute_type(attr)}">
                 $if "optf2_gift_content" in item and pack.get_attribute_name(attr) == "referenced item def":
-                    Contains <span class="${item['optf2_gift_quality']}_name">$item["optf2_gift_content"]</span>
+                    Contains <span class="prefix-${item['optf2_gift_quality']}">$item["optf2_gift_content"]</span>
                 $else:
                     $:pack.format_attribute_description(attr).replace("\n", "<br/>")
               </div>
         $if item["optf2_untradeable"]:
-              <div class="item_neutral_attr">
+              <div class="attr-neutral">
                 Untradeable
               </div>
         </div>
@@ -69,7 +69,7 @@ $def insert_cell(pack, item, user, sortby, invalid = False):
   $if isvalve:
       $ name_suffix = '<img src="{0}valve.png" alt="Valve" title="Valve Employee"/>'.format(static_prefix)
   $if user.get_visibility() != "public":
-      $ name_suffix += '<span class="item_negative_attr" style="font-weight: normal;"> (private)</span>'
+      $ name_suffix += '<span class="attr-negative" style="font-weight: normal;"> (private)</span>'
     <div class="tool" style="padding-right: 0; border: 0;">
       <a href="$profileurl">
         <img src="$user.get_avatar_url(user.AVATAR_SMALL)" alt="$realn" title="$realn"/>
@@ -131,7 +131,7 @@ $def insert_cell(pack, item, user, sortby, invalid = False):
         <ul>
           <li><a href="$qurl(quality = None)">All</a></li>
           $for q in filter_qualities:
-              <li><a href="$qurl(quality = q['id'])"><span class="$q['str']_name">$q["prettystr"]</span></a></li>
+              <li><a href="$qurl(quality = q['id'])"><span class="prefix-${q['str']}">$q["prettystr"]</span></a></li>
         </ul>
       </div>
       <div class="dropdown-menu" style="float: left;">

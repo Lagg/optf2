@@ -11,7 +11,7 @@ $def generate_class_icon_link(classes):
           <img src="${static_prefix}${ec}_icon.png" title="$ec" alt="$ec"/>
         </a>&nbsp;
 <div id="header">
-  <h1 class="${qitem['str']}_name">
+  <h1 class="prefix-${qitem['str']}">
     $if not user:
         $ plink_user = "from_schema"
         $ urlpart = "schema_dump"
@@ -27,37 +27,39 @@ $def generate_class_icon_link(classes):
   <img id="stat_vertrule" src="${static_prefix}vertical.gif" height="600" width="1" alt="divider"/>
   <div id="item_attrs">
   $ item_wiki_url = wiki_url + encode_url(pack.get_item_name(item))
-  <div class="item_neutral_attr" style="font-weight: normal;">
+  <div class="item-level">
     Level $item["optf2_level"] $pack.get_item_type(item)
   </div>
   $if item["optf2_description"]:
-      <div class="item_neutral_attr" style="font-weight: normal;">
+      <div class="item-description">
         $item["optf2_description"]
       </div>
   $for attr in item["optf2_attrs"]:
       $ desc = pack.format_attribute_description(attr)
-      <div class="item_${pack.get_attribute_type(attr)}_attr">
+      <div class="attr-${pack.get_attribute_type(attr)}">
         $if "optf2_gift_from" in item and pack.get_attribute_name(attr) == "gifter account id":
             Gift from <a href="${virtual_root}user/${item['optf2_gift_from']}">$item["optf2_gift_from_persona"]</a>
         $elif "optf2_gift_content" in item and pack.get_attribute_name(attr) == "referenced item def":
-            Contains <span class="${item['optf2_gift_quality']}_name">$item["optf2_gift_content"]</span>
+            Contains <span class="prefix-${item['optf2_gift_quality']}">$item["optf2_gift_content"]</span>
             <a href="${virtual_root}item/${pack.get_item_id(item)}?contents=1">(more)</a>
         $else:
             $:desc.replace("\n", "<br/>")
       </div>
   $if item["optf2_untradeable"]:
-      <div class="item_neutral_attr">
+      <div class="attr-neutral">
         Untradeable
       </div>
   $if user:
       $ serial = pack.get_item_id(item)
-      $if not serial:
-          <div class="item_positive_attr">Unopened <a href="${virtual_root}item/${item['optf2_gift_container_id']}">Gift</a></div>
+      $if not serial and "optf2_gift_container_id" in item:
+          <div class="attr-positive">
+            Unopened <a href="${virtual_root}item/${item['optf2_gift_container_id']}">Gift</a>
+          </div>
       $else:
-          <div class="item_neutral_attr">
+          <div class="attr-neutral">
             Serial: <span id="item_id">$serial</span>
           </div>
-      <div class="item_neutral_attr">
+      <div class="attr-neutral">
         $ pos = pack.get_item_position(item)
         Position: \
         $if pos <= -1:
@@ -65,7 +67,7 @@ $def generate_class_icon_link(classes):
         $else:
             $pos
       </div>
-      <div class="item_neutral_attr">
+      <div class="attr-neutral">
         $ equipped = pack.get_item_equipped_classes(item)
         Equipped: \
         $if len(equipped) > 0:
@@ -75,19 +77,19 @@ $def generate_class_icon_link(classes):
       </div>
       $ quantity = pack.get_item_quantity(item)
       $if quantity > 1:
-          <div class="item_neutral_attr">
+          <div class="attr-neutral">
             Uses: $quantity
           </div>
       $if outdated:
-          <div class="item_negative_attr" style="font-weight: normal">
+          <div class="attr-negative" style="font-weight: normal">
             This item is out of date. It may have been deleted or customized.
           </div>
   $else:
-      <div class="item_neutral_attr">
+      <div class="attr-neutral">
         $ schema_id = pack.get_item_schema_id(item);
         ID: <span id="item_id">$schema_id</span>
       </div>
-      <div class="item_neutral_attr">
+      <div class="attr-neutral">
         $ equipable = pack.get_item_equipable_classes(item)
         Classes: \
         $if len(equipable) <= 0 or not equipable[0]:
