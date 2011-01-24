@@ -78,6 +78,9 @@ def get_invalid_pos(items):
     return invalid_items
 
 def sort(items, sortby):
+    if not items or len(items) == 0:
+        return [None] * config.backpack_padded_size
+
     itemcmp = None
     def defcmp(x, y):
         if x < y:
@@ -123,28 +126,32 @@ def sort(items, sortby):
 
     if itemcmp:
         items.sort(cmp = itemcmp)
+
+    itemcount = len(items)
+    highestpos = pack.get_item_position(items[-1])
+
+    if itemcount < config.backpack_padded_size:
+        itemcount = config.backpack_padded_size
+
+    if sortby == "cell" and highestpos > itemcount:
+        itemcount = highestpos
+
+    rem = itemcount % 50
+    if rem != 0: itemcount += (50 - rem)
+    pagecount = itemcount / 50
+
     if sortby == "cell":
-        cursize = config.backpack_padded_size
-        newitems = [None] * (cursize + 1)
+        newitems = [None] * (itemcount + 1)
         for item in items:
             pos = pack.get_item_position(item)
             try:
-                if pos > cursize:
-                    while pos > cursize:
-                        newitems += ([None] * 100)
-                        cursize += 100
                 if pos > -1 and newitems[pos] == None:
                     newitems[pos] = deepcopy(item)
             except IndexError: pass
         del newitems[0]
         return newitems
-    else:
-        if len(items) < config.backpack_padded_size:
-            items += ([None] * (config.backpack_padded_size - len(items)))
-        else:
-            remainder = len(items) % 50
-            if remainder != 0: items += ([None] * (50 - remainder))
-    return items
+
+    return items + ([None] * (itemcount - len(items)))
 
 def filter_by_class(items, theclass):
     filtered_items = []
@@ -284,6 +291,10 @@ def process_attributes(items):
                     attr["description_string"] = "Gift from " + item["optf2_gift_from_persona"]
                 except:
                     item["optf2_gift_from_persona"] = "this user"
+
+                if "optf2_gift_content" in item:
+                    item["optf2_gift_item"]["optf2_gift_from_persona"] = item["optf2_gift_from_persona"]
+                    item["optf2_gift_item"]["optf2_gift_from"] = item["optf2_gift_from"]
 
             if "description_string" in attr and not pack.is_attribute_hidden(attr):
                 attr["description_string"] = web.websafe(attr["description_string"])
