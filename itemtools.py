@@ -292,15 +292,16 @@ def process_attributes(items):
                 except:
                     item["optf2_gift_from_persona"] = "this user"
 
-                if "optf2_gift_item" in item:
-                    item["optf2_gift_item"]["optf2_gift_from_persona"] = item["optf2_gift_from_persona"]
-                    item["optf2_gift_item"]["optf2_gift_from"] = item["optf2_gift_from"]
-
             if "description_string" in attr and not pack.is_attribute_hidden(attr):
                 attr["description_string"] = web.websafe(attr["description_string"])
             else:
                 continue
+
             item["optf2_attrs"].append(deepcopy(attr))
+
+        if "optf2_gift_item" in item:
+            item["optf2_gift_item"]["optf2_gift_from_persona"] = item["optf2_gift_from_persona"]
+            item["optf2_gift_item"]["optf2_gift_from"] = item["optf2_gift_from"]
 
         quality_str = pack.get_item_quality(item)["str"]
         full_qdict_name = generate_full_item_name(item)
