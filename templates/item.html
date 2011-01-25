@@ -51,7 +51,7 @@ $def generate_class_icon_link(classes):
       </div>
   $if user:
       $ serial = pack.get_item_id(item)
-      $if not serial and "optf2_gift_container_id" in item:
+      $if not serial and "optf2_gift_item" in item:
           <div class="attr-positive">
             Unopened <a href="${virtual_root}item/${item['optf2_gift_container_id']}">Gift</a> from
             <a href="${virtual_root}user/${item['optf2_gift_from']}">$item["optf2_gift_from_persona"]</a>

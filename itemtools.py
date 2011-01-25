@@ -292,7 +292,7 @@ def process_attributes(items):
                 except:
                     item["optf2_gift_from_persona"] = "this user"
 
-                if "optf2_gift_content" in item:
+                if "optf2_gift_item" in item:
                     item["optf2_gift_item"]["optf2_gift_from_persona"] = item["optf2_gift_from_persona"]
                     item["optf2_gift_item"]["optf2_gift_from"] = item["optf2_gift_from"]
 
