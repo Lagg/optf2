@@ -337,7 +337,7 @@ class pack_fetch:
             return templates.error("Failed to load backpack ({0})".format(E))
         except steam.ProfileError as E:
             return templates.error("Failed to load profile ({0})".format(E))
-        except:
+        except KeyboardInterrupt:
             return templates.error("Failed to load backpack")
 
         isvalve = (user.get_primary_group() == valve_group_id)
@@ -390,14 +390,14 @@ class pack_feed:
 
 class index:
     def GET(self):
-        countlist = db_obj.select("unique_views", order = "count DESC", limit = config.top_backpack_rows)
-        return templates.index(countlist)
-    def POST(self):
         user = web.input().get("user")
+
         if user:
             if user.endswith('/'): user = user[:-1]
             raise web.seeother(config.virtual_root + "user/" + os.path.basename(user))
-        else: return web.seeother(config.virtual_root)
+
+        countlist = db_obj.select("unique_views", order = "count DESC", limit = config.top_backpack_rows)
+        return templates.index(countlist)
 
 class openid_consume:
     def GET(self):

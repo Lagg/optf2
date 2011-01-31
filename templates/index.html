@@ -8,7 +8,7 @@ $$(document).ready(function() { autocomplete_attach("#user"); });
 <div id="logo">
   <img src="${static_prefix}optf2_logo.png" alt="Logo"/>
 </div>
-<form id="search_form" method="post" action="${virtual_root}">
+<form id="search_form" method="get" action="${virtual_root}">
   <table>
     <tr>
       <td><input type="text" id="user" name="user"/></td>
