@@ -1,4 +1,4 @@
-import web, config, steam, database
+import web, config, steam, database, re
 from copy import deepcopy
 
 qualitydict = {"unique": "The",
@@ -215,6 +215,13 @@ def process_attributes(items):
         max_level = pack.get_item_max_level(item)
         pb_level = pack.get_item_level(item)
         custom_desc = pack.get_item_custom_description(item)
+        itype = pack.get_item_type(item)
+
+        if itype.startswith("TF_"):
+            s1 = re.sub("(.)([A-Z][a-z]+)", "\\1 \\2", itype[3:])
+            itype = re.sub("([a-z0-9])([A-Z])", "\\1 \\2", s1)
+            itype = itype.replace("_", "")
+        item["optf2_type"] = itype
 
         if custom_desc: item["optf2_description"] = custom_desc
 
@@ -343,6 +350,8 @@ def get_equippable_classes(items):
     item """
 
     valid_classes = set()
+
+    if not items: return []
 
     for item in items:
         if not item: continue

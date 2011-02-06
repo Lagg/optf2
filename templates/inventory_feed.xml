@@ -16,7 +16,7 @@ $def with (user, pack, items)
       <item>
         $ permalink = "{0}{1}item/{2}".format(instance.homedomain, virtual_root, pack.get_item_id(item))
         $ level = item["optf2_level"]
-        $ type = pack.get_item_type(item)
+        $ type = item["optf2_type"]
         $ name = pack.get_item_custom_name(item)
         $ image = item['optf2_image_url']
         $if not name:

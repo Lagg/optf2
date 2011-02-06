@@ -31,7 +31,7 @@ $var title: $project_name - All Items
             <span class="paint_splotch" style="background: $item['optf2_color'];">&nbsp;</span>
         <div class="item_attribs">
           $:item["optf2_cell_name"]
-          <div class="item-level">Level $item["optf2_level"] $:painty $pack.get_item_type(item)</div>
+          <div class="item-level">Level $item["optf2_level"] $:painty $item["optf2_type"]</div>
           $if item["optf2_description"]:
               <div class="item-description">
                 $item["optf2_description"]
