@@ -12,47 +12,44 @@ def cache_not_stale(row):
     else:
         return False
 
-def refresh_profile_cache(sid):
-    user = steam.profile(sid)
-    summary = user.get_summary_object()
+def refresh_profile_cache(sid, vanity = None):
+    user = steam.user.profile(sid)
+    summary = user._summary_object
+    queryvars = {"id64": user.get_id64(),
+                 "timestamp": int(time()),
+                 "profile": buffer(pickle.dumps(summary, pickle.HIGHEST_PROTOCOL))}
 
-    try:
-        database_obj.insert("profile_cache", id64 = user.get_id64(),
-                            timestamp = int(time()),
-                            profile = buffer(pickle.dumps(summary)))
-    except:
-        database_obj.update("profile_cache", id64 = user.get_id64(),
-                            timestamp = int(time()),
-                            profile = buffer(pickle.dumps(summary)),
-                            where = "id64 = $id64", vars = {"id64": user.get_id64()})
+    if vanity: queryvars["vanity"] = vanity
+    if not sid.isdigit(): queryvars["vanity"] = sid
+
+    itervars = list(queryvars.iteritems())
+
+    database_obj.query("INSERT INTO profile_cache (" + web.db.SQLQuery.join([k for k,v in itervars], ", ") + ") VALUES " +
+                       "(" + web.db.SQLQuery.join([web.db.SQLParam(v) for k,v in itervars], ", ") + ")" +
+                       " ON DUPLICATE KEY UPDATE " + web.db.SQLQuery.join(["{0}=VALUES({0})".format(k) for k,v in itervars], ", "))
 
     return user
 
 def load_profile_cached(sid, stale = False):
-    user = steam.profile()
-    if not sid.isdigit():
-        sid = user.get_id64_from_sid(sid.encode("ascii", "replace"))
-        if not sid:
-            return refresh_profile_cache(sid)
-
-    if config.cache_pack:
-        try:
+    user = steam.user.profile()
+    try:
+        if sid.isdigit():
             prow = database_obj.select("profile_cache", what = "profile, timestamp",
                                        where = "id64 = $id64", vars = {"id64": int(sid)})[0]
-            pfile = StringIO(str(prow["profile"]))
+        else:
+            prow = database_obj.select("profile_cache", what = "profile, timestamp",
+                                       where = "vanity = $v", vars = {"v": sid})[0]
 
-            if stale or cache_not_stale(prow):
-                user.load_summary_file(pfile)
-            else:
-                try:
-                    return refresh_profile_cache(sid)
-                except:
-                    user.load_summary_file(pfile)
-                    return user
-            return user
-        except:
-            return refresh_profile_cache(sid)
-    else:
+        pfile = pickle.loads(prow["profile"])
+
+        if stale or cache_not_stale(prow):
+            return steam.user.profile(pfile)
+        else:
+            try:
+                return refresh_profile_cache(sid)
+            except:
+                return steam.user.profile(pfile)
+    except:
         return refresh_profile_cache(sid)
 
 def db_pack_is_new(lastpack, newpack):
@@ -60,38 +57,38 @@ def db_pack_is_new(lastpack, newpack):
             sorted(pickle.loads(str(lastpack[0]["backpack"]))) != sorted(newpack))
 
 def refresh_pack_cache(user):
-    pack = steam.backpack()
-    pack.load_pack(user)
+    pack = steam.tf2.backpack(schema = web.ctx.item_schema)
+    pack.load(user)
     ts = int(time())
 
     with database_obj.transaction():
         backpack_items = []
         data = []
-        packitems = pack.get_items()
+        packitems = list(pack)
         thequery = web.db.SQLQuery("INSERT INTO items (id64, " +
                                    "owner, sid, level, untradeable, " +
                                    "token, quality, custom_name, " +
                                    "custom_desc, attributes, quantity) VALUES ")
         for item in packitems:
-            backpack_items.append(pack.get_item_id(item))
-            attribs = pack.get_item_attributes(item)
+            backpack_items.append(item.get_id())
+            attribs = item.get_attributes()
+            pattribs = []
 
             # Replace gift contents sid with item dict
-            contents = pack.get_item_contents(item)
-            if contents:
-                for attr in attribs:
-                    # referenced item def
-                    if pack.get_attribute_id(attr) == 194:
-                        attr["value"] = deepcopy(contents)
-                        break
-            if "attributes" in item:
-                item["attributes"]["attribute"] = deepcopy(attribs)
+            contents = item.get_contents()
+            for attr in attribs:
+                if contents and attr.get_id() == 194:
+                    attr._attribute["value"] = deepcopy(contents._item)
+                pattribs.append(deepcopy(attr._attribute))
 
-            row = [pack.get_item_id(item), user.get_id64(), pack.get_item_schema_id(item),
-                   pack.get_item_level(item), pack.is_item_untradeable(item),
-                   pack.get_item_inventory_token(item), pack.get_item_quality(item)["id"],
-                   pack.get_item_custom_name(item), pack.get_item_custom_description(item),
-                   pickle.dumps(attribs), pack.get_item_quantity(item)]
+            if len(pattribs) > 0 and "attributes" in item._item:
+                item._item["attributes"]["attribute"] = pattribs
+
+            row = [item.get_id(), user.get_id64(), item.get_schema_id(),
+                   item.get_level(), item.is_untradable(),
+                   item.get_inventory_token(), item.get_quality()["id"],
+                   item.get_custom_name(), item.get_custom_description(),
+                   pickle.dumps(pattribs, pickle.HIGHEST_PROTOCOL), item.get_quantity()]
 
             data.append('(' + web.db.SQLQuery.join([web.db.SQLParam(ival) for ival in row], ', ') + ')')
 
@@ -112,7 +109,7 @@ def refresh_pack_cache(user):
                                             order = "timestamp DESC", limit = 1))
         if db_pack_is_new(lastpack, backpack_items):
             database_obj.insert("backpacks", id64 = user.get_id64(),
-                                backpack = buffer(pickle.dumps(backpack_items)),
+                                backpack = buffer(pickle.dumps(backpack_items, pickle.HIGHEST_PROTOCOL)),
                                 timestamp = ts)
         elif len(lastpack) > 0:
             lastts = database_obj.select("backpacks", what = "MAX(timestamp) AS ts", where = "id64 = $id64",
@@ -153,6 +150,7 @@ def db_to_itemobj(dbitem):
                "custom_name": dbitem["custom_name"],
                "custom_desc": dbitem["custom_desc"],
                "attributes": {"attribute": pickle.loads(str(dbitem["attributes"]))}}
+
     return theitem
 
 def fetch_item_for_id(iid):
@@ -186,7 +184,5 @@ def load_pack_cached(user, stale = False, date = None):
             if len(items) > 0:
                 dbitems = database_obj.query(query)
 
-            for item in dbitems:
-                theitem = db_to_itemobj(item)
-                packresult.append(deepcopy(theitem))
+            packresult = [steam.tf2.item(web.ctx.item_schema, db_to_itemobj(item)) for item in dbitems]
         return packresult

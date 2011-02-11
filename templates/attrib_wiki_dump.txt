@@ -1,4 +1,4 @@
-$def with (pack)
+$def with (attribs)
 {|class="wikitable grid sortable plainlinks"
 |-
 !class="header"|ID
@@ -7,13 +7,13 @@ $def with (pack)
 !class="header"|Value Type
 !class="header"|Class
 !class="header" width="10%"|Notes
-$for attr in pack.get_item_schema_attributes():
-    $ desc = pack.get_attribute_description(attr)
-    $ name = pack.get_attribute_name(attr)
-    $ attrtype = pack.get_attribute_type(attr)
+$for attr in attribs:
+    $ desc = attr.get_description()
+    $ name = attr.get_name()
+    $ attrtype = attr.get_type()
     $ notes = ""
     $if desc: $ desc = desc.replace("\n", "<br/>").replace("%s1", "n")
     $if not desc or desc.find("Attrib_") != -1: $ notes = "Hidden or unused"
     |-
-    {{Item Attribute|id=$pack.get_attribute_id(attr)|name=$name|description=$desc|value-type=$pack.get_attribute_value_type(attr)|class=$pack.get_attribute_class(attr)|effect-type=$attrtype|notes=$notes}}
+    {{Item Attribute|id=$attr.get_id()|name=$name|description=$desc|value-type=$attr.get_value_type()|class=$attr.get_class()|effect-type=$attrtype|notes=$notes}}
 |}

@@ -1,4 +1,4 @@
-$def with (pack, items, filter_classes, attrdump = None)
+$def with (items, filter_classes, attrdump = None)
 $var title: $project_name - All Items
 
 <div id="header">
@@ -19,30 +19,30 @@ $var title: $project_name - All Items
 <div id="content">
   <div id="backpack">
   $for item in items:
-      $ item_link = "{0}item/{1}".format(virtual_root, pack.get_item_schema_id(item))
-      $ qitem = pack.get_item_quality(item)["str"]
-      $ painty = item.get("optf2_painted_text", "")
-      $ item_id = pack.get_item_schema_id(item)
+      $ item_link = "{0}item/{1}".format(virtual_root, item.get_schema_id())
+      $ qitem = item.get_quality()["str"]
+      $ painty = item.optf2.get("painted_text", "")
+      $ item_id = item.get_schema_id()
       <div class="item_cell cell-${qitem}" id="s${item_id}">
         <a class="item_link" href="$item_link">
-          <img class="item_image_small" src="$item['optf2_image_url']" alt="$pack.get_item_name(item)"/>
+          <img class="item_image_small" src="$item.optf2['image_url']" alt="$item.get_name()"/>
         </a>
-        $if "optf2_color" in item:
-            <span class="paint_splotch" style="background: $item['optf2_color'];">&nbsp;</span>
+        $if "color" in item.optf2:
+            <span class="paint_splotch" style="background: $item.optf2['color'];">&nbsp;</span>
         <div class="item_attribs">
-          $:item["optf2_cell_name"]
-          <div class="item-level">Level $item["optf2_level"] $:painty $item["optf2_type"]</div>
-          $if item["optf2_description"]:
+          $:item.optf2["cell_name"]
+          <div class="item-level">Level $item.optf2["level"] $:painty $item.optf2["type"]</div>
+          $if item.optf2["description"]:
               <div class="item-description">
-                $item["optf2_description"]
+                $item.optf2["description"]
               </div>
-          $for attr in item["optf2_attrs"]:
-              <div class="attr-${pack.get_attribute_type(attr)}">
-                $:pack.format_attribute_description(attr).replace("\n", "<br/>")
+          $for attr in item.optf2["attrs"]:
+              <div class="attr-${attr.get_type()}">
+                $:attr.get_description_formatted().replace("\n", "<br/>")
               </div>
-          $if item["optf2_untradeable"]:
+          $if item.is_untradable():
               <div class="attr-neutral">
-                Untradeable
+                Untradable
               </div>
         </div>
       </div>

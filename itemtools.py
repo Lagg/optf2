@@ -28,31 +28,30 @@ particledict = {0: "Invalid Particle",
                 19: "Circling Heart",
                 20: "Map Stamps"}
 
-pack = steam.backpack()
-
 def generate_full_item_name(item, ignore_qdict = False):
     """ Ignores the values in qualitydict if ignore_qdict is True """
-    quality_str = pack.get_item_quality(item)["str"]
-    pretty_quality_str = pack.get_item_quality(item)["prettystr"]
-    custom_name = pack.get_item_custom_name(item)
-    item_name = pack.get_item_name(item)
+    quality_str = item.get_quality()["str"]
+    pretty_quality_str = item.get_quality()["prettystr"]
+    custom_name = item.get_custom_name()
+    item_name = item.get_name()
 
     if ignore_qdict:
         prefix = pretty_quality_str + " "
     else:
         prefix = qualitydict.get(quality_str, pretty_quality_str) + " "
 
-    if item_name.find("The ") != -1 and pack.is_item_prefixed(item):
+    if item_name.find("The ") != -1 and item.is_name_prefixed():
         item_name = item_name[4:]
 
-    if custom_name or (not pack.is_item_prefixed(item) and quality_str == "unique"):
+    if custom_name or (not item.is_name_prefixed() and quality_str == "unique"):
         prefix = ""
     if custom_name:
         item_name = custom_name
 
     item_name = web.websafe(item_name)
 
-    if ignore_qdict and (quality_str == "unique" or quality_str == "normal"):
+    if ((web.input().get("lang") != "en" and quality_str == "unique") or
+        ignore_qdict and (quality_str == "unique" or quality_str == "normal")):
         return item_name
     else:
         return prefix + item_name
@@ -67,13 +66,11 @@ def get_invalid_pos(items):
     invalid_items = []
     for item in items:
         if not item: continue
-        pos = pack.get_item_position(item)
+        pos = item.get_position()
         if pos != -1 and pos not in poslist:
-            poslist.append(pack.get_item_position(item))
+            poslist.append(item.get_position())
         else:
-            for item in items:
-                if item and item not in invalid_items and pos == pack.get_item_position(item):
-                    invalid_items.append(deepcopy(item))
+            invalid_items.append(item)
 
     return invalid_items
 
@@ -95,27 +92,27 @@ def sort(items, sortby):
 
     if sortby == "serial":
         def itemcmp(x, y):
-            return defcmp(pack.get_item_id(x),
-                          pack.get_item_id(y))
+            return defcmp(x.get_id(),
+                          y.get_id())
     elif sortby == "cell":
         def itemcmp(x, y):
-            return defcmp(pack.get_item_position(x),
-                          pack.get_item_position(y))
+            return defcmp(x.get_position(),
+                          y.get_position())
     elif sortby == "level":
         def itemcmp(x, y):
-            return defcmp(pack.get_item_level(x),
-                          pack.get_item_level(y))
+            return defcmp(x.get_level(),
+                          y.get_level())
     elif sortby == "name":
         def itemcmp(x, y):
             return defcmp(generate_full_item_name(x),
                           generate_full_item_name(y))
     elif sortby == "slot":
         def itemcmp(x, y):
-            return defcmp(pack.get_item_slot(x), pack.get_item_slot(y))
+            return defcmp(x.get_slot(), y.get_slot())
     elif sortby == "class":
         def itemcmp(x, y):
-            cx = pack.get_item_equipable_classes(x)
-            cy = pack.get_item_equipable_classes(y)
+            cx = x.get_equipable_classes()
+            cy = y.get_equipable_classes()
             lenx = len(cx)
             leny = len(cy)
 
@@ -128,7 +125,7 @@ def sort(items, sortby):
         items.sort(cmp = itemcmp)
 
     itemcount = len(items)
-    highestpos = pack.get_item_position(items[-1])
+    highestpos = items[-1].get_position()
 
     if itemcount < config.backpack_padded_size:
         itemcount = config.backpack_padded_size
@@ -143,10 +140,10 @@ def sort(items, sortby):
     if sortby == "cell":
         newitems = [None] * (itemcount + 1)
         for item in items:
-            pos = pack.get_item_position(item)
+            pos = item.get_position()
             try:
                 if pos > -1 and newitems[pos] == None:
-                    newitems[pos] = deepcopy(item)
+                    newitems[pos] = item
             except IndexError: pass
         del newitems[0]
         return newitems
@@ -158,7 +155,7 @@ def filter_by_class(items, theclass):
 
     for item in items:
         if not item: continue
-        classes = pack.get_item_equipable_classes(item)
+        classes = item.get_equipable_classes()
         for c in classes:
             if c == theclass:
                 filtered_items.append(item)
@@ -170,7 +167,7 @@ def filter_by_quality(items, thequality):
 
     for item in items:
         if not item: continue
-        if str(pack.get_item_quality(item)["id"]) == thequality:
+        if str(item.get_quality()["id"]) == thequality:
             filtered_items.append(item)
     return filtered_items
 
@@ -184,8 +181,8 @@ def get_stats(items):
     for item in items:
         if not item: continue
 
-        slot = pack.get_item_slot(item)
-        iclass = pack.get_item_class(item)
+        slot = item.get_slot()
+        iclass = item.get_class()
 
         stats["total"] += 1
 
@@ -201,123 +198,124 @@ def get_stats(items):
 
 def process_attributes(items):
     """ Filters attributes for the item list,
-    optf2-specific keys are prefixed with optf2_ """
+    optf2-specific data is stored in item.optf2 """
 
+    newitems = []
     for item in items:
         if not item: continue
-        attrs = pack.get_item_attributes(item)
-        item["optf2_untradeable"] = pack.is_item_untradeable(item)
-        item["optf2_attrs"] = []
-        item["optf2_description"] = pack.get_item_description(item)
-        item["optf2_image_url"] = pack.get_item_image(item, pack.ITEM_IMAGE_SMALL)
-        item["optf2_image_url_large"] = pack.get_item_image(item, pack.ITEM_IMAGE_LARGE)
-        min_level = pack.get_item_min_level(item)
-        max_level = pack.get_item_max_level(item)
-        pb_level = pack.get_item_level(item)
-        custom_desc = pack.get_item_custom_description(item)
-        itype = pack.get_item_type(item)
+        if not getattr(item, "optf2", None):
+            item.optf2 = {}
+        attrs = item.get_attributes()
+        item.optf2["attrs"] = []
+        item.optf2["description"] = item.get_description()
+        item.optf2["image_url"] = item.get_image(item.ITEM_IMAGE_SMALL)
+        item.optf2["image_url_large"] = item.get_image(item.ITEM_IMAGE_LARGE)
+        min_level = item.get_min_level()
+        max_level = item.get_max_level()
+        pb_level = item.get_level()
+        custom_desc = item.get_custom_description()
+        itype = item.get_type()
 
         if itype.startswith("TF_"):
             s1 = re.sub("(.)([A-Z][a-z]+)", "\\1 \\2", itype[3:])
             itype = re.sub("([a-z0-9])([A-Z])", "\\1 \\2", s1)
             itype = itype.replace("_", "")
-        item["optf2_type"] = itype
+        item.optf2["type"] = itype
 
-        if custom_desc: item["optf2_description"] = custom_desc
+        if custom_desc: item.optf2["description"] = custom_desc
 
         if min_level == max_level:
-            item["optf2_level"] = str(min_level)
+            item.optf2["level"] = str(min_level)
         else:
-            item["optf2_level"] = str(min_level) + "-" + str(max_level)
+            item.optf2["level"] = str(min_level) + "-" + str(max_level)
 
-        if pb_level != None: item["optf2_level"] = pb_level
+        if pb_level != None: item.optf2["level"] = pb_level
 
         for attr in attrs:
-            desc = pack.get_attribute_description(attr)
-
-            if pack.get_attribute_name(attr) == "cannot trade":
-                item["optf2_untradeable"] = True
-                continue
+            desc = attr.get_description()
 
             # Contained item is a schema id, this is an incredibly
             # ugly hack but I'm too stubborn to make DB changes for this
-            if pack.get_attribute_name(attr) == "referenced item def":
-                giftcontents = pack.get_attribute_value(attr)
+            if attr.get_name() == "referenced item def":
+                giftcontents = attr.get_value()
 
                 if not isinstance(giftcontents, dict):
-                    giftcontents = pack.get_item_by_schema_id(int(giftcontents))
-
-                giftcontents["optf2_gift_container_id"] = pack.get_item_id(item)
-                item["optf2_gift_content"] = generate_full_item_name(giftcontents)
-                item["optf2_gift_content_id"] = pack.get_item_schema_id(giftcontents)
-                item["optf2_gift_quality"] = pack.get_item_quality(giftcontents)["str"]
-                item["optf2_gift_item"] = giftcontents
-
-                attr["description_string"] = 'Contains ' + item["optf2_gift_content"]
-                attr["hidden"] = False
-
-            # Workaround until Valve gives sane values
-            if (pack.get_attribute_value_type(attr) != "date" and
-                attr["value"] > 1000000000 and
-                "float_value" in attr):
-                attr["value"] = attr["float_value"]
-
-            if pack.get_attribute_name(attr) == "set item tint RGB":
-                raw_rgb = int(pack.get_attribute_value(attr))
-                # Set to purple for team colored paint
-                if pack.get_item_schema_id(item) != 5023 and raw_rgb == 1:
-                    item_color = 'url("{0}team_splotch.png")'.format(config.static_prefix)
+                    giftcontents = item._schema[(int(giftcontents))]
                 else:
+                    giftcontents = steam.tf2.item(item._schema, giftcontents)
+
+                giftcontents.optf2 = {}
+                giftcontents.optf2["gift_container_id"] = item.get_id()
+                item.optf2["gift_content"] = generate_full_item_name(giftcontents)
+                item.optf2["gift_quality"] = giftcontents.get_quality()["str"]
+                item.optf2["gift_item"] = giftcontents
+
+                attr._attribute["description_string"] = 'Contains ' + item.optf2["gift_content"]
+                attr._attribute["hidden"] = False
+
+            if attr.get_name() == "set item tint RGB":
+                raw_rgb = int(attr.get_value())
+
+                if item.get_schema_id() == 5046:
+                    # Team Spirit
+                    item_color = 'url("{0}team_splotch.png")'.format(config.static_prefix)
+                    raw_rgb = 0
+                else:
+                    if item.get_schema_id() == 5023:
+                        # Default paint can
+                        raw_rgb = 0
                     item_color = "#{0:02X}{1:02X}{2:02X}".format((raw_rgb >> 16) & 0xFF,
                                                                  (raw_rgb >> 8) & 0xFF,
                                                                  (raw_rgb) & 0xFF)
 
                 # Workaround until the icons for colored paint cans are correct
-                schema_paintcan = pack.get_item_by_schema_id(pack.get_item_schema_id(item))
+                try:
+                    schema_paintcan = item._schema[item.get_schema_id()]
+                except KeyError: schema_paintcan = 0
                 if (schema_paintcan and
-                    schema_paintcan.get("name", "").startswith("Paint Can") and
-                    raw_rgb != 1 and raw_rgb != 0):
+                    schema_paintcan._item.get("name", "").startswith("Paint Can") and
+                    raw_rgb != 0):
                     paintcan_url = "{0}item_icons/Paint_Can_{1}.png".format(config.static_prefix,
                                                                             item_color[1:])
-                    item["optf2_image_url"] = absolute_url(paintcan_url)
-                    item["optf2_image_url_large"] = absolute_url(paintcan_url)
-                item["optf2_color"] = item_color
+                    item.optf2["image_url"] = absolute_url(paintcan_url)
+                    item.optf2["image_url_large"] = absolute_url(paintcan_url)
+                item.optf2["color"] = item_color
                 continue
 
-            if pack.get_attribute_name(attr) == "attach particle effect":
-                attr["description_string"] = ("Effect: " +
-                                              particledict.get(int(attr["value"]), particledict[0]))
+            if attr.get_name() == "attach particle effect":
+                attr._attribute["description_string"] = ("Effect: " +
+                                                         particledict.get(int(attr.get_value()), particledict[0]))
 
-            if pack.get_attribute_name(attr) == "gifter account id":
-                attr["description_string"] = "Gift"
-                item["optf2_gift_from"] = "7656" + str(int(pack.get_attribute_value(attr) +
-                                                           1197960265728))
+            if attr.get_name() == "gifter account id":
+                attr._attribute["description_string"] = "Gift"
+                item.optf2["gift_from"] = "7656" + str(int(attr.get_value()) +
+                                                       1197960265728)
                 try:
-                    user = database.load_profile_cached(item["optf2_gift_from"], stale = True)
-                    item["optf2_gift_from_persona"] = user.get_persona()
-                    attr["description_string"] = "Gift from " + item["optf2_gift_from_persona"]
+                    user = database.load_profile_cached(item.optf2["gift_from"], stale = True)
+                    item.optf2["gift_from_persona"] = user.get_persona()
+                    attr._attribute["description_string"] = "Gift from " + item.optf2["gift_from_persona"]
                 except:
-                    item["optf2_gift_from_persona"] = "this user"
+                    item.optf2["gift_from_persona"] = "this user"
 
-            if "description_string" in attr and not pack.is_attribute_hidden(attr):
-                attr["description_string"] = web.websafe(attr["description_string"])
+            if not attr.is_hidden():
+                attr._attribute["description_string"] = web.websafe(attr.get_description())
             else:
                 continue
 
-            item["optf2_attrs"].append(deepcopy(attr))
+            item.optf2["attrs"].append(deepcopy(attr))
 
-        if "optf2_gift_item" in item:
-            item["optf2_gift_item"]["optf2_gift_from_persona"] = item["optf2_gift_from_persona"]
-            item["optf2_gift_item"]["optf2_gift_from"] = item["optf2_gift_from"]
+        if "gift_item" in item.optf2:
+            item.optf2["gift_item"].optf2["gift_from_persona"] = item.optf2["gift_from_persona"]
+            item.optf2["gift_item"].optf2["gift_from"] = item.optf2["gift_from"]
 
-        quality_str = pack.get_item_quality(item)["str"]
+        quality_str = item.get_quality()["str"]
         full_qdict_name = generate_full_item_name(item)
         full_default_name = generate_full_item_name(item, True)
-        is_gift_contents = "optf2_gift_container_id" in item
+        is_gift_contents = "gift_container_id" in item.optf2
 
-        item["optf2_cell_name"] = '<div class="prefix-{0} item-name">{1}</div>'.format(quality_str, full_qdict_name)
+        item.optf2["cell_name"] = '<div class="prefix-{0} item-name">{1}</div>'.format(quality_str, full_qdict_name)
 
-        color = item.get("optf2_color")
+        color = item.optf2.get("color")
         paint_job = ""
         prefix = ""
         if color:
@@ -328,22 +326,25 @@ def process_attributes(items):
                 paint_job = '<span style="color: {0}; font-weight: bold;">Painted</span>'.format(color)
         if is_gift_contents:
             prefix = '<span class="prefix-giftwrapped">Giftwrapped</span>'
-        item["optf2_painted_text"] = paint_job
-        item["optf2_dedicated_name"] = "{0} {1} {2}".format(prefix, paint_job, full_default_name)
+        item.optf2["painted_text"] = paint_job
+        item.optf2["dedicated_name"] = "{0} {1} {2}".format(prefix, paint_job, full_default_name)
 
         if color:
             paint_job = "Painted"
         if is_gift_contents:
             prefix = "Giftwrapped"
-        item["optf2_title_name"] = "{0} {1} {2}".format(prefix, paint_job, full_default_name)
+        item.optf2["title_name"] = "{0} {1} {2}".format(prefix, paint_job, full_default_name)
 
         if color:
             paint_job = "(Painted)"
         else:
             paint_job = ""
-        item["optf2_feed_name"] = "{0} {1}".format(full_qdict_name, paint_job)
+        item.optf2["feed_name"] = "{0} {1}".format(full_qdict_name, paint_job)
 
-    return items
+        newitems.append(item)
+
+    items = newitems
+    return newitems
 
 def get_equippable_classes(items):
     """ Returns a set of classes that can equip this
@@ -355,8 +356,8 @@ def get_equippable_classes(items):
 
     for item in items:
         if not item: continue
-        classes = pack.get_item_equipable_classes(item)
-        if classes[0]: valid_classes |= set(classes)
+        classes = item.get_equipable_classes()
+        valid_classes |= set(classes)
 
     return sorted(list(valid_classes))
 
@@ -377,7 +378,7 @@ def get_present_qualities(items):
 
     for item in items:
         if not item: continue
-        quality = pack.get_item_quality(item)
+        quality = item.get_quality()
         if quality["id"] not in qualities:
             qualities.add(quality["id"])
             qlist.append(quality)

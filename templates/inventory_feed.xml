@@ -1,4 +1,4 @@
-$def with (user, pack, items)
+$def with (user, items)
 <?xml version="1.0" encoding="UTF-8"?>
 
 <rss version="2.0">
@@ -14,15 +14,15 @@ $def with (user, pack, items)
   $items.reverse()
   $for item in items:
       <item>
-        $ permalink = "{0}{1}item/{2}".format(instance.homedomain, virtual_root, pack.get_item_id(item))
-        $ level = item["optf2_level"]
-        $ type = item["optf2_type"]
-        $ name = pack.get_item_custom_name(item)
-        $ image = item['optf2_image_url']
+        $ permalink = "{0}{1}item/{2}".format(instance.homedomain, virtual_root, item.get_id())
+        $ level = item.optf2["level"]
+        $ type = item.optf2["type"]
+        $ name = item.get_custom_name()
+        $ image = item.optf2["image_url"]
         $if not name:
-            $ name = pack.get_item_name(item)
+            $ name = item.get_name()
         <description>Level $level $type</description>
-        <title>$:item["optf2_feed_name"]</title>
+        <title>$:item.optf2["feed_name"]</title>
         <link>$permalink</link>
         <guid isPermaLink="true">$permalink</guid>
         <enclosure type="image/png" length="0" url="$image"/>

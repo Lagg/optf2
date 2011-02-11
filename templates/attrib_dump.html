@@ -1,4 +1,4 @@
-$def with (pack)
+$def with (attribs)
 $var title: $project_name - All Item Attributes
 
 <div id="header">
@@ -6,20 +6,19 @@ $var title: $project_name - All Item Attributes
   <h5>Click on an attribute name to see the items it is attached to.</h5>
 </div>
 <div id="content">
-  $ attribs = pack.get_item_schema_attributes()
   <table id="attrib_table">
     <tr><th>ID</th><th>Name</th><th>Description</th><th>Value Type</th><th>Class</th></tr>
   $for attr in attribs:
-      $ type = pack.get_attribute_type(attr)
-      $ valtype = pack.get_attribute_value_type(attr)
-      $ minval = pack.get_attribute_value_min(attr)
-      $ maxval = pack.get_attribute_value_max(attr)
-      $ minfval = pack.get_attribute_value_formatted(minval, valtype)
-      $ maxfval = pack.get_attribute_value_formatted(maxval, valtype)
-      $ name = pack.get_attribute_name(attr)
-      $ desc = pack.get_attribute_description(attr)
+      $ type = attr.get_type()
+      $ valtype = attr.get_value_type()
+      $ minval = attr.get_value_min()
+      $ maxval = attr.get_value_max()
+      $ minfval = attr.get_value_formatted(minval)
+      $ maxfval = attr.get_value_formatted(maxval)
+      $ name = attr.get_name()
+      $ desc = attr.get_description()
       <tr>
-        <td>$pack.get_attribute_id(attr)</td>
+        <td>$attr.get_id()</td>
         <td>
           <a name="$name.replace(' ', '_')" class="attr-${type}" href="${qurl(att = name)}">$name</a>
         </td>
@@ -29,7 +28,7 @@ $var title: $project_name - All Item Attributes
               $:desc.replace("\n", "<br/>").replace("%s1", mmstr)
         </td>
         <td>$valtype</td>
-        <td>$pack.get_attribute_class(attr)</td>
+        <td>$attr.get_class()</td>
       </tr>
   </table>
   <i><a href="$qurl(wikitext = 1)">Download as wikitext</a></i>

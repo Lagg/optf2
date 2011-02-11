@@ -1,10 +1,11 @@
-$def with (user, item, pack, outdated)
-$ qitem = pack.get_item_quality(item)
+$def with (user, item, outdated)
+$ qitem = item.get_quality()
+$ extra = item.optf2
 $if not user:
     $ usern = "Schema"
 $else:
     $ usern = user.get_persona() + "'s"
-$var title: $project_name - $usern $item["optf2_title_name"]
+$var title: $project_name - $usern $extra["title_name"]
 $def generate_class_icon_link(classes):
     $for ec in classes:
         <a href="${wiki_url + ec}">
@@ -18,50 +19,50 @@ $def generate_class_icon_link(classes):
     $else:
         $ plink_user = user.get_id64()
         $ urlpart = "user/{0}".format(plink_user)
-    <a href="${virtual_root}${urlpart}">$usern</a> $:item["optf2_dedicated_name"]
+    <a href="${virtual_root}${urlpart}">$usern</a> $:extra["dedicated_name"]
   </h1>
 </div>
 <div id="content">
   <div id="item_stats" class="dedicated_item">
-  <img id="item_image_large" src="$item['optf2_image_url_large']" alt="$usern $item['optf2_title_name']"/>
+  <img id="item_image_large" src="$extra['image_url_large']" alt="$usern $extra['title_name']"/>
   <img id="stat_vertrule" src="${static_prefix}vertical.gif" height="600" width="1" alt="divider"/>
   <div id="item_attrs">
-  $ item_wiki_url = wiki_url + encode_url(pack.get_item_name(item))
+  $ item_wiki_url = wiki_url + encode_url(item.get_name())
   <div class="item-level">
-    Level $item["optf2_level"] $item["optf2_type"]
+    Level $extra["level"] $extra["type"]
   </div>
-  $if item["optf2_description"]:
+  $if extra["description"]:
       <div class="item-description">
-        $item["optf2_description"]
+        $extra["description"]
       </div>
-  $for attr in item["optf2_attrs"]:
-      $ desc = pack.format_attribute_description(attr)
-      <div class="attr-${pack.get_attribute_type(attr)}">
-        $if "optf2_gift_from" in item and pack.get_attribute_name(attr) == "gifter account id":
-            Gift from <a href="${virtual_root}user/${item['optf2_gift_from']}">$item["optf2_gift_from_persona"]</a>
-        $elif "optf2_gift_content" in item and pack.get_attribute_name(attr) == "referenced item def":
-            Contains <span class="prefix-${item['optf2_gift_quality']}">$item["optf2_gift_content"]</span>
-            <a href="${virtual_root}item/${pack.get_item_id(item)}?contents=1">(more)</a>
+  $for attr in extra["attrs"]:
+      $ desc = attr.get_description_formatted()
+      <div class="attr-${attr.get_type()}">
+        $if "gift_from" in extra and attr.get_name() == "gifter account id":
+            Gift from <a href="${virtual_root}user/${extra['gift_from']}">$extra["gift_from_persona"]</a>
+        $elif "gift_content" in extra and attr.get_name() == "referenced item def":
+            Contains <span class="prefix-${extra['gift_quality']}">$extra["gift_content"]</span>
+            <a href="${virtual_root}item/${item.get_id()}?contents=1">(more)</a>
         $else:
             $:desc.replace("\n", "<br/>")
       </div>
-  $if item["optf2_untradeable"]:
+  $if item.is_untradable():
       <div class="attr-neutral">
-        Untradeable
+        Untradable
       </div>
   $if user:
-      $ serial = pack.get_item_id(item)
-      $if "optf2_gift_from" in item and not serial:
+      $ serial = item.get_id()
+      $if "gift_from" in extra and not serial:
           <div class="attr-positive">
-            Unopened <a href="${virtual_root}item/${item['optf2_gift_container_id']}">Gift</a> from
-            <a href="${virtual_root}user/${item['optf2_gift_from']}">$item["optf2_gift_from_persona"]</a>
+            Unopened <a href="${virtual_root}item/${extra['gift_container_id']}">Gift</a> from
+            <a href="${virtual_root}user/${extra['gift_from']}">$extra["gift_from_persona"]</a>
           </div>
       $elif serial:
           <div class="attr-neutral">
             Serial: <span id="item_id">$serial</span>
           </div>
       <div class="attr-neutral">
-        $ pos = pack.get_item_position(item)
+        $ pos = item.get_position()
         Position: \
         $if pos <= -1:
             Not in backpack yet!
@@ -69,14 +70,14 @@ $def generate_class_icon_link(classes):
             $pos
       </div>
       <div class="attr-neutral">
-        $ equipped = pack.get_item_equipped_classes(item)
+        $ equipped = item.get_equipped_classes()
         Equipped: \
         $if len(equipped) > 0:
             $:generate_class_icon_link(equipped)
         $else:
             No
       </div>
-      $ quantity = pack.get_item_quantity(item)
+      $ quantity = item.get_quantity()
       $if quantity > 1:
           <div class="attr-neutral">
             Uses: $quantity
@@ -87,11 +88,11 @@ $def generate_class_icon_link(classes):
           </div>
   $else:
       <div class="attr-neutral">
-        $ schema_id = pack.get_item_schema_id(item);
+        $ schema_id = item.get_schema_id()
         ID: <span id="item_id">$schema_id</span>
       </div>
       <div class="attr-neutral">
-        $ equipable = pack.get_item_equipable_classes(item)
+        $ equipable = item.get_equipable_classes()
         Classes: \
         $if len(equipable) <= 0 or not equipable[0]:
             Not equipable

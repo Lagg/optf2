@@ -24,11 +24,6 @@ language = "en"
 project_name = "OPTF2"
 project_homepage = "http://projects.optf2.com/projects/optf2"
 
-# Cache a player's backpack. Reduces the number of API
-# requests and makes it a lot faster but might make the
-# database big
-cache_pack = True
-
 # Refresh cache every x seconds.
 cache_pack_refresh_interval = 30
 
@@ -62,7 +57,10 @@ backpack_padded_size = 300
 # have sensitive data in it that
 # shouldn't be publicly accessible
 
-cache_file_dir = "/tmp/steamodd"
+cache_file_dir = "/home/anthony/.cache/steamodd"
+
+if not os.path.exists(cache_file_dir):
+    os.makedirs(cache_file_dir)
 
 # Used as a timeout for fetching external data
 socket.setdefaulttimeout(5)
@@ -79,3 +77,7 @@ database = {"username": "root",
 # Only tested with mysql, previously worked on sqlite but I don't recommend it.
 database_obj = web.database(dbn = "mysql", db = database["database"], user = database["username"],
                             pw = database["password"], host = database["host"])
+
+# A list of valid ISO language codes
+valid_languages = ["da", "nl", "en", "fi", "fr", "de", "it", "ja",
+                   "ko", "no", "pl", "pt", "ru", "zh", "es", "sv"]

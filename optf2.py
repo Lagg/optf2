@@ -23,12 +23,10 @@ try:
     import hmac, hashlib
     import steam, os, json, urllib2
     import web
-    from copy import deepcopy
     import cPickle as pickle
     import config
     steam.set_api_key(config.api_key)
     steam.set_language(config.language)
-    steam.set_cache_dir(config.cache_file_dir)
     import database, itemtools
     import time
 except ImportError as E:
@@ -70,16 +68,36 @@ render_globals = {"css_url": config.css_url,
                   }
 
 app = web.application(urls, globals())
+
+schemadict = {}
+def lang_hook():
+    lang = web.input().get("lang", "en")
+
+    if lang not in schemadict and lang in config.valid_languages:
+        cachepath = os.path.join(config.cache_file_dir, "schema-" + lang)
+        schema_object = None
+
+        if os.path.exists(cachepath):
+            schema_object = pickle.load(open(cachepath, "rb"))
+        else:
+            schema_object = steam.tf2.item_schema(lang = lang)
+            pickle.dump(schema_object, open(cachepath, "wb"), pickle.HIGHEST_PROTOCOL)
+
+        schemadict[lang] = schema_object
+
+    web.ctx.item_schema = schemadict[lang]
+
+app.add_processor(web.loadhook(lang_hook))
 templates = web.template.render(config.template_dir, base = "base",
                                 globals = render_globals)
 
-logging.basicConfig(filename = os.path.join(steam.get_cache_dir(), "optf2.log"), level = logging.DEBUG)
+logging.basicConfig(filename = os.path.join(config.cache_file_dir, "optf2.log"), level = logging.DEBUG)
 
 db_obj = config.database_obj
 
 session = web.session.Session(app, web.session.DBStore(db_obj, "sessions"))
 
-openid_secret = os.path.join(steam.get_cache_dir(), "oid_super_secret")
+openid_secret = os.path.join(config.cache_file_dir, "oid_super_secret")
 if not os.path.exists(openid_secret):
     secretfile = file(openid_secret, "wb+")
     secretfile.write(os.urandom(32))
@@ -110,22 +128,20 @@ def internalerror():
     return web.internalerror(templates.error("Unknown error, " + config.project_name + " may be down for maintenance"))
 if not web.config.debug: app.internalerror = internalerror
 
-pack = steam.backpack()
-
 class schema_dump:
     """ Dumps everything in the schema in a pretty way """
 
     def GET(self):
         try:
             query = web.input()
-            items = pack.get_items(from_schema = True)
+            items = web.ctx.item_schema
 
             if "sortclass" in query:
                 items = itemtools.filter_by_class(items, query["sortclass"])
 
             filter_classes = itemtools.get_equippable_classes(items)
 
-            return templates.schema_dump(pack, itemtools.process_attributes(items), filter_classes)
+            return templates.schema_dump(itemtools.process_attributes(items), filter_classes)
         except:
             return templates.error("Couldn't load schema")
 
@@ -135,30 +151,29 @@ class attrib_dump:
     def GET(self):
         try:
             query = web.input()
-            if not pack.get_item_schema_attributes():
-                raise Exception
+            attribs = web.ctx.item_schema.get_attributes()
 
             attachment_check = query.get("att")
             if attachment_check:
-                items = pack.get_items(from_schema = True)
+                items = web.ctx.item_schema
                 attached_items = []
 
                 for item in items:
-                    attrs = pack.get_item_attributes(item)
+                    attrs = item.get_attributes()
                     for attr in attrs:
-                        attr_name = pack.get_attribute_name(attr)
+                        attr_name = attr.get_name()
                         if attachment_check == attr_name:
                             attached_items.append(item)
                             break
 
-                return templates.schema_dump(pack, itemtools.process_attributes(attached_items), [], attachment_check)
+                return templates.schema_dump(itemtools.process_attributes(attached_items), [], attachment_check)
 
             if query.get("wikitext"):
                 web.header("Content-Type", "text/plain; charset=UTF-8")
                 return web.template.render(config.template_dir,
-                                           globals = render_globals).attrib_wiki_dump(pack)
+                                           globals = render_globals).attrib_wiki_dump(attribs)
 
-            return templates.attrib_dump(pack)
+            return templates.attrib_dump(attribs)
         except:
             return templates.error("Couldn't load attributes")
 
@@ -199,7 +214,7 @@ class pack_item:
         def item_get(id64):
             item = database.fetch_item_for_id(id64)
             if not item:
-                item = pack.get_item_by_schema_id(int(id64))
+                item = web.ctx.item_schema[long(id64)]
             return item
 
         try:
@@ -209,22 +224,23 @@ class pack_item:
             if len(idl) == 1:
                 idl.append(idl[0])
             theitem = item_get(idl[1])
-            if "owner" in theitem:
+            if not isinstance(theitem, steam.tf2.item):
                 user = database.load_profile_cached(str(theitem["owner"]), stale = True)
+                theitem = steam.tf2.item(web.ctx.item_schema, theitem)
                 if user:
                     backpack = database.fetch_pack_for_user(user)
-                    if backpack and pack.get_item_id(theitem) not in pickle.loads(str(backpack["backpack"])):
+                    if backpack and theitem.get_id() not in pickle.loads(str(backpack["backpack"])):
                         item_outdated = True
 
             item = itemtools.process_attributes([theitem])[0]
             if web.input().get("contents"):
-                itemcontents = item.get("optf2_gift_item")
+                itemcontents = item.optf2.get("gift_item")
                 if itemcontents: item = itemtools.process_attributes([itemcontents])[0]
-        except Exception:
-            return templates.item_error_notfound(idl[1])
         except urllib2.URLError:
             return templates.error("Couldn't connect to Steam")
-        return templates.item(user, item, pack, item_outdated)
+        except:
+            return templates.item_error_notfound(idl[1])
+        return templates.item(user, item, item_outdated)
 
 class persona:
     def GET(self, id):
@@ -232,7 +248,7 @@ class persona:
         callback = web.input().get("jsonp")
 
         try:
-            user = steam.profile(id)
+            user = steam.user.profile(id)
             persona = user.get_persona()
             realname = user.get_real_name()
             theobject["persona"] = persona
@@ -259,7 +275,7 @@ class pack_fetch:
             user = database.load_profile_cached(sid)
         except urllib2.URLError:
             return templates.error("Couldn't connect to Steam")
-        except steam.ProfileError as E:
+        except steam.user.ProfileError as E:
             search = json.loads(user_completion().GET(sid))
             nuser = None
             for result in search:
@@ -292,7 +308,7 @@ class pack_fetch:
         try:
             items = database.load_pack_cached(user, date = packtime)
             if not items and user.get_visibility() != "public":
-                raise steam.ProfileError("Backpack is private")
+                raise steam.user.ProfileError("Backpack is private")
 
             timestamps = []
             for ts in database.fetch_pack_for_user(user, tl_size = 10):
@@ -326,47 +342,44 @@ class pack_fetch:
 
             for bitem in baditems:
                 if bitem in items:
-                    bpos = pack.get_item_position(bitem)
+                    bpos = bitem.get_position()
                     if bpos > 0 and sortby == "cell":
                         items[items.index(bitem)] = None
                     else:
                         items.remove(bitem)
                         items.append(None)
 
-        except steam.TF2Error as E:
+        except steam.tf2.TF2Error as E:
             return templates.error("Failed to load backpack ({0})".format(E))
-        except steam.ProfileError as E:
+        except steam.user.ProfileError as E:
             return templates.error("Failed to load profile ({0})".format(E))
-        except KeyboardInterrupt:
+        except:
             return templates.error("Failed to load backpack")
 
         isvalve = (user.get_primary_group() == valve_group_id)
         views = 1
-        with db_obj.transaction():
-            uid64 = user.get_id64()
-            ipaddr = web.ctx.ip
+        uid64 = user.get_id64()
+        ipaddr = web.ctx.ip
 
+        with db_obj.transaction():
             count = list(db_obj.select("search_count", where = "id64 = $id64 AND ip = $ip",
                                        vars = {"ip": ipaddr, "id64": uid64}))
             if len(count) <= 0:
                 db_obj.query("INSERT INTO search_count (id64, ip) VALUES ($id64, $ip)",
                              vars = {"id64": uid64, "ip": ipaddr})
-            else:
-                db_obj.query("UPDATE search_count SET count = count + 1 WHERE id64 = $id64 AND ip = $ip",
-                             vars = {"id64": uid64, "ip": ipaddr})
 
             views = db_obj.query("SELECT COUNT(*) AS views FROM search_count WHERE id64 = $id64",
                                  vars = {"id64": uid64})[0]["views"]
-            db_obj.query("INSERT IGNORE INTO unique_views (id64) VALUES ($id64)",
-                         vars = {"id64": uid64})
-            db_obj.update("unique_views", where = "id64 = $id64",
-                          vars = {"id64": uid64},
-                          persona = user.get_persona(), valve = isvalve,
-                          count = views)
+            db_obj.query("INSERT INTO unique_views (id64, persona, valve, count) VALUES " +
+                         "($id64, $p, $v, $c) ON DUPLICATE KEY UPDATE id64=VALUES(id64), persona=VALUES(persona),"
+                         " valve=VALUES(valve), count=VALUES(count)", vars = {"id64": uid64,
+                                                                              "p": user.get_persona(),
+                                                                              "v": isvalve,
+                                                                              "c": views})
 
         web.ctx.env["optf2_rss_url"] = "{0}feed/{1}".format(config.virtual_root, uid64)
         web.ctx.env["optf2_rss_title"] = "{0}'s Backpack".format(user.get_persona())
-        return templates.inventory(user, pack, isvalve, items, views,
+        return templates.inventory(user, isvalve, items, views,
                                    filter_classes, sortby, baditems,
                                    stats, timestamps, filter_qualities,
                                    range(1, total_pages + 1))
@@ -384,9 +397,7 @@ class pack_feed:
             return templates.error(str(E))
         web.header("Content-Type", "application/rss+xml")
         return web.template.render(config.template_dir,
-                                   globals = render_globals).inventory_feed(user,
-                                                                            pack,
-                                                                            items)
+                                   globals = render_globals).inventory_feed(user, items)
 
 class index:
     def GET(self):
