@@ -231,13 +231,14 @@ def process_attributes(items):
 
         if pb_level != None: item.optf2["level"] = pb_level
 
-        for attr in attrs:
-            desc = attr.get_description()
+        for theattr in attrs:
+            newattr = deepcopy(theattr)
+            desc = newattr.get_description()
 
             # Contained item is a schema id, this is an incredibly
             # ugly hack but I'm too stubborn to make DB changes for this
-            if attr.get_name() == "referenced item def":
-                giftcontents = attr.get_value()
+            if newattr.get_name() == "referenced item def":
+                giftcontents = newattr.get_value()
 
                 if not isinstance(giftcontents, dict):
                     giftcontents = item._schema[(int(giftcontents))]
@@ -250,11 +251,11 @@ def process_attributes(items):
                 item.optf2["gift_quality"] = giftcontents.get_quality()["str"]
                 item.optf2["gift_item"] = giftcontents
 
-                attr._attribute["description_string"] = 'Contains ' + item.optf2["gift_content"]
-                attr._attribute["hidden"] = False
+                newattr._attribute["description_string"] = 'Contains ' + item.optf2["gift_content"]
+                newattr._attribute["hidden"] = False
 
-            if attr.get_name() == "set item tint RGB":
-                raw_rgb = int(attr.get_value())
+            if newattr.get_name() == "set item tint RGB":
+                raw_rgb = int(newattr.get_value())
 
                 if item.get_schema_id() == 5046:
                     # Team Spirit
@@ -282,27 +283,27 @@ def process_attributes(items):
                 item.optf2["color"] = item_color
                 continue
 
-            if attr.get_name() == "attach particle effect":
-                attr._attribute["description_string"] = ("Effect: " +
-                                                         particledict.get(int(attr.get_value()), particledict[0]))
+            if newattr.get_name() == "attach particle effect":
+                newattr._attribute["description_string"] = ("Effect: " +
+                                                            particledict.get(int(newattr.get_value()), particledict[0]))
 
-            if attr.get_name() == "gifter account id":
-                attr._attribute["description_string"] = "Gift"
-                item.optf2["gift_from"] = "7656" + str(int(attr.get_value()) +
+            if newattr.get_name() == "gifter account id":
+                newattr._attribute["description_string"] = "Gift"
+                item.optf2["gift_from"] = "7656" + str(int(newattr.get_value()) +
                                                        1197960265728)
                 try:
                     user = database.load_profile_cached(item.optf2["gift_from"], stale = True)
                     item.optf2["gift_from_persona"] = user.get_persona()
-                    attr._attribute["description_string"] = "Gift from " + item.optf2["gift_from_persona"]
+                    newattr._attribute["description_string"] = "Gift from " + item.optf2["gift_from_persona"]
                 except:
                     item.optf2["gift_from_persona"] = "this user"
 
-            if not attr.is_hidden():
-                attr._attribute["description_string"] = web.websafe(attr.get_description())
+            if not newattr.is_hidden():
+                newattr._attribute["description_string"] = web.websafe(newattr.get_description())
             else:
                 continue
 
-            item.optf2["attrs"].append(deepcopy(attr))
+            item.optf2["attrs"].append(newattr)
 
         if "gift_item" in item.optf2:
             item.optf2["gift_item"].optf2["gift_from_persona"] = item.optf2["gift_from_persona"]
