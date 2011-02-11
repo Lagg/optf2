@@ -70,9 +70,11 @@ app = web.application(urls, globals())
 
 schemadict = {}
 def lang_hook():
-    lang = web.input().get("lang", "en")
+    lang = web.input().get("lang")
 
-    if lang not in schemadict and lang in config.valid_languages:
+    if lang not in config.valid_languages: lang = "en"
+
+    if lang not in schemadict:
         cachepath = os.path.join(config.cache_file_dir, "schema-" + lang)
         schema_object = None
 
