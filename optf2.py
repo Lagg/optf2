@@ -26,7 +26,6 @@ try:
     import cPickle as pickle
     import config
     steam.set_api_key(config.api_key)
-    steam.set_language(config.language)
     import database, itemtools
     import time
 except ImportError as E:

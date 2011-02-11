@@ -18,8 +18,6 @@ static_prefix = "/static/"
 
 api_key = None
 
-language = "en"
-
 # It would be nice of you not to change these
 project_name = "OPTF2"
 project_homepage = "http://projects.optf2.com/projects/optf2"
