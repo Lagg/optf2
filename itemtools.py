@@ -28,7 +28,7 @@ particledict = {0: "Invalid Particle",
                 19: "Circling Heart",
                 20: "Map Stamps"}
 
-def generate_full_item_name(item, ignore_qdict = False):
+def generate_full_item_name(item, ignore_qdict = False, strip_prefixes = False):
     """ Ignores the values in qualitydict if ignore_qdict is True """
     quality_str = item.get_quality()["str"]
     pretty_quality_str = item.get_quality()["prettystr"]
@@ -50,8 +50,9 @@ def generate_full_item_name(item, ignore_qdict = False):
 
     item_name = web.websafe(item_name)
 
-    if ((web.input().get("lang") != "en" and quality_str == "unique") or
-        ignore_qdict and (quality_str == "unique" or quality_str == "normal")):
+    if ((web.ctx.item_schema.get_language() != "en" and quality_str == "unique") or
+        ignore_qdict and (quality_str == "unique" or quality_str == "normal") or
+        strip_prefixes):
         return item_name
     else:
         return prefix + item_name
@@ -104,8 +105,8 @@ def sort(items, sortby):
                           y.get_level())
     elif sortby == "name":
         def itemcmp(x, y):
-            return defcmp(generate_full_item_name(x),
-                          generate_full_item_name(y))
+            return defcmp(generate_full_item_name(x, strip_prefixes = True),
+                          generate_full_item_name(y, strip_prefixes = True))
     elif sortby == "slot":
         def itemcmp(x, y):
             return defcmp(x.get_slot(), y.get_slot())
