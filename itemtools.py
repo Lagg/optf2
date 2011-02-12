@@ -257,14 +257,10 @@ def process_attributes(items):
             if newattr.get_name() == "set item tint RGB":
                 raw_rgb = int(newattr.get_value())
 
-                if item.get_schema_id() == 5046:
+                if raw_rgb == 1:
                     # Team Spirit
                     item_color = 'url("{0}team_splotch.png")'.format(config.static_prefix)
-                    raw_rgb = 0
                 else:
-                    if item.get_schema_id() == 5023:
-                        # Default paint can
-                        raw_rgb = 0
                     item_color = "#{0:02X}{1:02X}{2:02X}".format((raw_rgb >> 16) & 0xFF,
                                                                  (raw_rgb >> 8) & 0xFF,
                                                                  (raw_rgb) & 0xFF)
@@ -275,7 +271,7 @@ def process_attributes(items):
                 except KeyError: schema_paintcan = 0
                 if (schema_paintcan and
                     schema_paintcan._item.get("name", "").startswith("Paint Can") and
-                    raw_rgb != 0):
+                    raw_rgb != 0 and raw_rgb != 1):
                     paintcan_url = "{0}item_icons/Paint_Can_{1}.png".format(config.static_prefix,
                                                                             item_color[1:])
                     item.optf2["image_url"] = absolute_url(paintcan_url)
