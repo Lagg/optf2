@@ -81,9 +81,12 @@ $def insert_cell(item, user, sortby, invalid = False):
         $if cgame:
             Playing \
             $ game_extra = cgame.get("extra", "Unknown")
+            $ game_extra_title = game_extra
+            $if len(game_extra) >= 20:
+                $ game_extra = game_extra[:17] + "..."
             $ game_server = cgame.get("server", "0.0.0.0:0")
             $if cgame.has_key("id"):
-                <a href="http://store.steampowered.com/app/$cgame['id']">$game_extra</a>
+                <a href="http://store.steampowered.com/app/$cgame['id']" title="$game_extra_title">$game_extra</a>
             $else:
                 $game_extra
             $if game_server != "0.0.0.0:0":
