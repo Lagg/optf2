@@ -48,8 +48,6 @@ def generate_full_item_name(item, ignore_qdict = False, strip_prefixes = False):
     if custom_name:
         item_name = custom_name
 
-    item_name = web.websafe(item_name)
-
     if ((web.ctx.item_schema.get_language() != "en" and quality_str == "unique") or
         ignore_qdict and (quality_str == "unique" or quality_str == "normal") or
         strip_prefixes):
