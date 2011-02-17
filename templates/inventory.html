@@ -5,10 +5,6 @@ $ realn = user.get_real_name()
 $var title: $project_name - $usern's Backpack
 $ perma = "{0}user/{1}".format(virtual_root, user.get_id64())
 $ rss = "{0}feed/{1}".format(virtual_root, user.get_id64())
-$def insert_name(item):
-    $:item.optf2["cell_name"]
-    $ painty = item.optf2.get("painted_text", "")
-    <div class="item-level">Level $item.optf2["level"] $:painty $item.optf2["type"]</div>
 $def insert_cell(item, user, sortby, invalid = False):
       $if not item:
           $ return '<div class="item_cell"></div>'
@@ -42,25 +38,26 @@ $def insert_cell(item, user, sortby, invalid = False):
         $if equippedstr:
             <span class="equipped">$equippedstr</span>
         <div class="item_attribs">
-          $:insert_name(item)
-        $if item.optf2["description"]:
+          $:item.optf2["cell_name"]
+          $ painty = item.optf2.get("painted_text", "")
+          <div class="item-level">Level $item.optf2["level"] $:painty $item.optf2["type"]</div>
+          $if item.optf2["description"]:
               <div class="item-description">
                 $item.optf2["description"]
               </div>
-        $for attr in item.optf2["attrs"]:
+          $for attr in item.optf2["attrs"]:
               <div class="attr-${attr.get_type()}">
                 $if "gift_content" in item.optf2 and attr.get_name() == "referenced item def":
                     Contains <span class="prefix-${item.optf2['gift_quality']}">$item.optf2["gift_content"]</span>
                 $else:
                     $:attr.get_description_formatted().replace("\n", "<br/>")
               </div>
-        $if item.is_untradable():
+          $if item.is_untradable():
               <div class="attr-neutral">
                 Untradable
               </div>
         </div>
       </div>
-
 <div id="header" style="position: relative;">
   <div class="toolbar" style="width: 1080px; margin: 0 auto 15px auto; height: 36px;">
   $ cgame = user.get_current_game()
