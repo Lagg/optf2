@@ -162,22 +162,17 @@ $def insert_cell(item, user, sortby, invalid = False):
   $if len(items) <= 0 and len(baditems) <= 0:
       <h2>Empty!</h2>
   <div id="backpack" style="width: 1040px;">
-  $ cell_count = 0
-  $ x_count = 0
-  $if len(baditems) > 0:
-      $for item in baditems:
-          $:insert_cell(item, user, sortby, invalid = True)
-      <div style="clear: both; margin-bottom: 20px;">&nbsp;</div>
-  $for item in items:
-      $if cell_count >= 50:
-          <div style="clear: both; margin: 10px 0 10px 0;">&nbsp;</div>
-          $ cell_count = 0
-      $if x_count >= 10:
-          <span style="clear: both; margin: 0;">&nbsp;</span>
-          $ x_count = 0
-      $ cell_count += 1
-      $ x_count += 1
-      $:insert_cell(item, user, sortby)
+    $if len(baditems) > 0:
+        <div id="page-0" class="backpack-page">
+          $for item in baditems:
+              $:insert_cell(item, user, sortby, invalid = True)
+        </div>
+    $for p in total_pages:
+        <div id="page-${p}" class="backpack-page">
+          $ slice = p * 50
+          $for item in items[slice - 50:slice]:
+              $:insert_cell(item, user, sortby)
+        </div>
   </div>
 </div>
 <div id="footer">
