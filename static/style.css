@@ -9,6 +9,8 @@ body { background: #202020; color: white; font-family: Arial, Helvetica, sans-se
     visibility: hidden;
     margin: 20px 0 20px 0;
 }
+#page-switcher { text-align: left; padding-left: 10px; }
+#page-counter { font-weight: bold; font-size: 13px; margin: 0 5px 0 5px; }
 
 .item-description, .item-level { color: white; }
 .item-name { overflow: hidden; }
@@ -172,6 +174,20 @@ img { border: 0; }
 .sortlinks img { padding: 0 5px 0 5px; }
 
 #logo { width: 389px; height: 126px; margin: 50px auto 50px auto; }
+
+.button {
+    margin: 5px;
+    position: relative;
+    display: inline;
+    cursor: pointer;
+    background-color: #353535;
+    padding: 5px;
+    min-width: 100px;
+    font-weight: bold;
+    -moz-border-radius: 8px;
+    -webkit-border-radius: 8px;
+    border-radius: 8px;
+}
 
 .dropdown-menu {
     text-align: left;

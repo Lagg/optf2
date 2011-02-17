@@ -304,7 +304,6 @@ class pack_fetch:
         sortclass = query.get("sortclass")
         packtime = query.get("time")
         filter_quality = query.get("quality")
-        page_number = query.get("page")
 
         try:
             items = database.load_pack_cached(user, date = packtime)
@@ -333,13 +332,7 @@ class pack_fetch:
             total_pages = len(items) / 50
             if len(items) % 50 != 0:
                 total_pages += 1
-
-            try:
-                page_number = int(page_number)
-                pageoffset = page_number * 50
-                if page_number > 0 and pageoffset <= len(items):
-                    items = items[pageoffset - 50:pageoffset]
-            except: pass
+            total_pages = range(1, total_pages + 1)
 
             for bitem in baditems:
                 if bitem in items:
@@ -383,7 +376,7 @@ class pack_fetch:
         return templates.inventory(user, isvalve, items, views,
                                    filter_classes, sortby, baditems,
                                    stats, timestamps, filter_qualities,
-                                   range(1, total_pages + 1))
+                                   total_pages)
 
     def GET(self, sid):
         return self._get_page_for_sid(sid)

@@ -142,14 +142,6 @@ $def insert_cell(item, user, sortby, invalid = False):
               <li><a href="$qurl(time = ts[0])">$ts[1]</a></li>
         </ul>
       </div>
-      <div class="dropdown-menu" style="float: left;">
-        <b>Page</b>
-        <ul>
-          <li><a href="$qurl(page = None)">Show All</a></li>
-          $for p in total_pages:
-              <li><a href="$qurl(page = p)">$p</a></li>
-        </ul>
-      </div>
     </div>
     <div class="tool" style="float: right; border-right: none;">
       <a href="$rss">

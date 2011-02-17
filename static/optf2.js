@@ -1,6 +1,39 @@
+var current_page = 0;
+
 $(document).ready(function(){
     $(".item_link").removeAttr("href");
     var cells = $(".item_cell");
+
+    var pages = $(".backpack-page").not("#page-0");
+    var hashpart = document.location.hash;
+    var thepage = hashpart.substring(6) - 1;
+    if (thepage >= 0 || (get_cookie("pagination") == 1 && pages.length > 0)) {
+        pages.hide();
+        var backpack = $("#backpack");
+
+        if (thepage < 0) {
+            thepage = 0;
+        }
+
+        if (pages[thepage] != undefined) {
+            current_page = thepage;
+
+            $(pages[thepage]).show();
+
+            var switcher = document.createElement("div");
+
+            switcher.id = "page-switcher";
+            switcher.innerHTML = '<div class="button" title="Prev">&lt; Previous</div><span id="page-counter">' +
+                (thepage + 1) + "/" + pages.length +
+                '</span><div class="button" title="Next">Next &gt;</div>';
+            document.location.hash = "#page-" + (thepage + 1);
+
+            $(switcher).appendTo("#backpack");
+            $("#page-switcher .button").click(backpack_page_switch);
+        } else {
+            $(pages).show();
+        }
+    }
 
     cells.hover(function() {
         var attribs = $(this).find(".item_attribs");
@@ -142,4 +175,48 @@ function autocomplete_attach(uid) {
         minLength: 2,
         source: autocomplete_magic
     });
+}
+
+function backpack_page_switch() {
+    var bp = $("#backpack");
+    var packs = $(".backpack-page").not("#page-0");
+    var newpage;
+
+    if (this.title == "Prev") {
+        newpage = current_page - 1;
+    } else {
+        newpage = current_page + 1;
+    }
+
+    if (newpage < 0 || (newpage + 1) > packs.length) {
+        return;
+    }
+
+    $(packs).hide();
+    current_page = newpage;
+    $(packs[current_page]).show();
+
+    document.location.hash = '#page-' + (current_page + 1);
+    $("#page-counter")[0].innerHTML = (current_page + 1) + '/' + packs.length;
+}
+
+function delete_cookie(cookie) {
+    document.cookie = cookie + "=0; expires=Thu Feb 17 2011 08:33:55 GMT-0700 (MST);";
+}
+
+function get_cookie(cookie) {
+    cookies = document.cookie.split(';');
+    for (i = 0; i < cookies.length; i++) {
+        thecookie = cookies[i];
+        cookiename = $.trim(thecookie.substr(0, thecookie.indexOf('=')));
+        cookievalue = $.trim(thecookie.substr(thecookie.indexOf('=') + 1));
+
+        if (cookiename == cookie) {
+            return cookievalue;
+        }
+    }
+}
+
+function set_cookie(cookie, val) {
+    document.cookie = cookie + "=" + val;
 }
