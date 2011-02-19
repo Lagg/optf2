@@ -1,14 +1,24 @@
 var current_page = 0;
+var page_switcher = document.createElement("div");
+var ispaginated = false;
 
 $(document).ready(function(){
     $(".item_link").removeAttr("href");
     var cells = $(".item_cell");
-
     var pages = $(".backpack-page").not("#page-0");
     var hashpart = document.location.hash;
     var thepage = hashpart.substring(6) - 1;
+
+    if (pages.length > 0) {
+        page_switcher.id = "page-switcher";
+        page_switcher.innerHTML = '<div class="button" id="prev-button">&lt; Previous</div><span id="page-counter">' +
+            '</span><div class="button" id="next-button">Next &gt;</div>';
+        $(page_switcher).appendTo("#backpack");
+        $("#next-button, #prev-button").click(backpack_page_switch);
+        $(page_switcher).hide();
+    }
+
     if (thepage >= 0 || (get_cookie("pagination") == 1 && pages.length > 0)) {
-        pages.hide();
         var backpack = $("#backpack");
 
         if (thepage < 0) {
@@ -17,23 +27,28 @@ $(document).ready(function(){
 
         if (pages[thepage] != undefined) {
             current_page = thepage;
-
-            $(pages[thepage]).show();
-
-            var switcher = document.createElement("div");
-
-            switcher.id = "page-switcher";
-            switcher.innerHTML = '<div class="button" title="Prev">&lt; Previous</div><span id="page-counter">' +
-                (thepage + 1) + "/" + pages.length +
-                '</span><div class="button" title="Next">Next &gt;</div>';
-            document.location.hash = "#page-" + (thepage + 1);
-
-            $(switcher).appendTo("#backpack");
-            $("#page-switcher .button").click(backpack_page_switch);
-        } else {
-            $(pages).show();
+            backpack_mode_paginated(pages);
         }
     }
+    var pagination_toggler = document.createElement("div");
+    if (ispaginated) {
+        pagination_toggler.innerHTML = "Show All";
+    } else {
+        pagination_toggler.innerHTML = "Show Pages";
+    }
+    $(pagination_toggler).addClass("button");
+    $(pagination_toggler).appendTo("#option-controls");
+    $(pagination_toggler).click(function(){
+        if (ispaginated) {
+            set_cookie("pagination", 0);
+            backpack_mode_full(pages);
+            pagination_toggler.innerHTML = "Show Pages";
+        } else {
+            set_cookie("pagination", 1);
+            backpack_mode_paginated(pages);
+            pagination_toggler.innerHTML = "Show All";
+        }
+    });
 
     cells.hover(function() {
         var attribs = $(this).find(".item_attribs");
@@ -182,7 +197,7 @@ function backpack_page_switch() {
     var packs = $(".backpack-page").not("#page-0");
     var newpage;
 
-    if (this.title == "Prev") {
+    if (this.id == "prev-button") {
         newpage = current_page - 1;
     } else {
         newpage = current_page + 1;
@@ -198,6 +213,20 @@ function backpack_page_switch() {
 
     document.location.hash = '#page-' + (current_page + 1);
     $("#page-counter")[0].innerHTML = (current_page + 1) + '/' + packs.length;
+}
+
+function backpack_mode_paginated(pages) {
+    $("#page-counter")[0].innerHTML = (current_page + 1) + '/' + pages.length;
+    pages.hide();
+    $(pages[current_page]).show();
+    $(page_switcher).show();
+    ispaginated = true;
+}
+
+function backpack_mode_full(pages) {
+    pages.show();
+    $(page_switcher).hide();
+    ispaginated = false;
 }
 
 function delete_cookie(cookie) {

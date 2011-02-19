@@ -184,15 +184,23 @@ img { border: 0; }
     padding: 5px;
     min-width: 100px;
     font-weight: bold;
+    text-align: center;
     -moz-border-radius: 8px;
     -webkit-border-radius: 8px;
     border-radius: 8px;
 }
+.button:hover { background-color: #282828; }
+.button:active { background-color: #383838; }
+
+.tool .button { background-color: #303030; float: left; }
+.tool .button:hover { background-color: #202020; }
+.tool .dropdown-menu { float: left; }
 
 .dropdown-menu {
     text-align: left;
     margin: 5px;
     position: relative;
+    display: inline;
     cursor: pointer;
     background-color: #303030;
     background-image: url("dropdown_arrow.png");
@@ -221,7 +229,7 @@ img { border: 0; }
 .dropdown-menu ul li:hover { background: #404040; }
 .dropdown-menu:hover ul { display: block; }
 
-.toolbar { background: #505050; position: relative; border: 1px solid black; padding: 5px; }
+.toolbar { background: #505050; position: relative; border: 1px solid black; padding: 5px; height: 36px; }
 .tool {
     text-align: left;
     padding: 2px 20px 0 20px;

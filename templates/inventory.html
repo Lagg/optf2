@@ -59,7 +59,7 @@ $def insert_cell(item, user, sortby, invalid = False):
         </div>
       </div>
 <div id="header" style="position: relative;">
-  <div class="toolbar" style="width: 1080px; margin: 0 auto 15px auto; height: 36px;">
+  <div class="toolbar" style="width: 1080px; margin: 0 auto 15px auto;">
   $ cgame = user.get_current_game()
   $ cstatus = user.get_status()
   $ name_suffix = ""
@@ -101,8 +101,8 @@ $def insert_cell(item, user, sortby, invalid = False):
       <br/>
       $stats["weapons"] weapons | $stats["hats"] hats | $stats["misc"] misc ($stats["total"] total)
     </div>
-    <div class="tool" style="border-right: 0;">
-      <div class="dropdown-menu" style="float: left;">
+    <div id="option-controls" class="tool" style="border-right: 0;">
+      <div class="dropdown-menu">
         <b>Sort</b>
         <ul>
           <li><a href="$qurl(sort = None)">Default</a></li>
@@ -114,7 +114,7 @@ $def insert_cell(item, user, sortby, invalid = False):
           <li><a href="$qurl(sort = 'class')">Class</a></li>
         </ul>
       </div>
-      <div class="dropdown-menu" style="float: left;">
+      <div class="dropdown-menu">
         <b>Class</b>
         <ul>
           <li><a href="$qurl(sortclass = None)"><img src="${static_prefix}tf_icon.png" alt="All" title="All"/> All</a></li>
@@ -126,7 +126,7 @@ $def insert_cell(item, user, sortby, invalid = False):
               </li>
         </ul>
       </div>
-      <div class="dropdown-menu" style="float: left;">
+      <div class="dropdown-menu">
         <b>Quality</b>
         <ul>
           <li><a href="$qurl(quality = None)">All</a></li>
@@ -134,7 +134,7 @@ $def insert_cell(item, user, sortby, invalid = False):
               <li><a href="$qurl(quality = q['id'])"><span class="prefix-${q['str']}">$q["prettystr"]</span></a></li>
         </ul>
       </div>
-      <div class="dropdown-menu" style="float: left;">
+      <div class="dropdown-menu">
         <b>Timeline</b>
         <ul style="min-width: 170px;">
           <li><a href="$qurl(time = None)">Now</a></li>
