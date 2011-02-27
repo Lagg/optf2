@@ -25,7 +25,7 @@ $var title: $project_name - All Items
       $ item_id = item.get_schema_id()
       <div class="item_cell cell-${qitem}" id="s${item_id}">
         <a class="item_link" href="$item_link">
-          <img class="item_image_small" src="$item.optf2['image_url']" alt="$item.get_name()"/>
+          <img class="item-image small" src="$item.optf2['image_url']" alt="$item.get_name()"/>
         </a>
         $if "color" in item.optf2:
             <span class="paint_splotch" style="background: $item.optf2['color'];">&nbsp;</span>

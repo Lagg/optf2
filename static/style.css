@@ -141,8 +141,9 @@ img { border: 0; }
     width: 800px;
     height: 600px;
 }
-.item_image_small { max-width: 86px; max-height: 86px; margin: 5px; }
-#item_image_large { float: left; width: 512px; height: 512px; }
+.item-image[class~=small] { max-width: 86px; max-height: 86px; margin: 5px; }
+.item-image[class~=large] { float: left; width: 512px; height: 512px; }
+
 #item_attrs {
     float: left;
     padding: 8px 0 8px 8px;

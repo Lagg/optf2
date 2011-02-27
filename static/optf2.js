@@ -85,6 +85,10 @@ $(document).ready(function(){
     cells.click(function() {
         item_open(this.id.slice(1));
     });
+
+    $(".item-image").one("error", function() {
+        this.src = virtual_root + "static/item_icons/Invalid_icon.png";
+    });
 });
 
 function item_image_resize(img, iw, ih, w, h) {
@@ -96,7 +100,7 @@ function item_image_resize(img, iw, ih, w, h) {
 
 function item_resize_event(event, ui) {
     var item = $(event.target);
-    var image = item.find("#item_image_large");
+    var image = item.find(".item-image");
 
     if (ui.size == undefined) {
         ui.size = {"height":  item.height(),

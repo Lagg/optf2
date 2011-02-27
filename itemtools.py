@@ -199,6 +199,7 @@ def process_attributes(items):
     """ Filters attributes for the item list,
     optf2-specific data is stored in item.optf2 """
 
+    default_item_image = config.virtual_root + "static/item_icons/Invalid_icon.png";
     newitems = []
     for item in items:
         if not item: continue
@@ -207,8 +208,8 @@ def process_attributes(items):
         attrs = item.get_attributes()
         item.optf2["attrs"] = []
         item.optf2["description"] = item.get_description()
-        item.optf2["image_url"] = item.get_image(item.ITEM_IMAGE_SMALL)
-        item.optf2["image_url_large"] = item.get_image(item.ITEM_IMAGE_LARGE)
+        item.optf2["image_url"] = item.get_image(item.ITEM_IMAGE_SMALL) or default_item_image
+        item.optf2["image_url_large"] = item.get_image(item.ITEM_IMAGE_LARGE) or default_item_image
         min_level = item.get_min_level()
         max_level = item.get_max_level()
         pb_level = item.get_level()
