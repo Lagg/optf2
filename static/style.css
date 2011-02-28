@@ -1,4 +1,4 @@
-body { background: #202020; color: white; font-family: Arial, Helvetica, sans-serif; font-size: 11px; }
+body { background: #181818; color: white; font-family: Arial, Helvetica, sans-serif; font-size: 11px; }
 
 .backpack-page { zoom: 1; }
 .backpack-page:after {
@@ -91,10 +91,13 @@ body { background: #202020; color: white; font-family: Arial, Helvetica, sans-se
 }
 .item_cell:hover .item_attribs {
     display: block;
+}
+.item_attribs {
+    display: none;
     position: absolute;
     top: 92px;
     left: -5.8em;
-    min-width: 20em;
+    width: 20em;
     background: black;
     margin: 10px;
     margin-left: 0;
@@ -104,11 +107,11 @@ body { background: #202020; color: white; font-family: Arial, Helvetica, sans-se
     -moz-box-shadow: 0px 0px 5px black;
     -webkit-box-shadow: 0px 0px 5px black;
     box-shadow: 0px 0px 5px black;
+    z-index: 30;
 }
 
 #footer {
     text-align: center;
-    background: #202020;
     max-width: 100%;
     padding: 8px;
     clear: both;

@@ -8,6 +8,12 @@ $(document).ready(function(){
     var pages = $(".backpack-page").not("#page-0");
     var hashpart = document.location.hash;
     var thepage = hashpart.substring(6) - 1;
+    var attrib_dict = {};
+
+    var domattribs = $(".item_attribs");
+    domattribs.each(function() { this.id = "a" + $(this).parent().attr("id"); attrib_dict[String(this.id)] = this; });
+    domattribs.remove();
+
 
     if (pages.length > 0) {
         page_switcher.id = "page-switcher";
@@ -51,9 +57,14 @@ $(document).ready(function(){
     });
 
     cells.hover(function() {
-        var attribs = $(this).find(".item_attribs");
+        var attribs = $(attrib_dict["a" + this.id])
+        var currentoffset = $(this).offset();
+        attribs.appendTo(document.body);
         attribs.show();
-        if (attribs.length) {
+        currentoffset["top"] += $(this).height() + 5;
+        currentoffset["left"] -= (attribs.width() / 3.4);
+        attribs.offset(currentoffset);
+        if (attribs.length > 0) {
             var scrollh = $(document).scrollTop();
             /* When a browser supports something simple yet non-standard like
                window.innerHeight, IE has to be ULTRA non-standard.
@@ -62,24 +73,17 @@ $(document).ready(function(){
             var offsety = attribs.offset().top;
             var threshold = (scrollh + windowh);
             var posbottom = (offsety + attribs.height());
-            if (this.deftop == undefined) {
-                this.deftop = attribs.css("top");
-            }
 
             if (posbottom > threshold) {
-                attribs.css("top", (-attribs.height() - 17) + "px");
-            } else {
-                attribs.css("top", this.deftop);
+                attribs.offset({top: ($(this).offset()["top"] - attribs.height() - 5)});
             }
         }
     }, function() {
-        var attribs = $(this).find(".item_attribs");
-        attribs.css("top", this.deftop);
-        attribs.hide();
+        $("#a" + this.id).remove();
     });
 
     $(document).scroll(function() {
-        $(".item_attribs").hide();
+        $(".item_attribs").remove();
     });
 
     cells.click(function() {
