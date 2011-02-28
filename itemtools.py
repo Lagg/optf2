@@ -34,26 +34,30 @@ def generate_full_item_name(item, ignore_qdict = False, strip_prefixes = False):
     pretty_quality_str = item.get_quality()["prettystr"]
     custom_name = item.get_custom_name()
     item_name = item.get_name()
+    language = web.ctx.item_schema.get_language()
 
     if ignore_qdict:
-        prefix = pretty_quality_str + " "
+        prefix = pretty_quality_str
     else:
-        prefix = qualitydict.get(quality_str, pretty_quality_str) + " "
+        prefix = qualitydict.get(quality_str, pretty_quality_str)
 
     if item_name.find("The ") != -1 and item.is_name_prefixed():
         item_name = item_name[4:]
 
-    if custom_name or (not item.is_name_prefixed() and quality_str == "unique"):
+    if strip_prefixes or custom_name or (not item.is_name_prefixed() and quality_str == "unique"):
         prefix = ""
+
     if custom_name:
         item_name = custom_name
 
-    if ((web.ctx.item_schema.get_language() != "en" and quality_str == "unique") or
-        ignore_qdict and (quality_str == "unique" or quality_str == "normal") or
-        strip_prefixes):
-        return item_name
-    else:
-        return prefix + item_name
+    if ((ignore_qdict or language != "en") and (quality_str == "unique" or quality_str == "normal")):
+        prefix = ""
+
+    if (language != "en" and prefix):
+        return item_name + " (" + prefix + ")"
+
+    if prefix: return prefix + " " + item_name
+    else: return item_name
 
 def absolute_url(relative_url):
     domain = web.ctx.homedomain
