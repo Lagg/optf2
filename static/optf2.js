@@ -1,6 +1,7 @@
 var current_page = 0;
 var page_switcher = document.createElement("div");
 var ispaginated = false;
+var last_dialog_size = null;
 
 $(document).ready(function(){
     $(".item_link").removeAttr("href");
@@ -110,6 +111,8 @@ function item_resize_event(event, ui) {
     if (ui.size == undefined) {
         ui.size = {"height":  item.height(),
                    "width": item.width()};
+    } else {
+        last_dialog_size = ui.size;
     }
 
     item_image_resize(image, image.width(), image.height(),
@@ -128,6 +131,11 @@ function item_open_success(data, status, xhr) {
     var dialog_width = 850;
     var dialog_height = 670;
     var item_id = dialog_content.find("#item_id").html();
+
+    if (last_dialog_size != null) {
+        dialog_width = last_dialog_size["width"];
+        dialog_height = last_dialog_size["height"];
+    }
 
     dialog_content.find("#item_attrs").append("<br/><br/><a href=\"" + virtual_root + "item/" + item_id + "\">Link to this item</a>");
     dialog_title.css({"font-size": "1.6em", "margin": "0", "padding": "0"});
@@ -148,8 +156,7 @@ function item_open_success(data, status, xhr) {
         width: dialog_width,
         height: dialog_height,
         minWidth: 250,
-        minHeight: 200,
-        modal: true
+        minHeight: 200
     });
 }
 
@@ -172,7 +179,8 @@ function item_open(item_id) {
     }
 
     if (reallyoldcontent) {
-        $(reallyoldcontent).dialog({open: function(e, u) { $("#" + loading_id).remove(); }});
+        $("#" + loading_id).remove();
+        $(reallyoldcontent).dialog({open: function(e, u) { item_resize_event(e, u); }});
     } else {
         $.get(item_url, item_open_success, {}, "html");
     }
