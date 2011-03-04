@@ -193,6 +193,11 @@ img { border: 0; }
     -webkit-border-radius: 8px;
     border-radius: 8px;
 }
+.button[class~=inactive], .button[class~=inactive]:hover, .button[class~=inactive]:active {
+    background-color: #252525;
+    color: gray;
+    cursor: default;
+}
 .button:hover { background-color: #282828; }
 .button:active { background-color: #383838; }
 

@@ -14,7 +14,6 @@ $(document).ready(function(){
     domattribs.each(function() { this.id = "a" + $(this).parent().attr("id"); attrib_dict[String(this.id)] = this; });
     domattribs.remove();
 
-
     if (pages.length > 0) {
         page_switcher.id = "page-switcher";
         page_switcher.innerHTML = '<div class="button" id="prev-button">&lt; Previous</div><span id="page-counter">' +
@@ -93,6 +92,8 @@ $(document).ready(function(){
     $(".item-image").one("error", function() {
         this.src = virtual_root + "static/item_icons/Invalid_icon.png";
     });
+
+    $(".button").mousedown(function() { return false; });
 });
 
 function item_image_resize(img, iw, ih, w, h) {
@@ -215,6 +216,18 @@ function backpack_page_switch() {
         return;
     }
 
+    if (newpage <= 0) {
+        $("#prev-button").addClass("inactive");
+    } else {
+        $("#prev-button").removeClass("inactive");
+    }
+
+    if ((newpage + 2) > packs.length) {
+        $("#next-button").addClass("inactive");
+    } else {
+        $("#next-button").removeClass("inactive");
+    }
+
     $(packs).hide();
     current_page = newpage;
     $(packs[current_page]).show();
@@ -229,6 +242,11 @@ function backpack_mode_paginated(pages) {
     $(pages[current_page]).show();
     $(page_switcher).show();
     ispaginated = true;
+    if(current_page <= 0) {
+        $("#prev-button").addClass("inactive");
+    } else if ((current_page + 2) > pages.length) {
+        $("#next-button").addClass("inactive");
+    }
 }
 
 function backpack_mode_full(pages) {
