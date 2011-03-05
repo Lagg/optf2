@@ -14,7 +14,7 @@ ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
 OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 """
 
-import config, steam, urllib2, web
+import config, steam, urllib2, web, os
 import cPickle as pickle
 from cStringIO import StringIO
 from time import time
@@ -72,6 +72,18 @@ def db_pack_is_new(lastpack, newpack):
     return (len(lastpack) <= 0 or
             sorted(pickle.loads(str(lastpack[0]["backpack"]))) != sorted(newpack))
 
+def load_schema_cached(lang, fresh = False):
+    cachepath = os.path.join(config.cache_file_dir, "schema-" + lang)
+    schema_object = None
+
+    if os.path.exists(cachepath) and not fresh:
+        schema_object = pickle.load(open(cachepath, "rb"))
+    else:
+        schema_object = steam.tf2.item_schema(lang = lang)
+        pickle.dump(schema_object, open(cachepath, "wb"), pickle.HIGHEST_PROTOCOL)
+
+    return schema_object
+
 def refresh_pack_cache(user):
     pack = steam.tf2.backpack(schema = web.ctx.item_schema)
     pack.load(user)
@@ -80,7 +92,12 @@ def refresh_pack_cache(user):
     with database_obj.transaction():
         backpack_items = []
         data = []
-        packitems = list(pack)
+        try:
+            packitems = list(pack)
+        except steam.tf2.ItemError:
+            web.ctx.item_schema = load_schema_cached(web.ctx.item_schema.get_language(), fresh = True)
+            pack.set_schema(web.ctx.item_schema)
+            packitems = list(pack)
         thequery = web.db.SQLQuery("INSERT INTO items (id64, " +
                                    "owner, sid, level, untradeable, " +
                                    "token, quality, custom_name, " +

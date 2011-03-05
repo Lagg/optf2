@@ -68,25 +68,11 @@ render_globals = {"css_url": config.css_url,
 
 app = web.application(urls, globals())
 
-schemadict = {}
 def lang_hook():
     lang = web.input().get("lang")
 
     if lang not in config.valid_languages: lang = "en"
-
-    if lang not in schemadict:
-        cachepath = os.path.join(config.cache_file_dir, "schema-" + lang)
-        schema_object = None
-
-        if os.path.exists(cachepath):
-            schema_object = pickle.load(open(cachepath, "rb"))
-        else:
-            schema_object = steam.tf2.item_schema(lang = lang)
-            pickle.dump(schema_object, open(cachepath, "wb"), pickle.HIGHEST_PROTOCOL)
-
-        schemadict[lang] = schema_object
-
-    web.ctx.item_schema = schemadict[lang]
+    web.ctx.item_schema = database.load_schema_cached(lang)
 
 app.add_processor(web.loadhook(lang_hook))
 templates = web.template.render(config.template_dir, base = "base",
