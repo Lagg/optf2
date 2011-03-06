@@ -1,9 +1,8 @@
-$def with (user, isvalve, items, views, filter_classes, sortby, baditems, stats, timestamps, filter_qualities, total_pages)
+$def with (user, isvalve, items, views, filter_classes, baditems, stats, timestamps, filter_qualities, total_pages)
 $ usern = user.get_persona()
 $ profileurl = user.get_profile_url()
 $ realn = user.get_real_name()
 $var title: $project_name - $usern's Backpack
-$ perma = "{0}user/{1}".format(virtual_root, user.get_id64())
 $ rss = "{0}feed/{1}".format(virtual_root, user.get_id64())
 <div id="header" style="position: relative;">
   <div class="toolbar" style="width: 1080px; margin: 0 auto 15px auto;">

@@ -44,6 +44,9 @@ particledict = {0: "Invalid Particle",
                 19: "Circling Heart",
                 20: "Map Stamps"}
 
+def _(thestring):
+    return thestring.encode("utf-8")
+
 def generate_full_item_name(item, ignore_qdict = False, strip_prefixes = False):
     """ Ignores the values in qualitydict if ignore_qdict is True """
     quality_str = item.get_quality()["str"]
@@ -330,7 +333,8 @@ def process_attributes(items):
         full_default_name = generate_full_item_name(item, True)
         is_gift_contents = "gift_container_id" in item.optf2
 
-        item.optf2["cell_name"] = '<div class="prefix-{0} item-name">{1}</div>'.format(quality_str, full_qdict_name)
+        item.optf2["cell_name"] = '<div class="prefix-{0} item-name">{1}</div>'.format(_(quality_str),
+                                                                                       _(full_qdict_name))
 
         color = item.optf2.get("color")
         paint_job = ""
@@ -344,19 +348,19 @@ def process_attributes(items):
         if is_gift_contents:
             prefix = '<span class="prefix-giftwrapped">Giftwrapped</span>'
         item.optf2["painted_text"] = paint_job
-        item.optf2["dedicated_name"] = "{0} {1} {2}".format(prefix, paint_job, full_default_name)
+        item.optf2["dedicated_name"] = "{0} {1} {2}".format(_(prefix), _(paint_job), _(full_default_name))
 
         if color:
             paint_job = "Painted"
         if is_gift_contents:
             prefix = "Giftwrapped"
-        item.optf2["title_name"] = "{0} {1} {2}".format(prefix, paint_job, full_default_name)
+        item.optf2["title_name"] = "{0} {1} {2}".format(_(prefix), _(paint_job), _(full_default_name))
 
         if color:
             paint_job = "(Painted)"
         else:
             paint_job = ""
-        item.optf2["feed_name"] = "{0} {1}".format(full_qdict_name, paint_job)
+        item.optf2["feed_name"] = "{0} {1}".format(_(full_qdict_name), _(paint_job))
 
         newitems.append(item)
 

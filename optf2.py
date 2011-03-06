@@ -360,9 +360,9 @@ class pack_fetch:
                                                                               "c": views})
 
         web.ctx.env["optf2_rss_url"] = "{0}feed/{1}".format(config.virtual_root, uid64)
-        web.ctx.env["optf2_rss_title"] = "{0}'s Backpack".format(user.get_persona())
+        web.ctx.env["optf2_rss_title"] = "{0}'s Backpack".format(user.get_persona().encode("utf-8"))
         return templates.inventory(user, isvalve, items, views,
-                                   filter_classes, sortby, baditems,
+                                   filter_classes, baditems,
                                    stats, timestamps, filter_qualities,
                                    total_pages)
 
