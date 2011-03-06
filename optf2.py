@@ -39,6 +39,7 @@ urls = (
     config.virtual_root + "feed/(.+)", "pack_feed",
     config.virtual_root + "item/(.+)", "pack_item",
     config.virtual_root + "persona/(.+)", "persona",
+    config.virtual_root + "loadout/(.+)", "loadout",
     config.virtual_root + "attrib_dump", "attrib_dump",
     config.virtual_root + "schema_dump", "schema_dump",
     config.virtual_root + "about", "about",
@@ -133,6 +134,45 @@ class schema_dump:
             return templates.schema_dump(itemtools.process_attributes(items), filter_classes)
         except:
             return templates.error("Couldn't load schema")
+
+class loadout:
+    """ User loadout lists """
+
+    def GET(self, user):
+        lclass = web.input().get("class")
+        try:
+            userp = database.load_profile_cached(user)
+            items = database.load_pack_cached(userp)
+            classes = itemtools.get_equippable_classes(items)
+            equippeditems = {}
+            allclasses = [v for k, v in steam.tf2.item.equipped_classes.iteritems()]
+
+            if lclass in classes:
+                items = itemtools.filter_by_class(items, lclass)
+                normalitems = itemtools.filter_by_quality(itemtools.filter_by_class(web.ctx.item_schema, lclass), "0")
+
+                for item in normalitems:
+                    slot = item.get_slot().title()
+                    if slot not in equippeditems:
+                        equippeditems[slot] = []
+                    equippeditems[slot].append(itemtools.process_attributes([item])[0])
+
+                for item in items:
+                    equippedclasses = item.get_equipped_classes()
+                    if len(equippedclasses) > 0 and lclass in equippedclasses:
+                        slot = item.get_slot().title()
+                        if slot not in equippeditems or equippeditems[slot][0].get_quality()["id"] == 0:
+                            equippeditems[slot] = []
+                        equippeditems[slot].append(itemtools.process_attributes([item])[0])
+
+                return templates.loadout(lclass, userp, sorted(equippeditems.iterkeys()), equippeditems,  allclasses)
+            return templates.loadout(lclass, userp, None, None, allclasses)
+        except steam.tf2.TF2Error as E:
+            return templates.error("Backpack error: {0}".format(E))
+        except steam.user.ProfileError as E:
+            return templates.error("Profile error: {0}".format(E))
+        except KeyboardInterrupt:
+            return templates.error("Couldn't load loadout page")
 
 class attrib_dump:
     """ Dumps all schema attributes in a pretty way """
