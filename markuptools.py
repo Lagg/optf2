@@ -47,7 +47,7 @@ def generate_cell(item, invalid = False, show_equipped = True):
     markup = ('<div class="{0} cell-{1}" id="s{2}">' +
               '<a class="item_link" href="{3}">' +
               '<img class="item-image small" src="{4}" alt="{5}"/>' +
-              '</a>').format(cell_class, quality, item_id, item_link, item.optf2["image_url"], item.get_name().encode("utf-8"))
+              '</a>').format(cell_class, quality, item_id, item_link, item.optf2["image_url"], item_id)
 
     if item.get_custom_name():
         markup += '<img src="' + static_prefix + 'name_tag.png" class="icon-name" alt="Named"/>'

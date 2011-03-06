@@ -210,7 +210,6 @@ a.button { text-decoration: none; }
     text-align: left;
     margin: 5px;
     position: relative;
-    display: inline;
     cursor: pointer;
     background-color: #303030;
     background-image: url("dropdown_arrow.png");

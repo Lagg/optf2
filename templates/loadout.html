@@ -3,7 +3,7 @@ $var title: $project_name - Loadout List
 
 <div id="header">
   <h2><a href="${virtual_root}user/${user.get_id64()}">${user.get_persona()}'s</a> <span style="color: #dddddd;">Loadouts</span> </h2>
-  <div class="dropdown-menu">
+  <div class="dropdown-menu" style="width: 10em; margin: auto;">
     $if items:
         <b><img src="${static_prefix}${lclass}_icon.png" alt="${lclass}"/> $lclass</b>
     $else:
@@ -18,7 +18,7 @@ $var title: $project_name - Loadout List
   $if items:
       <dl style="margin: 0 auto 0 auto; width: 50%; text-align: left;">
       $for k in slots:
-          <dt style="clear: both;"><h4>$k</h4></dt>
+          <dt style="clear: both;"><b>$k</b></dt>
             $for item in items[k]:
                 <dd>$:markup.generate_cell(item, show_equipped = False)</dd>
       </dl>
