@@ -279,7 +279,7 @@ def process_attributes(items):
 
                 if raw_rgb == 1:
                     # Team Spirit
-                    item_color = 'url("{0}team_splotch.png")'.format(config.static_prefix)
+                    item_color = "url('{0}team_splotch.png')".format(config.static_prefix)
                 else:
                     item_color = "#{0:02X}{1:02X}{2:02X}".format((raw_rgb >> 16) & 0xFF,
                                                                  (raw_rgb >> 8) & 0xFF,

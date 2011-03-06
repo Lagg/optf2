@@ -5,59 +5,6 @@ $ realn = user.get_real_name()
 $var title: $project_name - $usern's Backpack
 $ perma = "{0}user/{1}".format(virtual_root, user.get_id64())
 $ rss = "{0}feed/{1}".format(virtual_root, user.get_id64())
-$def insert_cell(item, user, sortby, invalid = False):
-      $if not item:
-          $ return '<div class="item_cell"></div>'
-      $ item_id = item.get_id()
-      $ item_link = "{0}item/{1}".format(virtual_root, item_id)
-      $ quality = item.get_quality()["str"]
-      $ equippedstr = ""
-      $ quantity = item.get_quantity()
-      $ equipped = (len(item.get_equipped_classes()) > 0)
-      $if equipped:
-          $ equippedstr = "Equipped "
-      $if quantity > 1:
-          $if not equipped:
-              $ equippedstr += "{0}".format(quantity)
-          $else:
-              $ equippedstr += "({0})".format(quantity)
-      $ cell_class = "item_cell"
-      $if item.get_position() <= -1: $ cell_class += " undropped"
-      <div class="$cell_class cell-${quality}" id="s${item_id}">
-        <a class="item_link" href="$item_link">
-          <img class="item-image small" src="$item.optf2['image_url']" alt="$item.get_name()"/>
-        </a>
-        $if item.get_custom_name():
-            <img src="${static_prefix}name_tag.png" class="icon-name" alt="Named"/>
-        $if item.get_custom_description():
-            <img src="${static_prefix}desc_tag.png" class="icon-desc"  alt="Described"/>
-        $if "gift_from" in item.optf2:
-            <img src="${static_prefix}gift_icon.png" class="icon-gift"  alt="Gift"/>
-        $if "color" in item.optf2:
-            <span class="paint_splotch" style="background: $item.optf2['color'];">&nbsp;</span>
-        $if equippedstr:
-            <span class="equipped">$equippedstr</span>
-        <div class="item_attribs">
-          $:item.optf2["cell_name"]
-          $ painty = item.optf2.get("painted_text", "")
-          <div class="item-level">Level $item.optf2["level"] $:painty $item.optf2["type"]</div>
-          $if item.optf2["description"]:
-              <div class="item-description">
-                $item.optf2["description"]
-              </div>
-          $for attr in item.optf2["attrs"]:
-              <div class="attr-${attr.get_type()}">
-                $if "gift_content" in item.optf2 and attr.get_name() == "referenced item def":
-                    Contains <span class="prefix-${item.optf2['gift_quality']}">$item.optf2["gift_content"]</span>
-                $else:
-                    $:attr.get_description_formatted().replace("\n", "<br/>")
-              </div>
-          $if item.is_untradable():
-              <div class="attr-neutral">
-                Untradable
-              </div>
-        </div>
-      </div>
 <div id="header" style="position: relative;">
   <div class="toolbar" style="width: 1080px; margin: 0 auto 15px auto;">
   $ cgame = user.get_current_game()
@@ -157,13 +104,13 @@ $def insert_cell(item, user, sortby, invalid = False):
     $if len(baditems) > 0:
         <div id="page-0" class="backpack-page">
           $for item in baditems:
-              $:insert_cell(item, user, sortby, invalid = True)
+              $:markup.generate_cell(item, invalid = True)
         </div>
     $for p in total_pages:
         <div id="page-${p}" class="backpack-page">
           $ slice = p * 50
           $for item in items[slice - 50:slice]:
-              $:insert_cell(item, user, sortby)
+              $:markup.generate_cell(item)
         </div>
   </div>
 </div>

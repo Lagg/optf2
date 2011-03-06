@@ -19,33 +19,7 @@ $var title: $project_name - All Items
 <div id="content">
   <div id="backpack">
   $for item in items:
-      $ item_link = "{0}item/{1}".format(virtual_root, item.get_schema_id())
-      $ qitem = item.get_quality()["str"]
-      $ painty = item.optf2.get("painted_text", "")
-      $ item_id = item.get_schema_id()
-      <div class="item_cell cell-${qitem}" id="s${item_id}">
-        <a class="item_link" href="$item_link">
-          <img class="item-image small" src="$item.optf2['image_url']" alt="$item.get_name()"/>
-        </a>
-        $if "color" in item.optf2:
-            <span class="paint_splotch" style="background: $item.optf2['color'];">&nbsp;</span>
-        <div class="item_attribs">
-          $:item.optf2["cell_name"]
-          <div class="item-level">Level $item.optf2["level"] $:painty $item.optf2["type"]</div>
-          $if item.optf2["description"]:
-              <div class="item-description">
-                $item.optf2["description"]
-              </div>
-          $for attr in item.optf2["attrs"]:
-              <div class="attr-${attr.get_type()}">
-                $:attr.get_description_formatted().replace("\n", "<br/>")
-              </div>
-          $if item.is_untradable():
-              <div class="attr-neutral">
-                Untradable
-              </div>
-        </div>
-      </div>
+      $:markup.generate_cell(item)
   </div>
 </div>
 <div id="footer">

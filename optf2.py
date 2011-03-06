@@ -28,6 +28,7 @@ try:
     steam.set_api_key(config.api_key)
     import database, itemtools
     import time
+    import markuptools
 except ImportError as E:
     print(str(E))
     raise SystemExit
@@ -63,7 +64,8 @@ render_globals = {"css_url": config.css_url,
                   "wiki_url": "http://wiki.teamfortress.com/wiki/",
                   "news_url": config.news_url,
                   "qurl": web.http.changequery,
-                  "iurl": web.input
+                  "iurl": web.input,
+                  "markup": markuptools
                   }
 
 app = web.application(urls, globals())
