@@ -15,7 +15,6 @@ OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 """
 
 import web, config, steam, database, re
-from copy import deepcopy
 
 qualitydict = {"unique": "The",
                "normal": ""}
@@ -255,13 +254,13 @@ def process_attributes(items):
         if pb_level != None: item.optf2["level"] = pb_level
 
         for theattr in attrs:
-            newattr = deepcopy(theattr)
-            desc = newattr.get_description()
+            newattr = {}
+            desc = theattr.get_description()
 
             # Contained item is a schema id, this is an incredibly
             # ugly hack but I'm too stubborn to make DB changes for this
-            if newattr.get_name() == "referenced item def":
-                giftcontents = newattr.get_value()
+            if theattr.get_name() == "referenced item def":
+                giftcontents = theattr.get_value()
 
                 if not isinstance(giftcontents, dict):
                     giftcontents = item._schema[(int(giftcontents))]
@@ -274,11 +273,11 @@ def process_attributes(items):
                 item.optf2["gift_quality"] = giftcontents.get_quality()["str"]
                 item.optf2["gift_item"] = giftcontents
 
-                newattr._attribute["description_string"] = 'Contains ' + item.optf2["gift_content"]
-                newattr._attribute["hidden"] = False
+                newattr["description_string"] = 'Contains ' + item.optf2["gift_content"]
+                newattr["hidden"] = False
 
-            if newattr.get_name() == "set item tint RGB":
-                raw_rgb = int(newattr.get_value())
+            if theattr.get_name() == "set item tint RGB":
+                raw_rgb = int(theattr.get_value())
 
                 if raw_rgb == 1:
                     # Team Spirit
@@ -302,27 +301,28 @@ def process_attributes(items):
                 item.optf2["color"] = item_color
                 continue
 
-            if newattr.get_name() == "attach particle effect":
-                newattr._attribute["description_string"] = ("Effect: " +
-                                                            particledict.get(int(newattr.get_value()), particledict[0]))
+            if theattr.get_name() == "attach particle effect":
+                newattr["description_string"] = ("Effect: " +
+                                                 particledict.get(int(theattr.get_value()), particledict[0]))
 
-            if newattr.get_name() == "gifter account id":
-                newattr._attribute["description_string"] = "Gift"
-                item.optf2["gift_from"] = "7656" + str(int(newattr.get_value()) +
+            if theattr.get_name() == "gifter account id":
+                newattr["description_string"] = "Gift"
+                item.optf2["gift_from"] = "7656" + str(int(theattr.get_value()) +
                                                        1197960265728)
                 try:
                     user = database.load_profile_cached(item.optf2["gift_from"], stale = True)
                     item.optf2["gift_from_persona"] = user.get_persona()
-                    newattr._attribute["description_string"] = "Gift from " + item.optf2["gift_from_persona"]
+                    newattr["description_string"] = "Gift from " + item.optf2["gift_from_persona"]
                 except:
                     item.optf2["gift_from_persona"] = "this user"
 
-            if not newattr.is_hidden():
-                newattr._attribute["description_string"] = web.websafe(newattr.get_description())
+            if not newattr.get("hidden", theattr.is_hidden()):
+                newattr["description_string"] = web.websafe(newattr.get("description_string",
+                                                                        theattr.get_description()))
             else:
                 continue
 
-            item.optf2["attrs"].append(newattr)
+            item.optf2["attrs"].append(steam.tf2.item_attribute(dict(theattr._attribute.items() + newattr.items())))
 
         if "gift_item" in item.optf2:
             item.optf2["gift_item"].optf2["gift_from_persona"] = item.optf2["gift_from_persona"]

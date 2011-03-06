@@ -18,7 +18,6 @@ import config, steam, urllib2, web, os
 import cPickle as pickle
 from cStringIO import StringIO
 from time import time
-from copy import deepcopy
 
 database_obj = config.database_obj
 
@@ -111,8 +110,8 @@ def refresh_pack_cache(user):
             contents = item.get_contents()
             for attr in attribs:
                 if contents and attr.get_id() == 194:
-                    attr._attribute["value"] = deepcopy(contents._item)
-                pattribs.append(deepcopy(attr._attribute))
+                    attr._attribute["value"] = contents._item
+                pattribs.append(attr._attribute)
 
             if len(pattribs) > 0 and "attributes" in item._item:
                 item._item["attributes"]["attribute"] = pattribs
