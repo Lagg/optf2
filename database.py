@@ -84,7 +84,7 @@ def load_schema_cached(lang, fresh = False):
     return schema_object
 
 def refresh_pack_cache(user):
-    pack = steam.tf2.backpack(schema = web.ctx.item_schema)
+    pack = steam.tf2.backpack(schema = load_schema_cached(web.ctx.language))
     pack.load(user)
     ts = int(time())
 
@@ -94,8 +94,7 @@ def refresh_pack_cache(user):
         try:
             packitems = list(pack)
         except steam.tf2.ItemError:
-            web.ctx.item_schema = load_schema_cached(web.ctx.item_schema.get_language(), fresh = True)
-            pack.set_schema(web.ctx.item_schema)
+            pack.set_schema(load_schema_cached(web.ctx.language, fresh = True))
             packitems = list(pack)
         thequery = web.db.SQLQuery("INSERT INTO items (id64, " +
                                    "owner, sid, level, untradeable, " +
@@ -206,6 +205,7 @@ def load_pack_cached(user, stale = False, date = None):
             except: pass
             thepack = fetch_pack_for_user(user)
     if thepack:
+        schema = load_schema_cached(web.ctx.language)
         with database_obj.transaction():
             query = web.db.SQLQuery("SELECT * FROM items WHERE id64=")
             items = pickle.loads(str(thepack["backpack"]))
@@ -216,5 +216,5 @@ def load_pack_cached(user, stale = False, date = None):
             if len(items) > 0:
                 dbitems = database_obj.query(query)
 
-            packresult = [steam.tf2.item(web.ctx.item_schema, db_to_itemobj(item)) for item in dbitems]
+            packresult = [steam.tf2.item(schema, db_to_itemobj(item)) for item in dbitems]
         return packresult

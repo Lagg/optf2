@@ -75,7 +75,7 @@ def lang_hook():
     lang = web.input().get("lang")
 
     if lang not in config.valid_languages: lang = "en"
-    web.ctx.item_schema = database.load_schema_cached(lang)
+    web.ctx.language = lang
 
 app.add_processor(web.loadhook(lang_hook))
 templates = web.template.render(config.template_dir, base = "base",
@@ -124,7 +124,7 @@ class schema_dump:
     def GET(self):
         try:
             query = web.input()
-            items = web.ctx.item_schema
+            items = database.load_schema_cached(web.ctx.language)
 
             if "sortclass" in query:
                 items = itemtools.filter_by_class(items, query["sortclass"])
@@ -149,7 +149,8 @@ class loadout:
 
             if lclass in classes:
                 items = itemtools.filter_by_class(items, lclass)
-                normalitems = itemtools.filter_by_quality(itemtools.filter_by_class(web.ctx.item_schema, lclass), "0")
+                normalitems = itemtools.filter_by_quality(itemtools.filter_by_class(database.load_schema_cached(web.ctx.language),
+                                                                                    lclass), "0")
 
                 for item in normalitems:
                     slot = item.get_slot().title()
@@ -180,11 +181,12 @@ class attrib_dump:
     def GET(self):
         try:
             query = web.input()
-            attribs = web.ctx.item_schema.get_attributes()
+            schema = database.load_schema_cached(web.ctx.language)
+            attribs = schema.get_attributes()
 
             attachment_check = query.get("att")
             if attachment_check:
-                items = web.ctx.item_schema
+                items = schema
                 attached_items = []
 
                 for item in items:
@@ -240,10 +242,12 @@ class user_completion:
 
 class pack_item:
     def GET(self, iid):
+        schema = database.load_schema_cached(web.ctx.language)
+
         def item_get(id64):
             item = database.fetch_item_for_id(id64)
             if not item:
-                item = web.ctx.item_schema[long(id64)]
+                item = schema[long(id64)]
             return item
 
         try:
@@ -255,7 +259,7 @@ class pack_item:
             theitem = item_get(idl[1])
             if not isinstance(theitem, steam.tf2.item):
                 user = database.load_profile_cached(str(theitem["owner"]), stale = True)
-                theitem = steam.tf2.item(web.ctx.item_schema, theitem)
+                theitem = steam.tf2.item(schema, theitem)
                 if user:
                     backpack = database.fetch_pack_for_user(user)
                     if backpack and theitem.get_id() not in pickle.loads(str(backpack["backpack"])):
@@ -401,6 +405,7 @@ class pack_fetch:
 
         web.ctx.env["optf2_rss_url"] = "{0}feed/{1}".format(config.virtual_root, uid64)
         web.ctx.env["optf2_rss_title"] = "{0}'s Backpack".format(user.get_persona().encode("utf-8"))
+
         return templates.inventory(user, isvalve, items, views,
                                    filter_classes, baditems,
                                    stats, timestamps, filter_qualities,

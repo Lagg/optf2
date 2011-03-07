@@ -52,7 +52,7 @@ def generate_full_item_name(item, ignore_qdict = False, strip_prefixes = False):
     pretty_quality_str = item.get_quality()["prettystr"]
     custom_name = item.get_custom_name()
     item_name = item.get_name()
-    language = web.ctx.item_schema.get_language()
+    language = web.ctx.language
 
     if ignore_qdict:
         prefix = pretty_quality_str
