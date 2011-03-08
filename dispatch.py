@@ -24,11 +24,12 @@ try:
     import steam, os, json, urllib2
     import web
     import cPickle as pickle
+    import time
     import config
     steam.set_api_key(config.api_key)
-    import database, itemtools
-    import time
-    import markuptools
+    from optf2.backend import database
+    from optf2.backend import items as itemtools
+    import optf2.frontend.markup as markuptools
 except ImportError as E:
     print(str(E))
     raise SystemExit

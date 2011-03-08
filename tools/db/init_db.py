@@ -5,7 +5,7 @@
 import config
 from openid.store import sqlstore
 
-schema = file("db/schema.sql").read().split(';')
+schema = file("schema.sql").read().split(';')
 
 for query in schema:
     query = query.strip().strip('\n')
