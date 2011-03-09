@@ -121,8 +121,20 @@ def sort(items, sortby):
                           y.get_position())
     elif sortby == "level":
         def itemcmp(x, y):
-            return defcmp(x.get_level(),
-                          y.get_level())
+            levelx = x.get_level()
+            levely = y.get_level()
+
+            if not levelx:
+                levelx = x.get_min_level()
+                levelxmax = x.get_max_level()
+                if levelx != levelxmax: levelx = levelxmax - levelx
+
+                levely = y.get_min_level()
+                levelymax = y.get_max_level()
+                if levely != levelymax: levely = levelymax - levely
+
+            return defcmp(levelx,
+                          levely)
     elif sortby == "name":
         def itemcmp(x, y):
             return defcmp(generate_full_item_name(x, strip_prefixes = True),
@@ -141,6 +153,9 @@ def sort(items, sortby):
                 return defcmp(cx[0], cy[0])
             else:
                 return defcmp(lenx, leny)
+    elif sortby == "schemaid":
+        def itemcmp(x, y):
+            return defcmp(x.get_schema_id(), y.get_schema_id())
 
     if itemcmp:
         items.sort(cmp = itemcmp)

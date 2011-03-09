@@ -125,14 +125,20 @@ class schema_dump:
     def GET(self):
         try:
             query = web.input()
-            items = database.load_schema_cached(web.ctx.language)
+            items = list(database.load_schema_cached(web.ctx.language))
+            filter_qualities = itemtools.get_present_qualities(items)
 
-            if "sortclass" in query:
-                items = itemtools.filter_by_class(items, query["sortclass"])
+            try: items = itemtools.filter_by_class(items, query["sortclass"])
+            except KeyError: pass
+            try: items = itemtools.filter_by_quality(items, query["quality"])
+            except KeyError: pass
+            try: items = itemtools.sort(items, query["sort"])
+            except KeyError: pass
 
+            stats = itemtools.get_stats(items)
             filter_classes = itemtools.get_equippable_classes(items)
 
-            return templates.schema_dump(itemtools.process_attributes(items), filter_classes)
+            return templates.schema_dump(itemtools.process_attributes(items), filter_classes, filter_qualities = filter_qualities, stats = stats)
         except:
             return templates.error("Couldn't load schema")
 
@@ -198,7 +204,7 @@ class attrib_dump:
                             attached_items.append(item)
                             break
 
-                return templates.schema_dump(itemtools.process_attributes(attached_items), [], attachment_check)
+                return templates.schema_dump(itemtools.process_attributes(attached_items), [], attrdump = attachment_check)
 
             if query.get("wikitext"):
                 web.header("Content-Type", "text/plain; charset=UTF-8")

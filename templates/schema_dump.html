@@ -1,4 +1,4 @@
-$def with (items, filter_classes, attrdump = None)
+$def with (items, filter_classes, stats = None, attrdump = None, filter_qualities = None)
 $var title: $project_name - All Items
 
 <div id="header">
@@ -6,15 +6,43 @@ $var title: $project_name - All Items
       <h2>$attrdump</h2>
       <h5><a href="${virtual_root}attrib_dump#${encode_url(attrdump.replace(' ', '_'))}">Back to table</a></h5>
   $else:
-      <h2>All items in TF2</h2>
-      <div class="sortlinks">
-        Filter:
-        <a href="$qurl(sortclass = None)"><img src="${static_prefix}tf_icon.png" alt="All" title="All"/></a>
-        $for k in filter_classes:
-            <a href="$qurl(sortclass = k)">
-              <img src="${static_prefix}${k}_icon.png" alt="${k}" title="${k}"/>
-            </a>
+      <div class="toolbar" style="margin-bottom: 15px;">
+        <div style="float: left;" class="dropdown-menu">
+          <b>Sort</b>
+          <ul>
+            <li><a href="$qurl(sort = None)">Default</a></li>
+            <li><a href="$qurl(sort = 'schemaid')">Serial</a></li>
+            <li><a href="$qurl(sort = 'level')">Level</a></li>
+            <li><a href="$qurl(sort = 'name')">Name</a></li>
+            <li><a href="$qurl(sort = 'slot')">Type</a></li>
+            <li><a href="$qurl(sort = 'class')">Class</a></li>
+          </ul>
+        </div>
+        <div style="float: left;" class="dropdown-menu">
+          <b>Class</b>
+          <ul>
+            <li><a href="$qurl(sortclass = None)"><img src="${static_prefix}tf_icon.png" alt="All" title="All"/> All</a></li>
+            $for k in filter_classes:
+                <li>
+                  <a href="$qurl(sortclass = k)">
+                    <img src="${static_prefix}${k}_icon.png" alt="${k}" title="${k}"/> $k
+                  </a>
+                </li>
+          </ul>
+        </div>
+        <div style="float: left;" class="dropdown-menu">
+          <b>Quality</b>
+          <ul>
+            <li><a href="$qurl(quality = None)">All</a></li>
+            $for q in filter_qualities:
+                <li><a href="$qurl(quality = q['id'])"><span class="prefix-${q['str']}">$q["prettystr"]</span></a></li>
+          </ul>
+        </div>
+        <div style="float: right;">
+          $stats["weapons"] weapons | $stats["hats"] hats | $stats["misc"] misc ($stats["total"] total)
+        </div>
       </div>
+
 </div>
 <div id="content">
   <div id="backpack">
