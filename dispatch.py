@@ -150,9 +150,8 @@ class loadout:
         try:
             userp = database.load_profile_cached(user)
             items = database.load_pack_cached(userp)
-            classes = itemtools.get_equippable_classes(items)
+            classes = [v for k, v in steam.tf2.item.equipped_classes.iteritems()]
             equippeditems = {}
-            allclasses = [v for k, v in steam.tf2.item.equipped_classes.iteritems()]
 
             if lclass in classes:
                 items = itemtools.filter_by_class(items, lclass)
@@ -173,8 +172,8 @@ class loadout:
                             equippeditems[slot] = []
                         equippeditems[slot].append(itemtools.process_attributes([item])[0])
 
-                return templates.loadout(lclass, userp, sorted(equippeditems.iterkeys()), equippeditems,  allclasses)
-            return templates.loadout(lclass, userp, None, None, allclasses)
+                return templates.loadout(lclass, userp, sorted(equippeditems.iterkeys()), equippeditems,  classes)
+            return templates.loadout(lclass, userp, None, None, classes)
         except steam.tf2.TF2Error as E:
             return templates.error("Backpack error: {0}".format(E))
         except steam.user.ProfileError as E:
