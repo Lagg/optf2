@@ -14,7 +14,7 @@ ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
 OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 """
 
-import web, config, steam, database, re
+import web, config, steam, database, re, operator
 
 qualitydict = {"unique": "The",
                "normal": ""}
@@ -100,65 +100,44 @@ def sort(items, sortby):
         return [None] * config.backpack_padded_size
 
     itemcmp = None
-    def defcmp(x, y):
-        if x < y:
-            return -1
-        elif x > y:
-            return 1
-        elif x == y:
-            return 0
 
     if sortby == "time":
         items.reverse()
 
     if sortby == "serial":
-        def itemcmp(x, y):
-            return defcmp(x.get_id(),
-                          y.get_id())
+        itemcmp = operator.methodcaller("get_id")
     elif sortby == "cell":
-        def itemcmp(x, y):
-            return defcmp(x.get_position(),
-                          y.get_position())
+        itemcmp = operator.methodcaller("get_position")
     elif sortby == "level":
-        def itemcmp(x, y):
-            levelx = x.get_level()
-            levely = y.get_level()
+        def levelcmp(obj):
+            level = obj.get_level()
 
-            if not levelx:
-                levelx = x.get_min_level()
-                levelxmax = x.get_max_level()
-                if levelx != levelxmax: levelx = levelxmax - levelx
+            if not level:
+                level = obj.get_min_level()
+                levelmax = obj.get_max_level()
+                if level != levelmax: level = levelmax - level
 
-                levely = y.get_min_level()
-                levelymax = y.get_max_level()
-                if levely != levelymax: levely = levelymax - levely
-
-            return defcmp(levelx,
-                          levely)
+            return level
+        itemcmp = lambda obj: levelcmp(obj)
     elif sortby == "name":
-        def itemcmp(x, y):
-            return defcmp(generate_full_item_name(x, strip_prefixes = True),
-                          generate_full_item_name(y, strip_prefixes = True))
+        itemcmp = lambda obj: generate_full_item_name(obj, strip_prefixes = True)
     elif sortby == "slot":
-        def itemcmp(x, y):
-            return defcmp(x.get_slot(), y.get_slot())
+        itemcmp = operator.methodcaller("get_slot")
     elif sortby == "class":
-        def itemcmp(x, y):
-            cx = x.get_equipable_classes()
-            cy = y.get_equipable_classes()
-            lenx = len(cx)
-            leny = len(cy)
+        def classcmp(obj):
+            eq = obj.get_equipable_classes()
+            eqlen = len(eq)
 
-            if lenx == 1 and leny == 1:
-                return defcmp(cx[0], cy[0])
+            if eqlen == 1:
+                return eq[0]
             else:
-                return defcmp(lenx, leny)
+                return eqlen
+        itemcmp = lambda obj: classcmp(obj)
     elif sortby == "schemaid":
-        def itemcmp(x, y):
-            return defcmp(x.get_schema_id(), y.get_schema_id())
+        itemcmp = operator.methodcaller("get_schema_id")
 
     if itemcmp:
-        items.sort(cmp = itemcmp)
+        items.sort(key = itemcmp)
 
     itemcount = len(items)
     highestpos = items[-1].get_position()
