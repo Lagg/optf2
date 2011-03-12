@@ -33,7 +33,7 @@ $def generate_class_icon_link(classes):
   </div>
   $if extra["description"]:
       <div class="item-description">
-        $extra["description"]
+        $:extra["description"].replace("\n", "<br/>")
       </div>
   $for attr in extra["attrs"]:
       $ desc = attr.get_description_formatted()

@@ -68,7 +68,7 @@ def generate_cell(item, invalid = False, show_equipped = True):
                                                                        painty,
                                                                        item.optf2["type"].encode("utf-8"))
 
-    if item.optf2["description"]: markup += '<div class="item-description">' + item.optf2["description"].encode("utf-8") + '</div>'
+    if item.optf2["description"]: markup += '<div class="item-description">' + item.optf2["description"].replace("\n", "<br/>").encode("utf-8") + '</div>'
 
     for attr in item.optf2["attrs"]:
         markup += '<div class="attr-' + attr.get_type().encode("utf-8") + '">'
