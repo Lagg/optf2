@@ -64,8 +64,7 @@ def generate_cell(item, invalid = False, show_equipped = True):
 
     painty = item.optf2.get("painted_text", "")
 
-    markup += '<div class="item-level">Level {0} {1} {2}</div>'.format(item.optf2["level"],
-                                                                       painty,
+    markup += '<div class="item-level">Level {0} {1}</div>'.format(item.optf2["level"],
                                                                        item.optf2["type"].encode("utf-8"))
 
     if item.optf2["description"]: markup += '<div class="item-description">' + item.optf2["description"].replace("\n", "<br/>").encode("utf-8") + '</div>'
@@ -78,8 +77,12 @@ def generate_cell(item, invalid = False, show_equipped = True):
             markup += attr.get_description_formatted().replace("\n", "<br/>")
         markup += '</div>'
 
+    if "paintcan" in item.optf2:
+        paintcan = item.optf2["paint_name"]
+        markup += '<div class="attr-positive">{1} with {2}</div>'.format(item.optf2["painted_text"], item.get_name())
+
     if item.is_untradable():
-              markup += '<div class="attr-neutral">Untradable</div>'
+        markup += '<div class="attr-neutral">Untradable</div>'
 
     markup += '</div></div>\n'
 

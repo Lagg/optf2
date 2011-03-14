@@ -281,12 +281,20 @@ def process_attributes(items):
                                                                  (raw_rgb >> 8) & 0xFF,
                                                                  (raw_rgb) & 0xFF)
 
+                for sitem in item._schema:
+                    if sitem._schema_item.get("name", "").startswith("Paint Can"):
+                        matchingcan = None
+                        for paintattr in sitem:
+                            if (paintattr.get_name() == "set item tint RGB" and
+                                int(paintattr.get_value()) == raw_rgb):
+                                matchingcan = sitem
+                                break
+                        if matchingcan:
+                            item.optf2["paint_name"] = matchingcan.get_name()
+                            break
+
                 # Workaround until the icons for colored paint cans are correct
-                try:
-                    schema_paintcan = item._schema[item.get_schema_id()]
-                except KeyError: schema_paintcan = 0
-                if (schema_paintcan and
-                    schema_paintcan._item.get("name", "").startswith("Paint Can") and
+                if (item._schema_item.get("name", "").startswith("Paint Can") and
                     raw_rgb != 0 and raw_rgb != 1):
                     paintcan_url = "{0}item_icons/Paint_Can_{1}.png".format(config.static_prefix,
                                                                             item_color[1:])
@@ -342,7 +350,7 @@ def process_attributes(items):
         if is_gift_contents:
             prefix = '<span class="prefix-giftwrapped">Giftwrapped</span>'
         item.optf2["painted_text"] = paint_job
-        item.optf2["dedicated_name"] = "{0} {1} {2}".format(_(prefix), _(paint_job), _(full_default_name))
+        item.optf2["dedicated_name"] = "{0} {1}".format(_(prefix), _(full_default_name))
 
         if color:
             paint_job = "Painted"

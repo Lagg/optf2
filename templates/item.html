@@ -50,6 +50,10 @@ $def generate_class_icon_link(classes):
       <div class="attr-neutral">
         Untradable
       </div>
+  $if "paint_name" in item.optf2:
+      <div class="attr-positive">
+        $:{item.optf2["painted_text"]} with ${item.optf2["paint_name"]}
+      </div>
   $if user:
       $ serial = item.get_id()
       $if "gift_from" in extra and not serial:
