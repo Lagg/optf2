@@ -382,7 +382,12 @@ def get_equippable_classes(items):
         classes = item.get_equipable_classes()
         valid_classes |= set(classes)
 
-    return sorted(list(valid_classes))
+    unordered = list(valid_classes)
+    ordered = list(steam.tf2.item.equipped_classes.values())
+    for oclass in ordered:
+        if oclass not in unordered: del oclass
+
+    return ordered
 
 def _quality_sort(x, y):
     px = x["prettystr"]

@@ -150,7 +150,7 @@ class loadout:
         try:
             userp = database.load_profile_cached(user)
             items = database.load_pack_cached(userp)
-            classes = [v for k, v in steam.tf2.item.equipped_classes.iteritems()]
+            classes = steam.tf2.item.equipped_classes.values()
             equippeditems = {}
 
             if lclass in classes:
