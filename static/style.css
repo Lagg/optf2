@@ -9,7 +9,7 @@ body { background: #181818; color: white; font-family: Arial, Helvetica, sans-se
     visibility: hidden;
     margin: 20px 0 20px 0;
 }
-#page-switcher { text-align: left; padding-left: 10px; }
+#page-switcher { text-align: right; padding-right: 10px; }
 #page-counter { font-weight: bold; font-size: 13px; margin: 0 5px 0 5px; }
 
 .item-description, .item-level { color: white; }
@@ -183,7 +183,6 @@ img { border: 0; }
     cursor: pointer;
     background-color: #353535;
     padding: 5px;
-    min-width: 100px;
     font-weight: bold;
     text-align: center;
     -moz-border-radius: 8px;
@@ -236,7 +235,7 @@ a.button { text-decoration: none; }
 .dropdown-menu ul li:hover { background: #404040; }
 .dropdown-menu:hover ul { display: block; }
 
-.toolbar { background: #505050; position: relative; border: 1px solid black; padding: 5px; height: 36px; }
+.toolbar { background: #505050; position: relative; border: 1px solid black; padding: 5px; height: 36px; min-width: 1080px; }
 .tool {
     text-align: left;
     padding: 2px 20px 0 20px;
