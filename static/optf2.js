@@ -2,6 +2,7 @@ var current_page = 0;
 var page_switcher = document.createElement("div");
 var ispaginated = false;
 var last_dialog_size = null;
+var invalid_icon_url = virtual_root + "static/item_icons/Invalid_icon.png";
 
 $(document).ready(function(){
     $(".item_link").removeAttr("href");
@@ -91,7 +92,8 @@ $(document).ready(function(){
     });
 
     $(".item-image").one("error", function() {
-        this.src = virtual_root + "static/item_icons/Invalid_icon.png";
+        this.src = invalid_icon_url;
+        $(this).addClass("invalid");
     });
 
     $(".button").mousedown(function() { return false; });
@@ -151,7 +153,13 @@ function item_open_success(data, status, xhr) {
 
     $(dialog_content).dialog({
         resize: item_resize_event,
-        open: item_resize_event,
+        open: function(event, ui) {
+            cellimg = $("#s" + item_id + " .item-image");
+            if (cellimg.hasClass("invalid")) {
+                $(event.target).find(".item-image").attr("src", invalid_icon_url);
+            }
+            item_resize_event(event, ui);
+        },
         title: dialog_title,
         width: dialog_width,
         height: dialog_height,
