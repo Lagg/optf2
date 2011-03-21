@@ -103,7 +103,9 @@ $def generate_class_icon_link(classes):
         $else:
             $:generate_class_icon_link(equipable)
       </div>
-  <br/><a href="$item_wiki_url">Official TF Wiki Article</a>
+  <br/><a href="$item_wiki_url">Official TF Wiki article</a>
+  $if user:
+      <br/><br/><a href="${virtual_root}item/${item.get_schema_id()}">Schema version</a>
   </div>
   </div>
 </div>

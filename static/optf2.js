@@ -154,7 +154,7 @@ function item_open_success(data, status, xhr) {
     $(dialog_content).dialog({
         resize: item_resize_event,
         open: function(event, ui) {
-            cellimg = $("#s" + item_id + " .item-image");
+            var cellimg = $("#s" + item_id + " .item-image");
             if (cellimg.hasClass("invalid")) {
                 $(event.target).find(".item-image").attr("src", invalid_icon_url);
             }
