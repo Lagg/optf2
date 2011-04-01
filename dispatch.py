@@ -389,25 +389,24 @@ class pack_fetch:
             return templates.error("Failed to load backpack")
 
         isvalve = (user.get_primary_group() == valve_group_id)
-        views = 1
+        views = 0
         uid64 = user.get_id64()
         ipaddr = web.ctx.ip
 
         with db_obj.transaction():
-            count = list(db_obj.select("search_count", where = "id64 = $id64 AND ip = $ip",
-                                       vars = {"ip": ipaddr, "id64": uid64}))
+            count = db_obj.select("search_count", where = "id64 = $id64 AND ip = $ip",
+                                  vars = {"ip": ipaddr, "id64": uid64})
             if len(count) <= 0:
-                db_obj.query("INSERT INTO search_count (id64, ip) VALUES ($id64, $ip)",
-                             vars = {"id64": uid64, "ip": ipaddr})
-
-            views = db_obj.query("SELECT COUNT(*) AS views FROM search_count WHERE id64 = $id64",
-                                 vars = {"id64": uid64})[0]["views"]
-            db_obj.query("INSERT INTO unique_views (id64, persona, valve, count) VALUES " +
-                         "($id64, $p, $v, $c) ON DUPLICATE KEY UPDATE id64=VALUES(id64), persona=VALUES(persona),"
-                         " valve=VALUES(valve), count=VALUES(count)", vars = {"id64": uid64,
-                                                                              "p": user.get_persona(),
-                                                                              "v": isvalve,
-                                                                              "c": views})
+                db_obj.insert("search_count", ip = ipaddr, id64 = uid64)
+                views = 1
+            db_obj.query("INSERT INTO unique_views (id64, persona, valve) VALUES " +
+                         "($id64, $p, $v) ON DUPLICATE KEY UPDATE id64=VALUES(id64), persona=VALUES(persona),"
+                         " valve=VALUES(valve), count=count+$c", vars = {"id64": uid64,
+                                                                         "p": user.get_persona(),
+                                                                         "v": isvalve,
+                                                                         "c": views})
+            views = db_obj.select("unique_views", what = "count", where = "id64 = $id64",
+                                  vars = {"id64": uid64})[0]["count"]
 
         web.ctx.env["optf2_rss_url"] = "{0}feed/{1}".format(config.virtual_root, uid64)
         web.ctx.env["optf2_rss_title"] = "{0}'s Backpack".format(user.get_persona().encode("utf-8"))
