@@ -272,7 +272,7 @@ function backpack_mode_full(pages) {
 }
 
 function delete_cookie(cookie) {
-    document.cookie = cookie + "=0; expires=Thu Feb 17 2011 08:33:55 GMT-0700 (MST);";
+    document.cookie = cookie + "=0; expires=Thu Feb 17 2011 08:33:55 GMT-0700 (MST); path=/";
 }
 
 function get_cookie(cookie) {
@@ -289,5 +289,5 @@ function get_cookie(cookie) {
 }
 
 function set_cookie(cookie, val) {
-    document.cookie = cookie + "=" + val;
+    document.cookie = cookie + "=" + val+"; path=/";
 }
