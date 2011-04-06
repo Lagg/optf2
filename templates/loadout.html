@@ -1,25 +1,26 @@
-$def with (lclass, user, slots, items, classlist)
+$def with (user, items, classlist, slotlist)
 $var title: $project_name - Loadout List
 
 <div id="header">
-  <h2><a href="${virtual_root}user/${user.get_id64()}">${user.get_persona()}'s</a> <span style="color: #dddddd;">Loadouts</span> </h2>
-  <div class="dropdown-menu" style="width: 10em; margin: auto;">
-    $if items:
-        <b><img src="${static_prefix}${lclass}_icon.png" alt="${lclass}"/> $lclass</b>
-    $else:
-        <b>Choose a class</b>
-    <ul>
-      $for c in classlist:
-          <li><a href="$qurl({'class':  c})"><img src="${static_prefix}${c}_icon.png" alt="${c}"/> ${c}</a></li>
-    </ul>
-  </div>
+  <h2><a href="${virtual_root}user/${user.get_id64()}">${user.get_persona()}'s</a> <span style="color: #dddddd;">Loadouts</span></h2>
 </div>
 <div id="content">
   $if items:
-      <dl style="margin: 0 auto 0 auto; width: 50%; text-align: left;">
-      $for k in slots:
-          <dt style="clear: both;"><b>$k</b></dt>
-            $for item in items[k]:
-                <dd>$:markup.generate_cell(item, show_equipped = False)</dd>
-      </dl>
+      <div style="margin: 0 auto 0 auto; width: 90%;">
+        $for lclass in classlist:
+            <div class="loadout-box" id="$lclass">
+              <div class="titlebar">
+                <img style="position: absolute; left: 2px; top: 2px;" src="${static_prefix}${lclass}_icon.png" alt="class icon"/>
+                <span style="margin-left: 30px;">$lclass</span>
+              </div>
+              $for slot in slotlist:
+                  $if slot not in items[lclass]:
+                      $ continue
+                  <div class="slot-item">
+                    <div><b>$slot</b></div>
+                  $for item in items[lclass][slot]:
+                      $:markup.generate_cell(item, show_equipped = False)
+                  </div>
+            </div>
+      </div>
 </div>

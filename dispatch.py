@@ -146,34 +146,37 @@ class loadout:
     """ User loadout lists """
 
     def GET(self, user):
-        lclass = web.input().get("class")
         try:
             userp = database.load_profile_cached(user)
             items = database.load_pack_cached(userp)
-            classes = steam.tf2.item.equipped_classes.values()
             equippeditems = {}
+            slotlist = set()
 
-            if lclass in classes:
-                items = itemtools.filter_by_class(items, lclass)
-                normalitems = itemtools.filter_by_quality(itemtools.filter_by_class(database.load_schema_cached(web.ctx.language),
-                                                                                    lclass), "0")
+            normalitems = itemtools.filter_by_quality(database.load_schema_cached(web.ctx.language), "0")
+            for item in normalitems:
+                classes = item.get_equipable_classes()
+                for c in classes:
+                    if c not in equippeditems:
+                        equippeditems[c] = {}
 
-                for item in normalitems:
                     slot = item.get_slot().title()
-                    if slot not in equippeditems:
-                        equippeditems[slot] = []
-                    equippeditems[slot].append(itemtools.process_attributes([item])[0])
+                    slotlist.add(slot)
+                    if slot not in equippeditems[c]:
+                        equippeditems[c][slot] = []
 
-                for item in items:
-                    equippedclasses = item.get_equipped_classes()
-                    if len(equippedclasses) > 0 and lclass in equippedclasses:
-                        slot = item.get_slot().title()
-                        if slot not in equippeditems or equippeditems[slot][0].get_quality()["id"] == 0:
-                            equippeditems[slot] = []
-                        equippeditems[slot].append(itemtools.process_attributes([item])[0])
+                    equippeditems[c][slot].append(itemtools.process_attributes([item])[0])
 
-                return templates.loadout(lclass, userp, sorted(equippeditems.iterkeys()), equippeditems,  classes)
-            return templates.loadout(lclass, userp, None, None, classes)
+            for item in items:
+                classes = item.get_equipped_classes()
+                for c in classes:
+                    slot = item.get_slot().title()
+                    slotlist.add(slot)
+                    if slot not in equippeditems[c] or equippeditems[c][slot][0].get_quality()["id"] == 0:
+                        equippeditems[c][slot] = []
+                    equippeditems[c][slot].append(itemtools.process_attributes([item])[0])
+
+            return templates.loadout(userp, equippeditems,
+                                     steam.tf2.item.equipped_classes.values(), sorted(slotlist))
         except steam.tf2.TF2Error as E:
             return templates.error("Backpack error: {0}".format(E))
         except steam.user.ProfileError as E:
