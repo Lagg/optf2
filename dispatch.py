@@ -150,7 +150,8 @@ class loadout:
             userp = database.load_profile_cached(user)
             items = database.load_pack_cached(userp)
             equippeditems = {}
-            slotlist = set()
+            valid_classes = steam.tf2.item.equipped_classes.values()
+            slotlist = ["Head", "Misc", "Primary", "Secondary", "Melee", "Pda", "Pda2", "Building", "Action"]
 
             normalitems = itemtools.filter_by_quality(database.load_schema_cached(web.ctx.language), "0")
             for item in normalitems:
@@ -160,7 +161,7 @@ class loadout:
                         equippeditems[c] = {}
 
                     slot = item.get_slot().title()
-                    slotlist.add(slot)
+                    if slot not in slotlist: slotlist.append(slot)
                     if slot not in equippeditems[c]:
                         equippeditems[c][slot] = []
 
@@ -170,13 +171,12 @@ class loadout:
                 classes = item.get_equipped_classes()
                 for c in classes:
                     slot = item.get_slot().title()
-                    slotlist.add(slot)
+                    if slot not in slotlist: slotlist.append(slot)
                     if slot not in equippeditems[c] or equippeditems[c][slot][0].get_quality()["id"] == 0:
                         equippeditems[c][slot] = []
                     equippeditems[c][slot].append(itemtools.process_attributes([item])[0])
 
-            return templates.loadout(userp, equippeditems,
-                                     steam.tf2.item.equipped_classes.values(), sorted(slotlist))
+            return templates.loadout(userp, equippeditems, valid_classes, slotlist)
         except steam.tf2.TF2Error as E:
             return templates.error("Backpack error: {0}".format(E))
         except steam.user.ProfileError as E:
