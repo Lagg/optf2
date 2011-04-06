@@ -92,8 +92,7 @@ $def generate_class_icon_link(classes):
           </div>
   $else:
       <div class="attr-neutral">
-        $ schema_id = item.get_schema_id()
-        ID: <span id="item_id">$schema_id</span>
+        ID: <span id="item_id">$item.get_schema_id()</span>
       </div>
       <div class="attr-neutral">
         $ equipable = item.get_equipable_classes()
@@ -102,6 +101,9 @@ $def generate_class_icon_link(classes):
             Not equipable
         $else:
             $:generate_class_icon_link(equipable)
+      </div>
+      <div class="attr-neutral">
+        Slot: $item.get_slot().title()
       </div>
   <br/><a href="$item_wiki_url">Official TF Wiki article</a>
   $if user:
