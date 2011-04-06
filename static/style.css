@@ -44,12 +44,12 @@ body { background: #181818; color: white; font-family: Arial, Helvetica, sans-se
 .attr-neutral, .attr-neutral:visited { color: #dbdbdb; }
 
 .prefix-unique { color: #ffd700; font-weight: bold; }
-.prefix-community { color: #87d459; font-weight: bold; }
-.prefix-developer { color: #db14a0; font-weight: bold; }
-.prefix-normal { color: #d0d0d0; font-weight: bold; }
-.prefix-selfmade { color: #79be50; font-weight: bold; }
-.prefix-vintage { color: #6186c5; font-weight: bold; }
-.prefix-rarity4 { color: #a965d9; font-weight: bold; }
+.prefix-community { color: #70b04a; font-weight: bold; }
+.prefix-developer { color: #a50f79; font-weight: bold; }
+.prefix-normal { color: #b2b2b2; font-weight: bold; }
+.prefix-selfmade { color: #70b04a; font-weight: bold; }
+.prefix-vintage { color: #476291; font-weight: bold; }
+.prefix-rarity4 { color: #8650ac; font-weight: bold; }
 .prefix-rarity1 { color: #4d7455; font-weight: bold; }
 .prefix-giftwrapped { color: #cf2700; }
 
@@ -73,12 +73,12 @@ body { background: #181818; color: white; font-family: Arial, Helvetica, sans-se
 .item_cell[class~=undropped] { background: #302323; }
 
 .cell-unique { border-color: #ffd700; }
-.cell-community { border-color: #87d459; }
-.cell-developer { border-color: #db14a0; }
-.cell-normal { border-color: #d0d0d0; }
-.cell-selfmade { border-color: #79be50; }
-.cell-vintage { border-color: #6186c5; }
-.cell-rarity4 { border-color: #a965d9; }
+.cell-community { border-color: #70b04a; }
+.cell-developer { border-color: #a50f79; }
+.cell-normal { border-color: #b2b2b2; }
+.cell-selfmade { border-color: #70b04a; }
+.cell-vintage { border-color: #476291; }
+.cell-rarity4 { border-color: #8650ac; }
 .cell-rarity1 { border-color: #4d7455; }
 
 .icon-gift { position: absolute; right: 53px; top: 3px; }
