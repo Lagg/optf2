@@ -170,7 +170,12 @@ class loadout:
             for item in items:
                 classes = item.get_equipped_classes()
                 for c in classes:
-                    slot = item.get_slot().title()
+                    # WORKAROUND: There is one unique shotgun for all classes, and it's in the primary slot. This
+                    # has obvious problems
+                    if item.get_schema_id() == 199 and c != "Engineer":
+                        slot = "Secondary"
+                    else:
+                        slot = item.get_slot().title()
                     if slot not in slotlist: slotlist.append(slot)
                     if slot not in equippeditems[c] or equippeditems[c][slot][0].get_quality()["id"] == 0:
                         equippeditems[c][slot] = []
