@@ -11,7 +11,7 @@ $var title: $project_name - Loadout List
             <div class="loadout-box" id="$lclass">
               <div class="titlebar">
                 <img style="position: absolute; left: 2px; top: 2px;" src="${static_prefix}${lclass}_icon.png" alt="class icon"/>
-                <span style="margin-left: 30px;">$lclass</span>
+                <a id="$lclass" href="#$lclass" style="margin-left: 30px;">$lclass</a>
               </div>
               $for slot in slotlist:
                   $if slot not in items[lclass]:

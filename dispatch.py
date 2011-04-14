@@ -357,7 +357,7 @@ class pack_fetch:
                 raise steam.user.ProfileError("Backpack is private")
 
             timestamps = []
-            for ts in database.fetch_pack_for_user(user, tl_size = 10):
+            for ts in database.fetch_pack_for_user(user, tl_size = 20):
                 prettyts = time.ctime(ts["timestamp"])
                 timestamps.append([ts["timestamp"], prettyts])
 
