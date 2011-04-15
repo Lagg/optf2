@@ -108,6 +108,9 @@ $def generate_class_icon_link(classes):
   <br/><a href="$item_wiki_url">Official TF Wiki article</a>
   $if user:
       <br/><br/><a href="${virtual_root}item/${item.get_schema_id()}">Schema version</a>
+      $ oid = item.get_original_id()
+      $if oid and oid != item.get_id():
+          <br/><br/><a href="${virtual_root}item/${oid}">Previous version</a>
   </div>
   </div>
 </div>

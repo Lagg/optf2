@@ -6,6 +6,7 @@ CREATE TABLE IF NOT EXISTS profile_cache (id64 BIGINT UNSIGNED PRIMARY KEY, vani
 CREATE TABLE IF NOT EXISTS unique_views (id64 BIGINT UNSIGNED PRIMARY KEY, count INTEGER UNSIGNED DEFAULT 1, persona TEXT, valve BOOLEAN);
 
 CREATE TABLE IF NOT EXISTS items (id64 BIGINT UNSIGNED PRIMARY KEY,
+                                  oid64 BIGINT UNSIGNED,
                                   owner BIGINT UNSIGNED,
                                   sid INTEGER UNSIGNED,
                                   level INTEGER UNSIGNED,

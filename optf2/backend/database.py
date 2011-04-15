@@ -96,7 +96,7 @@ def refresh_pack_cache(user):
         except steam.tf2.ItemError:
             pack.set_schema(load_schema_cached(web.ctx.language, fresh = True))
             packitems = list(pack)
-        thequery = web.db.SQLQuery("INSERT INTO items (id64, " +
+        thequery = web.db.SQLQuery("INSERT INTO items (id64, oid64, " +
                                    "owner, sid, level, untradeable, " +
                                    "token, quality, custom_name, " +
                                    "custom_desc, attributes, quantity) VALUES ")
@@ -115,7 +115,7 @@ def refresh_pack_cache(user):
             if len(pattribs) > 0 and "attributes" in item._item:
                 item._item["attributes"]["attribute"] = pattribs
 
-            row = [item.get_id(), user.get_id64(), item.get_schema_id(),
+            row = [item.get_id(), item.get_original_id(), user.get_id64(), item.get_schema_id(),
                    item.get_level(), item.is_untradable(),
                    item.get_inventory_token(), item.get_quality()["id"],
                    item.get_custom_name(), item.get_custom_description(),
@@ -124,7 +124,7 @@ def refresh_pack_cache(user):
             data.append('(' + web.db.SQLQuery.join([web.db.SQLParam(ival) for ival in row], ', ') + ')')
 
         thequery += web.db.SQLQuery.join(data, ', ')
-        thequery += (" ON DUPLICATE KEY UPDATE id64=VALUES(id64), " +
+        thequery += (" ON DUPLICATE KEY UPDATE id64=VALUES(id64), oid64=VALUES(oid64), " +
                      "owner=VALUES(owner), sid=VALUES(sid), level=VALUES(level), " +
                      "untradeable=VALUES(untradeable), token=VALUES(token), " +
                      "quality=VALUES(quality), custom_name=VALUES(custom_name), " +
@@ -171,6 +171,7 @@ def fetch_pack_for_user(user, date = None, tl_size = None):
 
 def db_to_itemobj(dbitem):
     theitem = {"id": dbitem["id64"],
+               "original_id": dbitem["oid64"],
                "owner": dbitem["owner"],
                "defindex": dbitem["sid"],
                "level": dbitem["level"],
