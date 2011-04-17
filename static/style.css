@@ -183,7 +183,7 @@ img { border: 0; }
 #item_attrs div { padding: 4px; }
 #stat_vertrule { float: left; }
 
-#backpack { width: 90%; margin: 0 auto 0 auto; }
+#backpack { width: 90%; margin: 0 auto 0 auto; clear: both; }
 
 .row_odd { background: #353535; }
 .row_even { background: #555555; }
@@ -202,14 +202,15 @@ img { border: 0; }
 #logo { width: 389px; height: 126px; margin: 50px auto 50px auto; }
 
 .button {
-    margin: 5px;
+    margin: 3px;
     position: relative;
     display: inline;
     cursor: pointer;
     background-color: #353535;
-    padding: 5px;
+    padding: 3px;
     font-weight: bold;
     text-align: center;
+    border: 1px solid black;
     -moz-border-radius: 8px;
     -webkit-border-radius: 8px;
     border-radius: 8px;
@@ -229,14 +230,15 @@ a.button { text-decoration: none; }
 
 .dropdown-menu {
     text-align: left;
-    margin: 5px;
+    margin: 3px;
     position: relative;
     cursor: pointer;
     background-color: #303030;
     background-image: url("dropdown_arrow.png");
     background-position: 100% 50%;
     background-repeat: no-repeat;
-    padding: 5px 20px 5px 5px;
+    padding: 3px 20px 3px 3px;
+    border: 1px solid black;
     -moz-border-radius: 8px;
     -webkit-border-radius: 8px;
     border-radius: 8px;
@@ -251,7 +253,7 @@ a.button { text-decoration: none; }
     background: black;
     padding: 0;
     position: absolute;
-    top: 12px;
+    top: 9px;
     list-style-type: none;
     z-index: 30;
     min-width: 100px;

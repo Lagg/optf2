@@ -8,9 +8,7 @@ $else:
 $var title: $project_name - $usern $extra["title_name"]
 $def generate_class_icon_link(classes):
     $for ec in classes:
-        <a href="${wiki_url + ec}">
-          <img src="${static_prefix}${ec}_icon.png" title="$ec" alt="$ec"/>
-        </a>&nbsp;
+        <a href="${wiki_url + ec}"><img src="${static_prefix}${ec}_icon.png" title="$ec" alt="$ec"/></a>&nbsp;
 <div id="header">
   <h1 class="prefix-${qitem['str']}">
     $if not user:
@@ -105,12 +103,12 @@ $def generate_class_icon_link(classes):
       <div class="attr-neutral">
         Slot: $item.get_slot().title()
       </div>
-  <br/><a href="$item_wiki_url">Official TF Wiki article</a>
+  <br/><a class="button" href="$item_wiki_url">Official TF Wiki article</a>
   $if user:
-      <br/><br/><a href="${virtual_root}item/${item.get_schema_id()}">Schema version</a>
+      <br/><br/><a class="button" href="${virtual_root}item/${item.get_schema_id()}">Schema version</a>
       $ oid = item.get_original_id()
       $if oid and oid != item.get_id():
-          <br/><br/><a href="${virtual_root}item/${oid}">Previous version</a>
+          <br/><br/><a class="button" href="${virtual_root}item/${oid}">Previous version</a>
   </div>
   </div>
 </div>
