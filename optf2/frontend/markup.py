@@ -49,6 +49,8 @@ def generate_cell(item, invalid = False, show_equipped = True):
               '<img class="item-image small" src="{4}" alt="{5}"/>' +
               '</a>').format(cell_class, quality, item_id, item_link, item.optf2["image_url"], item_id)
 
+    if "gift_content" in item.optf2:
+        markup += '<img src="' + item.optf2["gift_item"].get_image(item.ITEM_IMAGE_SMALL) + '" alt="0" class="item-image gift-preview"/>'
     if item.get_custom_name():
         markup += '<img src="' + static_prefix + 'name_tag.png" class="icon-name" alt="Named"/>'
     if item.get_custom_description():

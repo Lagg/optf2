@@ -171,6 +171,17 @@ img { border: 0; }
 }
 .item-image[class~=small] { max-width: 86px; max-height: 86px; margin: 5px; }
 .item-image[class~=large] { float: left; width: 512px; height: 512px; }
+.item-image[class~=gift-preview] {
+    width: 48px;
+    height: 48px;
+    position: absolute;
+    bottom: 2px;
+    right: 2px;
+    background: #222222;
+    -moz-border-radius: 13px;
+    -webkit-border-radius: 13px;
+    border-radius: 13px;
+}
 
 #item_attrs {
     float: left;
