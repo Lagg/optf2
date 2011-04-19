@@ -79,3 +79,6 @@ database_obj = web.database(dbn = "mysql", db = database["database"], user = dat
 # A list of valid ISO language codes
 valid_languages = ["da", "nl", "en", "fi", "fr", "de", "it", "ja",
                    "ko", "no", "pl", "pt", "ru", "zh", "es", "sv"]
+
+# Valid games so far are p2 and tf2
+game_mode = "tf2"

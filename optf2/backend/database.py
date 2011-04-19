@@ -19,6 +19,11 @@ import cPickle as pickle
 from cStringIO import StringIO
 from time import time
 
+if config.game_mode == "tf2":
+    gamelib = steam.tf2
+elif config.game_mode == "p2":
+    gamelib = steam.p2
+
 database_obj = config.database_obj
 
 def cache_not_stale(row):
@@ -78,13 +83,13 @@ def load_schema_cached(lang, fresh = False):
     if os.path.exists(cachepath) and not fresh:
         schema_object = pickle.load(open(cachepath, "rb"))
     else:
-        schema_object = steam.tf2.item_schema(lang = lang)
+        schema_object = gamelib.item_schema(lang = lang)
         pickle.dump(schema_object, open(cachepath, "wb"), pickle.HIGHEST_PROTOCOL)
 
     return schema_object
 
 def refresh_pack_cache(user):
-    pack = steam.tf2.backpack(schema = load_schema_cached(web.ctx.language))
+    pack = gamelib.backpack(schema = load_schema_cached(web.ctx.language))
     pack.load(user)
     ts = int(time())
 
@@ -113,7 +118,7 @@ def refresh_pack_cache(user):
                 pattribs.append(attr._attribute)
 
             if len(pattribs) > 0 and "attributes" in item._item:
-                item._item["attributes"]["attribute"] = pattribs
+                item._item["attributes"] = pattribs
 
             row = [item.get_id(), item.get_original_id(), user.get_id64(), item.get_schema_id(),
                    item.get_level(), item.is_untradable(),
@@ -181,7 +186,7 @@ def db_to_itemobj(dbitem):
                "quality": dbitem["quality"],
                "custom_name": dbitem["custom_name"],
                "custom_desc": dbitem["custom_desc"],
-               "attributes": {"attribute": pickle.loads(str(dbitem["attributes"]))}}
+               "attributes": pickle.loads(str(dbitem["attributes"]))}
 
     return theitem
 
