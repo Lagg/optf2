@@ -14,7 +14,7 @@ $var title: $project_name - Loadout List
                 <a id="$lclass" href="#$lclass" style="margin-left: 30px;">$lclass</a>
               </div>
               $for slot in slotlist:
-                  $if slot not in items[lclass]:
+                  $if lclass not in items or slot not in items[lclass]:
                       $ continue
                   <div class="slot-item">
                     <div><b>$slot</b></div>

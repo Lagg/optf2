@@ -150,10 +150,11 @@ class loadout:
             userp = database.load_profile_cached(user)
             items = database.load_pack_cached(userp)
             equippeditems = {}
-            valid_classes = steam.tf2.item.equipped_classes.values()
+            schema = database.load_schema_cached(web.ctx.language)
+            valid_classes = schema.class_bits.values()
             slotlist = ["Head", "Misc", "Primary", "Secondary", "Melee", "Pda", "Pda2", "Building", "Action"]
 
-            normalitems = itemtools.filter_by_quality(database.load_schema_cached(web.ctx.language), "0")
+            normalitems = itemtools.filter_by_quality(schema, "0")
             for item in normalitems:
                 classes = item.get_equipable_classes()
                 for c in classes:
@@ -170,6 +171,7 @@ class loadout:
             for item in items:
                 classes = item.get_equipped_classes()
                 for c in classes:
+                    if c not in equippeditems: equippeditems[c] = {}
                     # WORKAROUND: There is one unique shotgun for all classes, and it's in the primary slot. This
                     # has obvious problems
                     if item.get_schema_id() == 199 and c != "Engineer":

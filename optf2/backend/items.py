@@ -375,7 +375,7 @@ def get_equippable_classes(items):
 
     valid_classes = set()
 
-    if not items: return []
+    if not items or len(items) == 0: return []
 
     for item in items:
         if not item: continue
@@ -383,7 +383,7 @@ def get_equippable_classes(items):
         valid_classes |= set(classes)
 
     unordered = list(valid_classes)
-    ordered = list(steam.tf2.item.equipped_classes.values())
+    ordered = list(items[0]._schema.class_bits.values())
     for oclass in ordered:
         if oclass not in unordered: del oclass
 

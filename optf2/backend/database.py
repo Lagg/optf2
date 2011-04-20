@@ -94,7 +94,7 @@ def refresh_pack_cache(user):
     ts = int(time())
 
     with database_obj.transaction():
-        backpack_items = []
+        backpack_items = set()
         data = []
         try:
             packitems = list(pack)
@@ -106,7 +106,7 @@ def refresh_pack_cache(user):
                                    "token, quality, custom_name, " +
                                    "custom_desc, attributes, quantity) VALUES ")
         for item in packitems:
-            backpack_items.append(item.get_id())
+            backpack_items.add(item.get_id())
             attribs = item.get_attributes()
             pattribs = []
 
