@@ -8,7 +8,7 @@ $else:
 $var title: $project_name - $usern $extra["title_name"]
 $def generate_class_icon_link(classes):
     $for ec in classes:
-        <a href="${wiki_url + ec}"><img src="${static_prefix}${ec}_icon.png" title="$ec" alt="$ec"/></a>&nbsp;
+        <a href="${virtual_root}loadout/${user.get_id64()}#${ec}"><img src="${static_prefix}${ec}_icon.png" title="$ec" alt="$ec"/></a>&nbsp;
 <div id="header">
   <h1 class="prefix-${qitem['str']}">
     $if not user:
