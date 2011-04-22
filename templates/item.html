@@ -8,7 +8,11 @@ $else:
 $var title: $project_name - $usern $extra["title_name"]
 $def generate_class_icon_link(classes):
     $for ec in classes:
-        <a href="${virtual_root}loadout/${user.get_id64()}#${ec}"><img src="${static_prefix}${ec}_icon.png" title="$ec" alt="$ec"/></a>&nbsp;
+        $if user:
+            $ classlink = "{0}loadout/{1}#{2}".format(virtual_root, user.get_id64(), ec)
+        $else:
+            $ classlink = "#"
+        <a href="$classlink"><img src="${static_prefix}${ec}_icon.png" title="$ec" alt="$ec"/></a>&nbsp;
 <div id="header">
   <h1 class="prefix-${qitem['str']}">
     $if not user:
