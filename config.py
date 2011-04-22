@@ -9,8 +9,6 @@ template_dir = "templates/"
 # be prefixed with this.
 virtual_root = "/"
 
-css_url = "/static/style.css"
-
 # The url to prefix URLs
 # pointing to static data with
 # e.g. class icons
@@ -82,3 +80,5 @@ valid_languages = ["da", "nl", "en", "fi", "fr", "de", "it", "ja",
 
 # Valid games so far are p2 and tf2
 game_mode = "tf2"
+
+css_url = "/static/style_" + game_mode + ".css"
