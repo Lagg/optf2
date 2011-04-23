@@ -43,7 +43,7 @@ body { background: #d8d8d8; color: black; font-family: Arial, Helvetica, sans-se
 .item-name { overflow: hidden; }
 .attr-negative, .attr-negative:visited { color: #ff0000; }
 .attr-positive, .attr-positive:visited { color: #1a82ff; }
-.attr-neutral, .attr-neutral:visited { color: #black; }
+.attr-neutral, .attr-neutral:visited { color: black; }
 
 .prefix-unique { color: #ffd700; font-weight: bold; }
 .prefix-community { color: #70b04a; font-weight: bold; }
@@ -95,7 +95,7 @@ body { background: #d8d8d8; color: black; font-family: Arial, Helvetica, sans-se
 
 .equipped {
     background: #b6b6b6;
-    color: #black;
+    color: black;
     position: absolute;
     bottom: 5px;
     left: 20px;
@@ -121,7 +121,7 @@ body { background: #d8d8d8; color: black; font-family: Arial, Helvetica, sans-se
     background: #919191;
     margin: 10px;
     margin-left: 0;
-    border-color: 8d8c8c;
+    border-color: #8d8c8c;
     z-index: 30;
 }
 
