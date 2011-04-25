@@ -46,6 +46,11 @@ particledict = {0: "Invalid Particle",
 def _(thestring):
     return thestring.encode("utf-8")
 
+if config.game_mode == "tf2":
+    gamelib = steam.tf2
+elif config.game_mode == "p2":
+    gamelib = steam.p2
+
 def generate_full_item_name(item, ignore_qdict = False, strip_prefixes = False):
     """ Ignores the values in qualitydict if ignore_qdict is True """
     quality_str = item.get_quality()["str"]
@@ -259,7 +264,7 @@ def process_attributes(items):
                 if not isinstance(giftcontents, dict):
                     giftcontents = item._schema[(int(giftcontents))]
                 else:
-                    giftcontents = steam.tf2.item(item._schema, giftcontents)
+                    giftcontents = item._schema.create_item(giftcontents)
 
                 giftcontents.optf2 = {}
                 giftcontents.optf2["gift_container_id"] = item.get_id()
@@ -324,7 +329,7 @@ def process_attributes(items):
             else:
                 continue
 
-            item.optf2["attrs"].append(steam.tf2.item_attribute(dict(theattr._attribute.items() + newattr.items())))
+            item.optf2["attrs"].append(gamelib.item_attribute(dict(theattr._attribute.items() + newattr.items())))
 
         if "gift_item" in item.optf2:
             item.optf2["gift_item"].optf2["gift_from_persona"] = item.optf2["gift_from_persona"]

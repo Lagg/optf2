@@ -184,7 +184,7 @@ class loadout:
                     equippeditems[c][slot].append(itemtools.process_attributes([item])[0])
 
             return templates.loadout(userp, equippeditems, valid_classes, slotlist)
-        except steam.tf2.TF2Error as E:
+        except steam.items.Error as E:
             return templates.error("Backpack error: {0}".format(E))
         except steam.user.ProfileError as E:
             return templates.error("Profile error: {0}".format(E))
@@ -277,7 +277,7 @@ class pack_item:
 
             if not fromschema:
                 user = database.load_profile_cached(str(theitem["owner"]), stale = True)
-                theitem = steam.tf2.item(schema, theitem)
+                theitem = schema.create_item(theitem)
                 if user:
                     backpack = database.fetch_pack_for_user(user)
                     if backpack and theitem.get_id() not in pickle.loads(str(backpack["backpack"])):
@@ -393,7 +393,7 @@ class pack_fetch:
                         items.remove(bitem)
                         items.append(None)
 
-        except steam.tf2.TF2Error as E:
+        except steam.items.Error as E:
             return templates.error("Failed to load backpack ({0})".format(E))
         except steam.user.ProfileError as E:
             return templates.error("Failed to load profile ({0})".format(E))

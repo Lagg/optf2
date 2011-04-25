@@ -98,7 +98,7 @@ def refresh_pack_cache(user):
         data = []
         try:
             packitems = list(pack)
-        except steam.tf2.ItemError:
+        except steam.items.ItemError:
             pack.set_schema(load_schema_cached(web.ctx.language, fresh = True))
             packitems = list(pack)
         thequery = web.db.SQLQuery("INSERT INTO items (id64, oid64, " +
@@ -222,5 +222,5 @@ def load_pack_cached(user, stale = False, date = None):
             if len(items) > 0:
                 dbitems = database_obj.query(query)
 
-            packresult = [steam.tf2.item(schema, db_to_itemobj(item)) for item in dbitems]
+            packresult = [schema.create_item(db_to_itemobj(item)) for item in dbitems]
         return packresult
