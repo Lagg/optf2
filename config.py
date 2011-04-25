@@ -1,6 +1,9 @@
 import socket, web, os
 from openid.store import sqlstore
 
+# Valid games so far are p2 and tf2
+game_mode = "p2"
+
 # You probably want this to be
 # an absolute path if you're not running the built-in server
 template_dir = "templates/"
@@ -78,7 +81,7 @@ database_obj = web.database(dbn = "mysql", db = database["database"], user = dat
 valid_languages = ["da", "nl", "en", "fi", "fr", "de", "it", "ja",
                    "ko", "no", "pl", "pt", "ru", "zh", "es", "sv"]
 
-# Valid games so far are p2 and tf2
-game_mode = "tf2"
-
 css_url = "/static/style_" + game_mode + ".css"
+
+wiki_mapping = {"p2": ("Portal 2 Wiki", "http://theportalwiki.com/wiki/"),
+                "tf2": ("Official TF Wiki", "http://wiki.teamfortress.com/wiki/")}

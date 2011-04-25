@@ -11,7 +11,7 @@ $def generate_class_icon_link(classes):
         $if user:
             $ classlink = "{0}loadout/{1}#{2}".format(virtual_root, user.get_id64(), ec)
         $else:
-            $ classlink = "#"
+            $ classlink = wiki_map[1] + ec
         <a href="$classlink"><img src="${static_prefix}${ec}_icon.png" title="$ec" alt="$ec"/></a>&nbsp;
 <div id="header">
   <h1 class="prefix-${qitem['str']}">
@@ -29,7 +29,7 @@ $def generate_class_icon_link(classes):
   <img class="item-image large" src="$extra['image_url_large']" alt="$usern $extra['title_name']"/>
   <img id="stat_vertrule" src="${static_prefix}vertical.gif" height="600" width="1" alt="divider"/>
   <div id="item_attrs">
-  $ item_wiki_url = wiki_url + encode_url(item.get_name())
+  $ item_wiki_url = wiki_map[1] + encode_url(item.get_name())
   <div class="item-level">
     Level $extra["level"] $extra["type"]
   </div>
@@ -107,7 +107,7 @@ $def generate_class_icon_link(classes):
       <div class="attr-neutral">
         Slot: $item.get_slot().title()
       </div>
-  <br/><a class="button" href="$item_wiki_url">Official TF Wiki article</a>
+  <br/><a class="button" href="$item_wiki_url">$wiki_map[0] article</a>
   $if user:
       <br/><br/><a class="button" href="${virtual_root}item/${item.get_schema_id()}">Schema version</a>
       $ oid = item.get_original_id()
