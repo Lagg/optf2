@@ -259,21 +259,23 @@ class user_completion:
 class pack_item:
     def GET(self, iid):
         schema = database.load_schema_cached(web.ctx.language)
-
-        def item_get(id64):
-            item = database.fetch_item_for_id(id64)
-            if not item:
-                item = schema[long(id64)]
-            return item
-
         try:
             user = None
             item_outdated = False
+            fromschema = False
             idl = iid.split('/')
+
             if len(idl) == 1:
                 idl.append(idl[0])
-            theitem = item_get(idl[1])
-            if not isinstance(theitem, steam.tf2.item):
+            id64 = idl[1]
+
+            try:
+                theitem = schema[long(id64)]
+                fromschema = True
+            except:
+                theitem = database.fetch_item_for_id(id64)
+
+            if not fromschema:
                 user = database.load_profile_cached(str(theitem["owner"]), stale = True)
                 theitem = steam.tf2.item(schema, theitem)
                 if user:
@@ -288,7 +290,7 @@ class pack_item:
         except urllib2.URLError:
             return templates.error("Couldn't connect to Steam")
         except:
-            return templates.item_error_notfound(idl[1])
+            return templates.item_error_notfound(id64)
         return templates.item(user, item, item_outdated)
 
 class persona:
