@@ -67,7 +67,8 @@ render_globals = {"css_url": config.css_url,
                   "news_url": config.news_url,
                   "qurl": web.http.changequery,
                   "iurl": web.input,
-                  "markup": markuptools
+                  "markup": markuptools,
+                  "game_mode": config.game_mode
                   }
 
 app = web.application(urls, globals())

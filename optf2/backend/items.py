@@ -51,37 +51,6 @@ if config.game_mode == "tf2":
 elif config.game_mode == "p2":
     gamelib = steam.p2
 
-def generate_full_item_name(item, ignore_qdict = False, strip_prefixes = False):
-    """ Ignores the values in qualitydict if ignore_qdict is True """
-    quality_str = item.get_quality()["str"]
-    pretty_quality_str = item.get_quality()["prettystr"]
-    custom_name = item.get_custom_name()
-    item_name = item.get_name()
-    language = web.ctx.language
-
-    if ignore_qdict:
-        prefix = pretty_quality_str
-    else:
-        prefix = qualitydict.get(quality_str, pretty_quality_str)
-
-    if item_name.find("The ") != -1 and item.is_name_prefixed():
-        item_name = item_name[4:]
-
-    if strip_prefixes or custom_name or (not item.is_name_prefixed() and quality_str == "unique"):
-        prefix = ""
-
-    if custom_name:
-        item_name = custom_name
-
-    if ((ignore_qdict or language != "en") and (quality_str == "unique" or quality_str == "normal")):
-        prefix = ""
-
-    if (language != "en" and prefix):
-        return item_name + " (" + prefix + ")"
-
-    if prefix: return prefix + " " + item_name
-    else: return item_name
-
 def absolute_url(relative_url):
     domain = web.ctx.homedomain
     if domain.endswith('/'): domain = domain[:-1]
@@ -125,7 +94,7 @@ def sort(items, sortby):
             return level
         itemcmp = lambda obj: levelcmp(obj)
     elif sortby == "name":
-        itemcmp = lambda obj: generate_full_item_name(obj, strip_prefixes = True)
+        itemcmp = lambda obj: obj.get_full_item_name(prefixes = None)
     elif sortby == "slot":
         itemcmp = operator.methodcaller("get_slot")
     elif sortby == "class":
@@ -268,7 +237,7 @@ def process_attributes(items):
 
                 giftcontents.optf2 = {}
                 giftcontents.optf2["gift_container_id"] = item.get_id()
-                item.optf2["gift_content"] = generate_full_item_name(giftcontents)
+                item.optf2["gift_content"] = giftcontents.get_full_item_name(prefixes = qualitydict)
                 item.optf2["gift_quality"] = giftcontents.get_quality()["str"]
                 item.optf2["gift_item"] = giftcontents
 
@@ -336,8 +305,8 @@ def process_attributes(items):
             item.optf2["gift_item"].optf2["gift_from"] = item.optf2["gift_from"]
 
         quality_str = item.get_quality()["str"]
-        full_qdict_name = generate_full_item_name(item)
-        full_default_name = generate_full_item_name(item, True)
+        full_qdict_name = item.get_full_item_name(prefixes = qualitydict)
+        full_default_name = item.get_full_item_name({"normal": None, "unique": None})
         is_gift_contents = "gift_container_id" in item.optf2
 
         item.optf2["cell_name"] = '<div class="prefix-{0} item-name">{1}</div>'.format(_(quality_str),
