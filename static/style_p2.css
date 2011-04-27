@@ -251,7 +251,7 @@ a.button { text-decoration: none; }
     background: black;
     padding: 0;
     position: absolute;
-    top: 9px;
+    top: 0.9em;
     list-style-type: none;
     z-index: 30;
     min-width: 100px;
