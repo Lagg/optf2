@@ -85,3 +85,7 @@ css_url = "/static/style_" + game_mode + ".css"
 
 wiki_mapping = {"p2": ("Portal 2 Wiki", "http://theportalwiki.com/wiki/"),
                 "tf2": ("Official TF Wiki", "http://wiki.teamfortress.com/wiki/")}
+
+# Optional mapping of other OP websites that will be used similarly to virtual_root
+opnet_mapping = {"OPTF2": "http://optf2.com/",
+                 "OPP2": "http://p2.optf2.com/"}
