@@ -77,7 +77,7 @@ def db_pack_is_new(lastpack, newpack):
             sorted(pickle.loads(str(lastpack[0]["backpack"]))) != sorted(newpack))
 
 def load_schema_cached(lang, fresh = False):
-    cachepath = os.path.join(config.cache_file_dir, "schema-" + lang)
+    cachepath = os.path.join(config.cache_file_dir, "schema-" + config.game_mode + "-" + lang)
     schema_object = None
 
     if os.path.exists(cachepath) and not fresh:
