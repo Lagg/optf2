@@ -349,7 +349,7 @@ def get_equippable_classes(items):
 
     valid_classes = set()
 
-    if not items or len(items) == 0: return []
+    if not items or len(items) == 0 or items[0] == None: return []
 
     for item in items:
         if not item: continue
