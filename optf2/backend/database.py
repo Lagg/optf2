@@ -19,10 +19,7 @@ import cPickle as pickle
 from cStringIO import StringIO
 from time import time
 
-if config.game_mode == "tf2":
-    gamelib = steam.tf2
-elif config.game_mode == "p2":
-    gamelib = steam.p2
+gamelib = getattr(steam, config.game_mode)
 
 database_obj = config.database_obj
 

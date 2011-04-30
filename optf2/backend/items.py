@@ -46,10 +46,7 @@ particledict = {0: "Invalid Particle",
 def _(thestring):
     return thestring.encode("utf-8")
 
-if config.game_mode == "tf2":
-    gamelib = steam.tf2
-elif config.game_mode == "p2":
-    gamelib = steam.p2
+gamelib = getattr(steam, config.game_mode)
 
 def absolute_url(relative_url):
     domain = web.ctx.homedomain
@@ -298,7 +295,7 @@ def process_attributes(items):
             else:
                 continue
 
-            item.optf2["attrs"].append(gamelib.item_attribute(dict(theattr._attribute.items() + newattr.items())))
+            item.optf2["attrs"].append(steam.items.item_attribute(dict(theattr._attribute.items() + newattr.items())))
 
         if "gift_item" in item.optf2:
             item.optf2["gift_item"].optf2["gift_from_persona"] = item.optf2["gift_from_persona"]
