@@ -45,6 +45,10 @@ $def generate_class_icon_link(classes):
         $elif "gift_content" in extra and attr.get_name() == "referenced item def":
             Contains <span class="prefix-${extra['gift_quality']}">$extra["gift_content"]</span>
             <a href="${virtual_root}item/${item.get_id()}?contents=1">(more)</a>
+        $elif "crafted_by_id64" in extra and attr.get_name() == "makers mark id":
+            <div class="attr-positive">
+              Crafted by <a href="${virtual_root}user/${extra['crafted_by_id64']}">$extra['crafted_by_persona']</a>
+            </div>
         $else:
             $:desc.replace("\n", "<br/>")
       </div>

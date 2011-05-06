@@ -66,6 +66,9 @@ def get_invalid_pos(items):
 
     return invalid_items
 
+def condensed_to_id64(value):
+    return "7656" + str(int(value) + 1197960265728)
+
 def sort(items, sortby):
     if not items or len(items) == 0:
         return [None] * config.backpack_padded_size
@@ -280,14 +283,30 @@ def process_attributes(items):
 
             if theattr.get_name() == "gifter account id":
                 newattr["description_string"] = "Gift"
-                item.optf2["gift_from"] = "7656" + str(int(theattr.get_value()) +
-                                                       1197960265728)
+                item.optf2["gift_from"] = condensed_to_id64(theattr.get_value())
+
                 try:
                     user = database.load_profile_cached(item.optf2["gift_from"], stale = True)
                     item.optf2["gift_from_persona"] = user.get_persona()
                     newattr["description_string"] = "Gift from " + item.optf2["gift_from_persona"]
                 except:
                     item.optf2["gift_from_persona"] = "this user"
+
+            if theattr.get_name() == "makers mark id":
+                crafter_id64 = condensed_to_id64(theattr.get_value())
+
+                try:
+                    user = database.load_profile_cached(crafter_id64, stale = True)
+                    item.optf2["crafted_by_persona"] = user.get_persona()
+                except:
+                    item.optf2["crafted_by_persona"] = "this user"
+
+                item.optf2["crafted_by_id64"] = crafter_id64
+                newattr["description_string"] = "Crafted by " + item.optf2["crafted_by_persona"]
+                newattr["hidden"] = False
+
+            if theattr.get_name() == "unique craft index":
+                item.optf2["craft_number"] = str(int(theattr.get_value()))
 
             if not newattr.get("hidden", theattr.is_hidden()):
                 newattr["description_string"] = web.websafe(newattr.get("description_string",
@@ -305,13 +324,12 @@ def process_attributes(items):
         full_qdict_name = item.get_full_item_name(prefixes = qualitydict)
         full_default_name = item.get_full_item_name({"normal": None, "unique": None})
         is_gift_contents = "gift_container_id" in item.optf2
-
-        item.optf2["cell_name"] = '<div class="prefix-{0} item-name">{1}</div>'.format(_(quality_str),
-                                                                                       _(full_qdict_name))
-
         color = item.optf2.get("color")
         paint_job = ""
         prefix = ""
+        craft_no = item.optf2.get("craft_number", "")
+        if craft_no: craft_no = " #" + craft_no
+
         if color:
             if color.startswith("url"):
                 color = "#FF00FF"
@@ -321,19 +339,23 @@ def process_attributes(items):
         if is_gift_contents:
             prefix = '<span class="prefix-giftwrapped">Giftwrapped</span>'
         item.optf2["painted_text"] = paint_job
-        item.optf2["dedicated_name"] = "{0} {1}".format(_(prefix), _(full_default_name))
+        item.optf2["dedicated_name"] = "{0} {1}{2}".format(_(prefix), _(full_default_name), _(craft_no))
+
+        item.optf2["cell_name"] = '<div class="prefix-{0} item-name">{1}{2}</div>'.format(_(quality_str),
+                                                                                          _(full_qdict_name),
+                                                                                          _(craft_no))
 
         if color:
             paint_job = "Painted"
         if is_gift_contents:
             prefix = "Giftwrapped"
-        item.optf2["title_name"] = "{0} {1} {2}".format(_(prefix), _(paint_job), _(full_default_name))
+        item.optf2["title_name"] = "{0} {1} {2}{3}".format(_(prefix), _(paint_job), _(full_default_name), _(craft_no))
 
         if color:
             paint_job = "(Painted)"
         else:
             paint_job = ""
-        item.optf2["feed_name"] = "{0} {1}".format(_(full_qdict_name), _(paint_job))
+        item.optf2["feed_name"] = "{0}{2} {1}".format(_(full_qdict_name), _(paint_job), _(craft_no))
 
         newitems.append(item)
 
