@@ -30,7 +30,7 @@ def lang_hook():
     web.ctx.language = lang
 
 def internalerror():
-    logging.error(traceback.format_exc())
+    logging.error(web.ctx.fullpath + ": " + traceback.format_exc())
     return web.internalerror(app.template.template.error("Unknown error, " + config.project_name + " may be down for maintenance"))
 
 application.add_processor(web.loadhook(lang_hook))
