@@ -46,9 +46,7 @@ $def generate_class_icon_link(classes):
             Contains <span class="prefix-${extra['gift_quality']}">$extra["gift_content"]</span>
             <a href="${virtual_root}item/${item.get_id()}?contents=1">(more)</a>
         $elif "crafted_by_id64" in extra and attr.get_name() == "makers mark id":
-            <div class="attr-positive">
-              Crafted by <a href="${virtual_root}user/${extra['crafted_by_id64']}">$extra['crafted_by_persona']</a>
-            </div>
+            Crafted by <a href="${virtual_root}user/${extra['crafted_by_id64']}">$extra['crafted_by_persona']</a>
         $else:
             $:desc.replace("\n", "<br/>")
       </div>
@@ -61,6 +59,8 @@ $def generate_class_icon_link(classes):
         $:{item.optf2["painted_text"]} with ${item.optf2["paint_name"]}
       </div>
   $if user:
+      $ style = item.get_current_style_name()
+      $if style: <div class="attr-neutral">Style: $style</div>
       $ serial = item.get_id()
       $if "gift_from" in extra and not serial:
           <div class="attr-positive">
@@ -108,6 +108,8 @@ $def generate_class_icon_link(classes):
         $else:
             $:generate_class_icon_link(equipable)
       </div>
+      $ styles = item.get_styles()
+      $if styles: <div class="attr-neutral">Styles: ${", ".join(styles)}</div>
       $ slot = item.get_slot()
       $if slot:
           <div class="attr-neutral">

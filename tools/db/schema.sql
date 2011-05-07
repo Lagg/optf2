@@ -15,6 +15,7 @@ CREATE TABLE IF NOT EXISTS items (id64 BIGINT UNSIGNED PRIMARY KEY,
                                   quality TINYINT UNSIGNED,
                                   custom_name TEXT,
                                   custom_desc TEXT,
+                                  style TINYINT UNSIGNED,
                                   attributes BLOB,
                                   quantity INTEGER UNSIGNED DEFAULT 1);
 

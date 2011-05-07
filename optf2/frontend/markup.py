@@ -79,6 +79,9 @@ def generate_cell(item, invalid = False, show_equipped = True):
             markup += attr.get_description_formatted().replace("\n", "<br/>")
         markup += '</div>'
 
+    style = item.get_current_style_name()
+    if style: markup += '<div class="attr-neutral">Style: {0}</div>'.format(style)
+
     if "paintcan" in item.optf2:
         paintcan = item.optf2["paint_name"]
         markup += '<div class="attr-positive">{1} with {2}</div>'.format(item.optf2["painted_text"], item.get_name())

@@ -101,7 +101,7 @@ def refresh_pack_cache(user):
         thequery = web.db.SQLQuery("INSERT INTO items (id64, oid64, " +
                                    "owner, sid, level, untradeable, " +
                                    "token, quality, custom_name, " +
-                                   "custom_desc, attributes, quantity) VALUES ")
+                                   "custom_desc, style, attributes, quantity) VALUES ")
         for item in packitems:
             backpack_items.add(item.get_id())
             attribs = item.get_attributes()
@@ -121,6 +121,7 @@ def refresh_pack_cache(user):
                    item.get_level(), item.is_untradable(),
                    item.get_inventory_token(), item.get_quality()["id"],
                    item.get_custom_name(), item.get_custom_description(),
+                   item.get_current_style_id(),
                    pickle.dumps(pattribs, pickle.HIGHEST_PROTOCOL), item.get_quantity()]
 
             data.append('(' + web.db.SQLQuery.join([web.db.SQLParam(ival) for ival in row], ', ') + ')')
@@ -130,7 +131,7 @@ def refresh_pack_cache(user):
                      "owner=VALUES(owner), sid=VALUES(sid), level=VALUES(level), " +
                      "untradeable=VALUES(untradeable), token=VALUES(token), " +
                      "quality=VALUES(quality), custom_name=VALUES(custom_name), " +
-                     "custom_desc=VALUES(custom_desc), attributes=VALUES(attributes), " +
+                     "custom_desc=VALUES(custom_desc), style=VALUES(style), attributes=VALUES(attributes), " +
                      "quantity=VALUES(quantity)")
 
         if len(data) > 0:
@@ -183,6 +184,7 @@ def db_to_itemobj(dbitem):
                "quality": dbitem["quality"],
                "custom_name": dbitem["custom_name"],
                "custom_desc": dbitem["custom_desc"],
+               "style": dbitem["style"],
                "attributes": pickle.loads(str(dbitem["attributes"]))}
 
     return theitem
