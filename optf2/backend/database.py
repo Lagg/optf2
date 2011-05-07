@@ -81,6 +81,12 @@ def load_schema_cached(lang, fresh = False):
         schema_object = pickle.load(open(cachepath, "rb"))
     else:
         schema_object = gamelib.item_schema(lang = lang)
+        schema_object.optf2_paints = {}
+        for sitem in schema_object:
+            if sitem._schema_item.get("name", "").startswith("Paint Can"):
+                for attr in sitem:
+                    if attr.get_name() == "set item tint RGB":
+                        schema_object.optf2_paints[int(attr.get_value())] = sitem
         pickle.dump(schema_object, open(cachepath, "wb"), pickle.HIGHEST_PROTOCOL)
 
     return schema_object

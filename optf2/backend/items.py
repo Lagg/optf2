@@ -255,17 +255,9 @@ def process_attributes(items):
                                                                  (raw_rgb >> 8) & 0xFF,
                                                                  (raw_rgb) & 0xFF)
 
-                for sitem in item._schema:
-                    if sitem._schema_item.get("name", "").startswith("Paint Can"):
-                        matchingcan = None
-                        for paintattr in sitem:
-                            if (paintattr.get_name() == "set item tint RGB" and
-                                int(paintattr.get_value()) == raw_rgb):
-                                matchingcan = sitem
-                                break
-                        if matchingcan:
-                            item.optf2["paint_name"] = matchingcan.get_name()
-                            break
+                paint_can = item._schema.optf2_paints.get(raw_rgb)
+                if paint_can: item.optf2["paint_name"] = paint_can.get_name()
+                else: item.optf2["paint_name"] = "unknown paint"
 
                 # Workaround until the icons for colored paint cans are correct
                 if (item._schema_item.get("name", "").startswith("Paint Can") and
