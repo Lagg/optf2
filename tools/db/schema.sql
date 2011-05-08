@@ -19,6 +19,6 @@ CREATE TABLE IF NOT EXISTS items (id64 BIGINT UNSIGNED PRIMARY KEY,
                                   attributes BLOB,
                                   quantity INTEGER UNSIGNED DEFAULT 1);
 
-CREATE TABLE IF NOT EXISTS backpacks (id64 BIGINT UNSIGNED, backpack BLOB, timestamp INTEGER UNSIGNED);
+CREATE TABLE IF NOT EXISTS backpacks (id64 BIGINT UNSIGNED, backpack BLOB, timestamp INTEGER UNSIGNED, INDEX (id64, timestamp));
 
 CREATE TABLE IF NOT EXISTS sessions (session_id CHAR(128) UNIQUE NOT NULL, atime timestamp NOT NULL default current_timestamp, data TEXT);
