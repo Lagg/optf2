@@ -70,7 +70,7 @@ def condensed_to_id64(value):
     return "7656" + str(int(value) + 1197960265728)
 
 def sort(items, sortby):
-    if not items or len(items) == 0:
+    if not items:
         return [None] * config.backpack_padded_size
 
     itemcmp = None
@@ -191,6 +191,8 @@ def process_attributes(items):
 
     default_item_image = config.virtual_root + "static/item_icons/Invalid_icon.png";
     newitems = []
+    schema = database.load_schema_cached(web.ctx.language)
+
     for item in items:
         if not item: continue
         if not getattr(item, "optf2", None):
@@ -231,9 +233,9 @@ def process_attributes(items):
                 giftcontents = theattr.get_value()
 
                 if not isinstance(giftcontents, dict):
-                    giftcontents = item._schema[(int(giftcontents))]
+                    giftcontents = schema[(int(giftcontents))]
                 else:
-                    giftcontents = item._schema.create_item(giftcontents)
+                    giftcontents = schema.create_item(giftcontents)
 
                 giftcontents.optf2 = {}
                 giftcontents.optf2["gift_container_id"] = item.get_id()
@@ -255,7 +257,7 @@ def process_attributes(items):
                                                                  (raw_rgb >> 8) & 0xFF,
                                                                  (raw_rgb) & 0xFF)
 
-                paint_can = item._schema.optf2_paints.get(raw_rgb)
+                paint_can = schema.optf2_paints.get(raw_rgb)
                 if paint_can: item.optf2["paint_name"] = paint_can.get_name()
                 else: item.optf2["paint_name"] = "unknown paint"
 
@@ -355,24 +357,26 @@ def process_attributes(items):
     return newitems
 
 def get_equippable_classes(items):
-    """ Returns a set of classes that can equip this
-    item """
+    """ Returns a set of classes that can equip the listed items """
 
     valid_classes = set()
 
-    if not items or len(items) == 0 or items[0] == None: return []
+    try:
+        if items[0] == None: return []
+    except IndexError:
+        return []
 
     for item in items:
         if not item: continue
         classes = item.get_equipable_classes()
         valid_classes |= set(classes)
 
-    unordered = list(valid_classes)
-    ordered = list(items[0]._schema.class_bits.values())
-    for oclass in ordered:
-        if oclass not in unordered: del oclass
+    ordered_classes = list(items[0]._schema.class_bits.values())
+    for c in ordered_classes:
+        if c not in valid_classes:
+            del c
 
-    return ordered
+    return ordered_classes
 
 def _quality_sort(x, y):
     px = x["prettystr"]

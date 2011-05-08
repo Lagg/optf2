@@ -27,7 +27,7 @@ class items:
     def GET(self):
         try:
             query = web.input()
-            items = list(database.load_schema_cached(web.ctx.language))
+            items = database.load_schema_cached(web.ctx.language)
             filter_qualities = itemtools.get_present_qualities(items)
 
             try: items = itemtools.filter_by_class(items, query["sortclass"])

@@ -34,7 +34,7 @@ def refresh_profile_cache(sid, vanity = None):
     summary = user._summary_object
     queryvars = {"id64": user.get_id64(),
                  "timestamp": int(time()),
-                 "profile": buffer(pickle.dumps(summary, pickle.HIGHEST_PROTOCOL))}
+                 "profile": pickle.dumps(summary, pickle.HIGHEST_PROTOCOL)}
 
     if vanity: queryvars["vanity"] = vanity
     if not sid.isdigit(): queryvars["vanity"] = sid
@@ -149,7 +149,7 @@ def refresh_pack_cache(user):
                                             order = "timestamp DESC", limit = 1))
         if db_pack_is_new(lastpack, backpack_items):
             database_obj.insert("backpacks", id64 = user.get_id64(),
-                                backpack = buffer(pickle.dumps(backpack_items, pickle.HIGHEST_PROTOCOL)),
+                                backpack = pickle.dumps(backpack_items, pickle.HIGHEST_PROTOCOL),
                                 timestamp = ts)
         elif len(lastpack) > 0:
             lastts = database_obj.select("backpacks", what = "MAX(timestamp) AS ts", where = "id64 = $id64",
@@ -157,7 +157,7 @@ def refresh_pack_cache(user):
             database_obj.update("backpacks", where = "id64 = $id64 AND timestamp = $ts",
                                 timestamp = ts, vars = {"id64": user.get_id64(), "ts": lastts})
         return packitems
-    return None
+    return []
 
 def fetch_pack_for_user(user, date = None, tl_size = None):
     """ Returns None if a backpack couldn't be found, returns
@@ -211,10 +211,7 @@ def load_pack_cached(user, stale = False, date = None):
         if not cache_not_stale(thepack):
             try:
                 return refresh_pack_cache(user)
-            except urllib2.URLError:
-                pass
             except: pass
-            thepack = fetch_pack_for_user(user)
     if thepack:
         schema = load_schema_cached(web.ctx.language)
         with database_obj.transaction():
@@ -229,3 +226,4 @@ def load_pack_cached(user, stale = False, date = None):
 
             packresult = [schema.create_item(db_to_itemobj(item)) for item in dbitems]
         return packresult
+    return []
