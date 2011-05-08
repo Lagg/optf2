@@ -360,18 +360,16 @@ def get_equippable_classes(items):
     """ Returns a set of classes that can equip the listed items """
 
     valid_classes = set()
+    schema = database.load_schema_cached(web.ctx.language)
 
-    try:
-        if items[0] == None: return []
-    except IndexError:
-        return []
+    if not items: return []
 
     for item in items:
         if not item: continue
         classes = item.get_equipable_classes()
         valid_classes |= set(classes)
 
-    ordered_classes = list(items[0]._schema.class_bits.values())
+    ordered_classes = list(schema.class_bits.values())
     for c in ordered_classes:
         if c not in valid_classes:
             del c
