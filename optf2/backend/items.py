@@ -84,6 +84,7 @@ def sort(items, sortby):
     if not items:
         return [None] * config.backpack_padded_size
 
+    items = list(items)
     itemcmp = None
 
     if sortby == "time":
