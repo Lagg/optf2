@@ -43,6 +43,17 @@ particledict = {0: "Invalid Particle",
                 19: "Circling Heart",
                 20: "Map Stamps"}
 
+# Capability string mapping, this will probably need localizing too
+capabilitydict = {"can_gift_wrap": "Gift wrappable",
+                  "can_craft_count": "Can be a numbered craft",
+                  "decodable": "Opened via key",
+                  "usable": "Action item",
+                  "usable_gc": "Usable outside Action slot",
+                  "usable_out_of_game": "Usable out of game",
+                  "can_craft_mark": "Can craft mark",
+                  "nameable": "Nameable",
+                  "paintable": "Paintable"}
+
 def _(thestring):
     return thestring.encode("utf-8")
 
@@ -314,6 +325,10 @@ def process_attributes(items):
             item.optf2["gift_item"].optf2["gift_from_persona"] = item.optf2["gift_from_persona"]
             item.optf2["gift_item"].optf2["gift_from"] = item.optf2["gift_from"]
 
+        caps = item.get_capabilities()
+        if caps:
+            item.optf2["capabilities"] = [capabilitydict.get(cap, cap) for cap in caps]
+
         quality_str = item.get_quality()["str"]
         full_qdict_name = item.get_full_item_name(prefixes = qualitydict)
         full_default_name = item.get_full_item_name({"normal": None, "unique": None})
@@ -400,3 +415,29 @@ def get_present_qualities(items):
 
     qlist.sort(cmp = _quality_sort)
     return qlist
+
+def get_present_capabilities(items):
+    """ Returns a sorted list of capabilities in this set of items,
+    uses the capabilitydict """
+
+    caps = set()
+
+    for item in items:
+        if not item: continue
+        caps |= set(item.get_capabilities())
+
+    caplist = [{"name": capabilitydict.get(cap, cap), "flag": cap} for cap in caps]
+    caplist.sort(key = operator.itemgetter("name"))
+    return caplist
+
+def filter_by_capability(items, capability):
+
+    if not items: return []
+
+    filtered = []
+    for item in items:
+        if not item: continue
+        if capability in item.get_capabilities():
+            filtered.append(item)
+
+    return filtered

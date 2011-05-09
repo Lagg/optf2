@@ -281,3 +281,14 @@ a.button { text-decoration: none; }
     border-right: 1px solid white;
     height: 34px;
 }
+
+.capability-list {
+    list-style-type: none;
+    padding-left: 4px;
+}
+.capability-list lh {
+    font-weight: bold;
+}
+.capability-list li {
+    margin-left: 8px;
+}

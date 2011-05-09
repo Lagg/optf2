@@ -1,4 +1,4 @@
-$def with (items, filter_classes, stats = None, attrdump = None, filter_qualities = None)
+$def with (items, filter_classes, stats = None, attrdump = None, filter_qualities = None, filter_capabilities = None)
 $var title: $project_name - All Items
 
 <div id="header">
@@ -36,6 +36,14 @@ $var title: $project_name - All Items
             <li><a href="$qurl(quality = None)">All</a></li>
             $for q in filter_qualities:
                 <li><a href="$qurl(quality = q['id'])"><span class="prefix-${q['str']}">$q["prettystr"]</span></a></li>
+          </ul>
+        </div>
+        <div style="float: left;" class="dropdown-menu">
+          <b>Capability</b>
+          <ul>
+            <li><a href="$qurl(capability = None)">Any</a></li>
+            $for c in filter_capabilities:
+                <li><a href="$qurl(capability = c['flag'])">$c["name"]</a></li>
           </ul>
         </div>
         <div style="float: right;">

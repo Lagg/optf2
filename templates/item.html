@@ -115,6 +115,12 @@ $def generate_class_icon_link(classes):
           <div class="attr-neutral">
             Slot: $slot.title()
           </div>
+      $if "capabilities" in item.optf2:
+          <ul class="capability-list">
+            <lh>Capabilities</lh>
+            $for cap in item.optf2["capabilities"]:
+                <li style="padding: 2px 0 2px 0;">$cap</li>
+          </ul>
   <br/><a class="button" href="$item_wiki_url">$wiki_map[0] article</a>
   $if user:
       <br/><br/><a class="button" href="${virtual_root}item/${item.get_schema_id()}">Schema version</a>

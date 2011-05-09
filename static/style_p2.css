@@ -271,6 +271,17 @@ a.button { text-decoration: none; }
     height: 34px;
 }
 
+.capability-list {
+    list-style-type: none;
+    padding-left: 4px;
+}
+.capability-list lh {
+    font-weight: bold;
+}
+.capability-list li {
+    margin-left: 8px;
+}
+
 .ui-widget-content { border: 1px solid #474747; background: #d8d8d8; color: #ffffff; }
 .ui-widget-content a { color: black; }
 .ui-widget-header { border: 1px solid #4d4d4d; background: #919191; color: #ffffff; font-weight: bold; }
