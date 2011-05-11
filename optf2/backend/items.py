@@ -50,7 +50,7 @@ capabilitydict = {"can_gift_wrap": "Gift wrappable",
                   "usable": "Action item",
                   "usable_gc": "Usable outside Action slot",
                   "usable_out_of_game": "Usable out of game",
-                  "can_craft_mark": "Can craft mark",
+                  "can_craft_mark": "Holds crafter name",
                   "nameable": "Nameable",
                   "paintable": "Paintable"}
 
