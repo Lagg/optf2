@@ -134,8 +134,15 @@ body { background: #d8d8d8; color: black; font-family: Arial, Helvetica, sans-se
 
 #content { height: 100%; text-align: center; }
 
-#search_form { text-align: center; }
-#search_form table { margin: 30px auto 50px auto; }
+#search-form { display: inline; }
+#search-field {
+    border-radius: 8px;
+    background-color: #404040;
+    border: 1px solid black;
+    color: white;
+    margin: 0 0 0 20px;
+    padding: 0 0 0 4px;
+}
 
 a { font-weight: bold; color: #555555; text-decoration: none; }
 a:hover { text-decoration: underline; }
@@ -145,7 +152,7 @@ a:visited { text-decoration: none; }
 #status_offline { color: #808080; }
 #status_snooze, #status_away, #status_busy { color: #2fb3ff; }
 
-#navbar { background: #2b2b2b; text-align: left; max-width: 100%; padding: 8px; margin-bottom: 0; position: relative; border: 1px solid black; }
+#navbar { background: #2b2b2b; text-align: left; max-width: 100%; padding: 6px; margin-bottom: 0; position: relative; border: 1px solid black; }
 #navbar a { padding: 8px 4px 8px 4px; margin-left: 16px; font-weight: normal; color: white; }
 #navbar a:hover { background: #535353; text-decoration: none; }
 #navbar #loginlink, #navbar #loginlink:hover { position: absolute; right: 3px; top: 3px; padding: 0; margin: 0; background: #606060; }

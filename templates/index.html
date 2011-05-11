@@ -1,21 +1,9 @@
 $def with (countlist)
 $var title: $project_name
 
-<script type="text/javascript"><!--
-$$(document).ready(function() { autocomplete_attach("#user"); });
---></script>
-
 <div id="logo">
   <img width="389" height="126" src="${static_prefix}logo_${game_mode}.png" alt="Logo"/>
 </div>
-<form id="search_form" method="get" action="${virtual_root}">
-  <table>
-    <tr>
-      <td><input type="text" id="user" name="user"/></td>
-      <td><input type="submit" id="submit" name="submit" value="Search"/></td>
-    </tr>
-  </table>
-</form>
 <table id="search_table">
   <tr id="search_title"><td colspan="2"><b>Top Backpacks</b></td></tr>
   <tr class="row_even"><td><b>User</b></td><td><b>Views</b></td></tr>

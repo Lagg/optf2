@@ -97,6 +97,20 @@ $(document).ready(function(){
     });
 
     $(".button").mousedown(function() { return false; });
+
+    var search = $("#search-field");
+    var default_search = "Search...";
+
+    search.autocomplete({
+        minLength: 2,
+        source: autocomplete_magic,
+        open: function() { $(".ui-autocomplete").css("z-index", "100"); },
+        select: function(e, ui) { this.value = ui.item.value; $("#search-form").submit(); }
+    });
+
+    search.val(default_search);
+    search.focus(function() { this.value = ""; });
+    search.focusout(function() { if(this.value.length == 0) { this.value = default_search; } });
 });
 
 function item_image_resize(img, iw, ih, w, h) {
@@ -208,13 +222,6 @@ function autocomplete_magic(req, resp) {
 
       resp (finalcomp.slice (0, 20));
   });
-}
-
-function autocomplete_attach(uid) {
-    $("#user").autocomplete({
-        minLength: 2,
-        source: autocomplete_magic
-    });
 }
 
 function backpack_page_switch() {
