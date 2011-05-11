@@ -78,8 +78,6 @@ database_obj = web.database(dbn = "mysql", db = database["database"], user = dat
 valid_languages = ["da", "nl", "en", "fi", "fr", "de", "it", "ja",
                    "ko", "no", "pl", "pt", "ru", "zh", "es", "sv"]
 
-css_url = "/static/style_" + game_mode + ".css"
-
 wiki_mapping = {"p2": ("Portal Wiki", "http://theportalwiki.com/wiki/"),
                 "tf2": ("Official TF Wiki", "http://wiki.teamfortress.com/wiki/")}
 wiki_mapping["tf2b"] = wiki_mapping["tf2"]

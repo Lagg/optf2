@@ -1,0 +1,84 @@
+body { background: #d8d8d8; color: black; }
+
+.loadout-box { border: 1px solid #a7a7a7; }
+.loadout-box .titlebar { background: #a7a7a7; }
+
+.loadout-header { color: #222222; }
+
+.item-description, .item-level { color: black; }
+
+.attr-neutral, .attr-neutral:visited { color: black; }
+
+.item_cell {
+    margin: 2px;
+    background: #bfbfbf;
+    -moz-border-radius: 0;
+    -webkit-border-radius: 0;
+    border-radius: 0;
+}
+
+.equipped {
+    background: #b6b6b6;
+    color: black;
+    right: 20px;
+    border: 1px solid black;
+    -moz-border-radius: 0;
+    -webkit-border-radius: 0;
+    border-radius: 0;
+
+}
+.item_cell:hover { background: #f2f2f2; }
+.item_attribs {
+    background: #919191;
+    border-color: #8d8c8c;
+    -moz-border-radius: 0;
+    -webkit-border-radius: 0;
+    border-radius: 0;
+    -moz-box-shadow: 0 0 0 0;
+    -webkit-box-shadow: 0 0 0 0;
+    box-shadow: 0 0 0 0;
+}
+
+a { color: #555555; }
+
+#navbar { background: #2b2b2b; }
+#navbar a { color: white; }
+
+.row_odd { background: #cbcbcb; }
+.row_even { background: #adadad; }
+#search_table a { color: black; }
+#attrib_table tr td { background: #adadad; }
+#attrib_table tr th { background: #3e3e3e; color: white; }
+#search_title { background: #3e3e3e; color: white; }
+
+#header h1[class|=prefix] { background: #919191; border: 1px solid black; }
+#header h1 a { color: white; }
+
+.button, .toolbar .button {
+    background-color: #828282;
+    color: black;
+    -moz-border-radius: 0;
+    -webkit-border-radius: 0;
+    border-radius: 0;
+}
+
+.toolbar .button:hover, .button:hover { background-color: #979797; }
+.button:active { background-color: #999999; }
+
+.dropdown-menu {
+    background-color: #828282;
+    color: black;
+    -moz-border-radius: 0;
+    -webkit-border-radius: 0;
+    border-radius: 0;
+}
+.dropdown-menu:hover { background-color: #979797; }
+
+.toolbar { color: white; background: #3e3e3e; }
+.toolbar a { color: white; }
+.toolbar a.button { color: black; }
+
+.ui-widget-content { border: 1px solid #474747; background: #d8d8d8; color: #ffffff; }
+.ui-widget-content a { color: black; }
+.ui-widget-header { border: 1px solid #4d4d4d; background: #919191; color: #ffffff; font-weight: bold; }
+.ui-widget-header a { color: white; }

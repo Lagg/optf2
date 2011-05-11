@@ -4,15 +4,13 @@ from optf2.backend import openid
 import web, config
 
 # These should stay explicit
-globals = {"css_url": config.css_url,
-           "virtual_root": config.virtual_root,
+globals = {"virtual_root": config.virtual_root,
            "static_prefix": config.static_prefix,
            "encode_url": web.urlquote,
            "len": len,
            "particledict": itemtools.particledict,
            "instance": web.ctx,
            "project_name": config.project_name,
-           "project_homepage": config.project_homepage,
            "wiki_map": config.wiki_mapping[config.game_mode],
            "news_url": config.news_url,
            "qurl": web.http.changequery,
