@@ -20,7 +20,6 @@ api_key = None
 
 # It would be nice of you not to change these
 project_name = "OPTF2"
-project_homepage = "http://projects.optf2.com/projects/optf2"
 
 # Refresh cache every x seconds.
 cache_pack_refresh_interval = 30
@@ -47,8 +46,7 @@ os.environ["REAL_SCRIPT_NAME"] = ''
 # this shown. (Not recommended)
 news_url = "http://agg.optf2.com/log/?cat=5"
 
-# The max size of the backpack. Used
-# for the padded cell sort
+# The starting size of the backpack
 backpack_padded_size = 300
 
 # The cache directory, this will
