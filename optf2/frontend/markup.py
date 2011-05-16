@@ -76,7 +76,7 @@ def generate_cell(item, invalid = False, show_equipped = True):
         if "gift_content" in item.optf2 and attr.get_name() == "referenced item def":
             markup += 'Contains <span class="prefix-' + item.optf2['gift_quality'].encode("utf-8") + '">' + item.optf2["gift_content"].encode("utf-8") + '</span>'
         else:
-            markup += attr.get_description_formatted().replace("\n", "<br/>")
+            markup += attr.get_description_formatted().replace("\n", "<br/>").encode("utf-8")
         markup += '</div>'
 
     style = item.get_current_style_name()
