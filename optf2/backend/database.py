@@ -110,25 +110,15 @@ def refresh_pack_cache(user):
                                    "custom_desc, style, attributes, quantity) VALUES ")
         for item in packitems:
             backpack_items.add(item.get_id())
-            attribs = item.get_attributes()
-            pattribs = []
-
-            # Replace gift contents sid with item dict
-            contents = item.get_contents()
-            for attr in attribs:
-                if contents and attr.get_id() == 194:
-                    attr._attribute["value"] = contents._item
-                pattribs.append(attr._attribute)
-
-            if len(pattribs) > 0 and "attributes" in item._item:
-                item._item["attributes"] = pattribs
+            rawattrs = item._item.get("attributes")
+            if rawattrs: rawattrs = pickle.dumps(rawattrs, pickle.HIGHEST_PROTOCOL)
 
             row = [item.get_id(), item.get_original_id(), user.get_id64(), item.get_schema_id(),
                    item.get_level(), item.is_untradable(),
                    item.get_inventory_token(), item.get_quality()["id"],
                    item.get_custom_name(), item.get_custom_description(),
                    item.get_current_style_id(),
-                   pickle.dumps(pattribs, pickle.HIGHEST_PROTOCOL), item.get_quantity()]
+                   rawattrs, item.get_quantity()]
 
             data.append('(' + web.db.SQLQuery.join([web.db.SQLParam(ival) for ival in row], ', ') + ')')
 
@@ -190,8 +180,10 @@ def db_to_itemobj(dbitem):
                "quality": dbitem["quality"],
                "custom_name": dbitem["custom_name"],
                "custom_desc": dbitem["custom_desc"],
-               "style": dbitem["style"],
-               "attributes": pickle.loads(str(dbitem["attributes"]))}
+               "style": dbitem["style"]}
+
+    rawattrs = dbitem["attributes"]
+    if rawattrs: theitem["attributes"] = pickle.loads(rawattrs)
 
     return theitem
 
