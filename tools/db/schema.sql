@@ -9,15 +9,16 @@ CREATE TABLE IF NOT EXISTS items (id64 BIGINT UNSIGNED PRIMARY KEY,
                                   oid64 BIGINT UNSIGNED,
                                   owner BIGINT UNSIGNED,
                                   sid INTEGER UNSIGNED,
-                                  level INTEGER UNSIGNED,
+                                  level TINYINT UNSIGNED,
                                   untradeable BOOLEAN,
                                   token INTEGER UNSIGNED,
                                   quality TINYINT UNSIGNED,
-                                  custom_name TEXT,
-                                  custom_desc TEXT,
+                                  custom_name VARCHAR(40),
+                                  custom_desc VARCHAR(80),
                                   style TINYINT UNSIGNED,
-                                  attributes BLOB,
                                   quantity INTEGER UNSIGNED DEFAULT 1);
+
+CREATE TABLE IF NOT EXISTS attributes (id64 BIGINT UNSIGNED PRIMARY KEY, attrs BLOB NOT NULL);
 
 CREATE TABLE IF NOT EXISTS backpacks (id64 BIGINT UNSIGNED, backpack BLOB, timestamp INTEGER UNSIGNED, INDEX (id64, timestamp));
 

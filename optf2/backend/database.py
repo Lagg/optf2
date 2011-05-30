@@ -99,26 +99,33 @@ def refresh_pack_cache(user):
     with database_obj.transaction():
         backpack_items = set()
         data = []
+        attrdata = []
+
         try:
             packitems = list(pack)
         except steam.items.ItemError:
             pack.set_schema(load_schema_cached(web.ctx.language, fresh = True))
             packitems = list(pack)
+
         thequery = web.db.SQLQuery("INSERT INTO items (id64, oid64, " +
                                    "owner, sid, level, untradeable, " +
                                    "token, quality, custom_name, " +
-                                   "custom_desc, style, attributes, quantity) VALUES ")
+                                   "custom_desc, style, quantity) VALUES ")
+        theattrquery = web.db.SQLQuery("INSERT INTO attributes(id64, attrs) VALUES ")
+
         for item in packitems:
             backpack_items.add(item.get_id())
             rawattrs = item._item.get("attributes")
-            if rawattrs: rawattrs = pickle.dumps(rawattrs, pickle.HIGHEST_PROTOCOL)
+            if rawattrs:
+                rawattrs = pickle.dumps(rawattrs, pickle.HIGHEST_PROTOCOL)
+                attrdata.append('(' + web.db.SQLParam(item.get_id()) + ', ' + web.db.SQLParam(rawattrs) + ')')
 
             row = [item.get_id(), item.get_original_id(), user.get_id64(), item.get_schema_id(),
                    item.get_level(), item.is_untradable(),
                    item.get_inventory_token(), item.get_quality()["id"],
                    item.get_custom_name(), item.get_custom_description(),
                    item.get_current_style_id(),
-                   rawattrs, item.get_quantity()]
+                   item.get_quantity()]
 
             data.append('(' + web.db.SQLQuery.join([web.db.SQLParam(ival) for ival in row], ', ') + ')')
 
@@ -127,8 +134,13 @@ def refresh_pack_cache(user):
                      "owner=VALUES(owner), sid=VALUES(sid), level=VALUES(level), " +
                      "untradeable=VALUES(untradeable), token=VALUES(token), " +
                      "quality=VALUES(quality), custom_name=VALUES(custom_name), " +
-                     "custom_desc=VALUES(custom_desc), style=VALUES(style), attributes=VALUES(attributes), " +
+                     "custom_desc=VALUES(custom_desc), style=VALUES(style), " +
                      "quantity=VALUES(quantity)")
+
+        theattrquery += web.db.SQLQuery.join(attrdata, ', ')
+        theattrquery += " ON DUPLICATE KEY UPDATE id64=VALUES(id64), attrs=VALUES(attrs)"
+        if len(attrdata) > 0:
+            database_obj.query(theattrquery)
 
         if len(data) > 0:
             database_obj.query(thequery)
@@ -139,7 +151,7 @@ def refresh_pack_cache(user):
                                             order = "timestamp DESC", limit = 1))
         if db_pack_is_new(lastpack, backpack_items):
             database_obj.insert("backpacks", id64 = user.get_id64(),
-                                backpack = pickle.dumps(backpack_items, pickle.HIGHEST_PROTOCOL),
+                                backpack = pickle.dumps(list(backpack_items), pickle.HIGHEST_PROTOCOL),
                                 timestamp = ts)
         elif len(lastpack) > 0:
             lastts = database_obj.select("backpacks", what = "MAX(timestamp) AS ts", where = "id64 = $id64",
@@ -187,11 +199,13 @@ def db_to_itemobj(dbitem):
 
     return theitem
 
+item_select_query = web.db.SQLQuery("SELECT items.*, attributes.attrs as attributes FROM items " +
+                                    "LEFT JOIN attributes ON items.id64=attributes.id64 " +
+                                    "WHERE items.id64")
+
 def fetch_item_for_id(iid):
     try:
-        itemrow = list(database_obj.select("items",
-                                           where = "id64 = $id64",
-                                           vars = {"id64": iid}))[0]
+        itemrow = database_obj.query(item_select_query + " = " + web.db.SQLParam(int(iid)))[0]
         return db_to_itemobj(itemrow)
     except IndexError:
         return None
@@ -207,11 +221,10 @@ def load_pack_cached(user, stale = False, date = None):
     if thepack:
         schema = load_schema_cached(web.ctx.language)
         with database_obj.transaction():
-            query = web.db.SQLQuery("SELECT * FROM items WHERE id64=")
             items = pickle.loads(str(thepack["backpack"]))
+            query = web.db.SQLQuery(item_select_query + ' IN (' +
+                                    web.db.SQLQuery.join([web.db.SQLParam(id64) for id64 in items], ", ") + ')')
             dbitems = []
-
-            query += web.db.SQLQuery.join([web.db.SQLParam(id64) for id64 in items], " OR id64=")
 
             if len(items) > 0:
                 dbitems = database_obj.query(query)
