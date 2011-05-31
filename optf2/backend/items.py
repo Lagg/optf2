@@ -14,7 +14,7 @@ ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
 OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 """
 
-import web, config, steam, database, re, operator
+import web, config, steam, database, re, operator, time
 
 qualitydict = {"unique": "The",
                "normal": ""}
@@ -324,6 +324,12 @@ def process_attributes(items):
 
             if theattr.get_name() == "unique craft index":
                 item.optf2["craft_number"] = str(int(theattr.get_value()))
+
+            if theattr.get_name() == "tradable after date":
+                # WORKAROUND: For some reason this has the wrong type and is hidden,
+                # not sure if this should be in steamodd or not
+                d = time.gmtime(theattr.get_value())
+                item.optf2["date_tradable"] = time.strftime("%F %H:%M:%S", d)
 
             if not newattr.get("hidden", theattr.is_hidden()):
                 newattr["description_string"] = web.websafe(newattr.get("description_string",

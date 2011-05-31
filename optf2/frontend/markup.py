@@ -88,6 +88,8 @@ def generate_cell(item, invalid = False, show_equipped = True):
 
     if item.is_untradable():
         markup += '<div class="attr-neutral">Untradable</div>'
+        if "date_tradable" in item.optf2:
+            markup += '<div class="attr-neutral">Tradable after: {0}</div>'.format(item.optf2["date_tradable"])
 
     markup += '</div></div>\n'
 

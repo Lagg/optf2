@@ -51,9 +51,9 @@ $def generate_class_icon_link(classes):
             $:desc.replace("\n", "<br/>")
       </div>
   $if item.is_untradable():
-      <div class="attr-neutral">
-        Untradable
-      </div>
+      <div class="attr-neutral">Untradable</div>
+      $if "date_tradable" in extra:
+          <div class="attr-neutral">Tradable after: $extra["date_tradable"]</div>
   $if "paint_name" in item.optf2:
       <div class="attr-positive">
         $:{item.optf2["painted_text"]} with ${item.optf2["paint_name"]}
