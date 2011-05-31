@@ -204,6 +204,7 @@ def process_attributes(items):
     default_item_image = config.virtual_root + "static/item_icons/Invalid_icon.png";
     newitems = []
     schema = database.load_schema_cached(web.ctx.language)
+    loaded_profiles = {}
 
     for item in items:
         if not item: continue
@@ -292,7 +293,13 @@ def process_attributes(items):
                 item.optf2["gift_from"] = condensed_to_id64(theattr.get_value())
 
                 try:
-                    user = database.load_profile_cached(item.optf2["gift_from"], stale = True)
+                    gifter = item.optf2["gift_from"]
+                    if gifter not in loaded_profiles:
+                        user = database.load_profile_cached(gifter, stale = True)
+                        loaded_profiles[gifter] = user
+                    else:
+                        user = loaded_profiles[gifter]
+
                     item.optf2["gift_from_persona"] = user.get_persona()
                     newattr["description_string"] = "Gift from " + item.optf2["gift_from_persona"]
                 except:
@@ -302,7 +309,11 @@ def process_attributes(items):
                 crafter_id64 = condensed_to_id64(theattr.get_value())
 
                 try:
-                    user = database.load_profile_cached(crafter_id64, stale = True)
+                    if crafter_id64 not in loaded_profiles:
+                        user = database.load_profile_cached(crafter_id64, stale = True)
+                        loaded_profiles[crafter_id64] = user
+                    else:
+                        user = loaded_profiles[crafter_id64]
                     item.optf2["crafted_by_persona"] = user.get_persona()
                 except:
                     item.optf2["crafted_by_persona"] = "this user"
