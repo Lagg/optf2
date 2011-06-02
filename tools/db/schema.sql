@@ -1,9 +1,11 @@
 
 CREATE TABLE IF NOT EXISTS search_count (id64 BIGINT UNSIGNED, ip VARCHAR(200));
 
-CREATE TABLE IF NOT EXISTS profile_cache (id64 BIGINT UNSIGNED PRIMARY KEY, vanity TEXT, profile BLOB, timestamp INTEGER);
-
-CREATE TABLE IF NOT EXISTS unique_views (id64 BIGINT UNSIGNED PRIMARY KEY, count INTEGER UNSIGNED DEFAULT 1, persona TEXT, valve BOOLEAN);
+CREATE TABLE IF NOT EXISTS profiles (id64 BIGINT UNSIGNED PRIMARY KEY,
+                                     vanity TEXT,
+                                     profile BLOB,
+                                     timestamp INTEGER,
+                                     bp_views INTEGER UNSIGNED NOT NULL DEFAULT 0);
 
 CREATE TABLE IF NOT EXISTS items (id64 BIGINT UNSIGNED PRIMARY KEY,
                                   oid64 BIGINT UNSIGNED,

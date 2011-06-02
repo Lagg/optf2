@@ -86,3 +86,7 @@ wiki_mapping["tf2b"] = wiki_mapping["tf2"]
 opnet_mapping = {"OPTF2": "http://optf2.com/",
                  "OPP2": "http://p2.optf2.com/",
                  "OPTF2Beta": "http://beta.optf2.com/"}
+
+# The 64 bit ID of the Valve group (this is how I check
+# if the user is a Valve employee)
+valve_group_id = 103582791429521412

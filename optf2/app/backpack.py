@@ -9,11 +9,6 @@ import template
 import api
 
 templates = template.template
-db_obj = config.database_obj
-
-# The 64 bit ID of the Valve group (this is how I check
-# if the user is a Valve employee)
-valve_group_id = 103582791429521412
 
 class loadout:
     """ User loadout lists """
@@ -183,27 +178,10 @@ class fetch:
         except:
             return templates.error("Failed to load backpack")
 
-        isvalve = (user.get_primary_group() == valve_group_id)
-        views = 0
-        uid64 = user.get_id64()
-        ipaddr = web.ctx.ip
+        views = database.get_user_pack_views(user)
+        isvalve = (user.get_primary_group() == config.valve_group_id)
 
-        with db_obj.transaction():
-            count = db_obj.select("search_count", where = "id64 = $id64 AND ip = $ip",
-                                  vars = {"ip": ipaddr, "id64": uid64})
-            if len(count) <= 0:
-                db_obj.insert("search_count", ip = ipaddr, id64 = uid64)
-                views = 1
-            db_obj.query("INSERT INTO unique_views (id64, persona, valve) VALUES " +
-                         "($id64, $p, $v) ON DUPLICATE KEY UPDATE id64=VALUES(id64), persona=VALUES(persona),"
-                         " valve=VALUES(valve), count=count+$c", vars = {"id64": uid64,
-                                                                         "p": user.get_persona(),
-                                                                         "v": isvalve,
-                                                                         "c": views})
-            views = db_obj.select("unique_views", what = "count", where = "id64 = $id64",
-                                  vars = {"id64": uid64})[0]["count"]
-
-        web.ctx.env["optf2_rss_url"] = "{0}feed/{1}".format(config.virtual_root, uid64)
+        web.ctx.env["optf2_rss_url"] = "{0}feed/{1}".format(config.virtual_root, user.get_id64())
         web.ctx.env["optf2_rss_title"] = "{0}'s Backpack".format(user.get_persona().encode("utf-8"))
 
         return templates.inventory(user, isvalve, items, views,

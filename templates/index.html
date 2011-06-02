@@ -8,8 +8,8 @@ $var title: $project_name
   <tr id="search_title"><td colspan="2"><b>Top Backpacks</b></td></tr>
   <tr class="row_even"><td><b>User</b></td><td><b>Views</b></td></tr>
 $for row in countlist:
-    $if row["valve"]:
+    $if row[1]:
         $ name_suffix = ' <img src="{0}valve.png" alt="Valve" title="Valve Employee"/>'.format(static_prefix)
     $else: $ name_suffix = ""
-    <tr class="row_${loop.parity}"><td><a href="${virtual_root}user/$row['id64']">$row["persona"]$:name_suffix</a></td><td>$row["count"]</td></tr>
+    <tr class="row_${loop.parity}"><td><a href="${virtual_root}user/$row[2].get_id64()">$row[2].get_persona()$:name_suffix</a></td><td>$row[0]</td></tr>
 </table>

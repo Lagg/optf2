@@ -41,7 +41,7 @@ def refresh_profile_cache(sid, vanity = None):
 
     itervars = list(queryvars.iteritems())
 
-    database_obj.query("INSERT INTO profile_cache (" + web.db.SQLQuery.join([k for k,v in itervars], ", ") + ") VALUES " +
+    database_obj.query("INSERT INTO profiles (" + web.db.SQLQuery.join([k for k,v in itervars], ", ") + ") VALUES " +
                        "(" + web.db.SQLQuery.join([web.db.SQLParam(v) for k,v in itervars], ", ") + ")" +
                        " ON DUPLICATE KEY UPDATE " + web.db.SQLQuery.join(["{0}=VALUES({0})".format(k) for k,v in itervars], ", "))
 
@@ -51,10 +51,10 @@ def load_profile_cached(sid, stale = False):
     user = steam.user.profile()
     try:
         if sid.isdigit():
-            prow = database_obj.select("profile_cache", what = "profile, timestamp",
+            prow = database_obj.select("profiles", what = "profile, timestamp",
                                        where = "id64 = $id64", vars = {"id64": int(sid)})[0]
         else:
-            prow = database_obj.select("profile_cache", what = "profile, timestamp",
+            prow = database_obj.select("profiles", what = "profile, timestamp",
                                        where = "vanity = $v", vars = {"v": sid})[0]
 
         pfile = pickle.loads(prow["profile"])
@@ -232,3 +232,35 @@ def load_pack_cached(user, stale = False, date = None):
             packresult = [schema.create_item(db_to_itemobj(item)) for item in dbitems]
         return packresult
     return []
+
+def get_user_pack_views(user):
+    """ Returns the viewcount of a user's backpack """
+
+    views = 0
+    uid64 = user.get_id64()
+    ipaddr = web.ctx.ip
+
+    with database_obj.transaction():
+        count = database_obj.select("search_count", where = "id64 = $id64 AND ip = $ip",
+                                    vars = {"ip": ipaddr, "id64": uid64})
+        if len(count) <= 0:
+            database_obj.insert("search_count", ip = ipaddr, id64 = uid64)
+            database_obj.query("UPDATE profiles SET bp_views = bp_views + 1 WHERE id64 = $id64",
+                               vars = {"id64": user.get_id64(), "c": views})
+
+        views = database_obj.select("profiles", what = "bp_views", where = "id64 = $id64",
+                                    vars = {"id64": uid64})[0]["bp_views"]
+
+    return views
+
+def get_top_pack_views(limit = 10):
+    """ Will return the top viewed backpacks sorted in descending order
+    no more than limit rows will be returned """
+
+    result = database_obj.select("profiles", what = "bp_views, profile", where = "bp_views > 0",  order = "bp_views DESC", limit = limit)
+    profiles = []
+    for row in result:
+        profile = steam.user.profile(pickle.loads(row["profile"]))
+        profiles.append((row["bp_views"], profile.get_primary_group() == config.valve_group_id, profile))
+
+    return profiles
