@@ -59,7 +59,7 @@ if not os.path.exists(cache_file_dir):
     os.makedirs(cache_file_dir)
 
 # Used as a timeout for fetching external data
-socket.setdefaulttimeout(5)
+socket.setdefaulttimeout(2)
 
 web.config.session_parameters["timeout"] = 86400
 web.config.session_parameters["cookie_name"] = "optf2_session_id"

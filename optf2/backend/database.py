@@ -70,8 +70,7 @@ def load_profile_cached(sid, stale = False):
         return refresh_profile_cache(sid)
 
 def db_pack_is_new(lastpack, newpack):
-    return (len(lastpack) <= 0 or
-            sorted(pickle.loads(str(lastpack[0]["backpack"]))) != sorted(newpack))
+    return (sorted(lastpack) != sorted(newpack))
 
 def load_schema_cached(lang, fresh = False):
     cachepath = os.path.join(config.cache_file_dir, "schema-" + config.game_mode + "-" + lang)
@@ -145,40 +144,50 @@ def refresh_pack_cache(user):
         if len(data) > 0:
             database_obj.query(thequery)
 
-        lastpack = list(database_obj.select("backpacks", what = "backpack",
-                                            where="id64 = $id64",
-                                            vars = {"id64": user.get_id64()},
-                                            order = "timestamp DESC", limit = 1))
-        if db_pack_is_new(lastpack, backpack_items):
+        lastpack = get_pack_snapshot_for_user(user)
+
+        if not lastpack or db_pack_is_new(pickle.loads(str(lastpack["backpack"])), backpack_items):
             database_obj.insert("backpacks", id64 = user.get_id64(),
                                 backpack = pickle.dumps(list(backpack_items), pickle.HIGHEST_PROTOCOL),
                                 timestamp = ts)
-        elif len(lastpack) > 0:
-            lastts = database_obj.select("backpacks", what = "MAX(timestamp) AS ts", where = "id64 = $id64",
-                                         vars = {"id64": user.get_id64()})[0]["ts"]
+        elif lastpack:
             database_obj.update("backpacks", where = "id64 = $id64 AND timestamp = $ts",
-                                timestamp = ts, vars = {"id64": user.get_id64(), "ts": lastts})
+                                timestamp = ts, vars = {"id64": user.get_id64(), "ts": lastpack["timestamp"]})
         return packitems
     return []
 
-def fetch_pack_for_user(user, date = None, tl_size = None):
+def get_pack_timeline_for_user(user, tl_size = None):
     """ Returns None if a backpack couldn't be found, returns
     tl_size rows from the timeline
     """
-    packrow = list(database_obj.select("backpacks",
-                                       where = "id64 = $id64",
-                                       order = "timestamp DESC",
-                                       limit = tl_size,
-                                       vars = {"id64": user.get_id64()}))
+    packrow = database_obj.select("backpacks",
+                                  where = "id64 = $id64",
+                                  order = "timestamp DESC",
+                                  limit = tl_size,
+                                  vars = {"id64": user.get_id64()})
 
-    if tl_size: return packrow
+    if len(packrow) > 0:
+        return packrow
 
-    for pack in packrow:
-        if not date:
-            return pack
-        if str(pack["timestamp"]) == str(date):
-            return pack
-    if len(packrow) > 0: return packrow[0]
+def get_pack_snapshot_for_user(user, date = None):
+    """ Returns the backpack snapshot or None if it couldn't be found,
+    if date is not give the latest snapshot will be returned."""
+
+    tsstr = ""
+    if date: tsstr = " AND timestamp = $ts"
+
+    rows = database_obj.select("backpacks",
+                               where = "id64 = $id64" + tsstr,
+                               what = "backpack, timestamp",
+                               limit = 1,
+                               order = "timestamp DESC",
+                               vars = {"id64": user.get_id64(), "ts": date})
+
+    if len(rows) > 0:
+        return rows[0]
+    else:
+        return None
+
 
 def db_to_itemobj(dbitem):
     theitem = {"id": dbitem["id64"],
@@ -212,7 +221,7 @@ def fetch_item_for_id(iid):
 
 def load_pack_cached(user, stale = False, date = None):
     packresult = []
-    thepack = fetch_pack_for_user(user, date = date)
+    thepack = get_pack_snapshot_for_user(user, date = date)
     if not stale and not date:
         if not cache_not_stale(thepack):
             try:

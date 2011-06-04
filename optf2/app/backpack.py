@@ -65,7 +65,6 @@ class item:
         try:
             user = None
             item_outdated = False
-            fromschema = False
             idl = iid.split('/')
 
             if len(idl) == 1:
@@ -74,15 +73,12 @@ class item:
 
             try:
                 theitem = schema[long(id64)]
-                fromschema = True
             except:
-                theitem = database.fetch_item_for_id(id64)
-
-            if not fromschema:
-                user = database.load_profile_cached(str(theitem["owner"]), stale = True)
-                theitem = schema.create_item(theitem)
+                rawitem = database.fetch_item_for_id(id64)
+                theitem = schema.create_item(rawitem)
+                user = database.load_profile_cached(str(rawitem["owner"]), stale = True)
                 if user:
-                    backpack = database.fetch_pack_for_user(user)
+                    backpack = database.get_pack_snapshot_for_user(user)
                     if backpack and theitem.get_id() not in pickle.loads(str(backpack["backpack"])):
                         item_outdated = True
 
@@ -139,7 +135,7 @@ class fetch:
                 raise steam.user.ProfileError("Backpack is private")
 
             timestamps = []
-            for ts in database.fetch_pack_for_user(user, tl_size = 20):
+            for ts in database.get_pack_timeline_for_user(user, tl_size = 20):
                 prettyts = time.ctime(ts["timestamp"])
                 timestamps.append([ts["timestamp"], prettyts])
 
