@@ -3,9 +3,9 @@ var page_switcher = document.createElement("div");
 var ispaginated = false;
 var last_dialog_size = null;
 var invalid_icon_url = virtual_root + "static/item_icons/Invalid_icon.png";
+var itemurls = {}
 
 $(document).ready(function(){
-    $(".item_link").removeAttr("href");
     var cells = $(".item_cell");
     var pages = $(".backpack-page").not("#page-0");
     var hashpart = document.location.hash;
@@ -13,6 +13,11 @@ $(document).ready(function(){
     var attrib_dict = {};
 
     var domattribs = $(".item_attribs");
+    var itemlinks = $(".item_link");
+
+    itemlinks.each(function() { itemurls[String($(this).parent().attr("id").slice(1))] = this.href; });
+    itemlinks.contents().unwrap();
+
     domattribs.each(function() { this.id = "a" + $(this).parent().attr("id"); attrib_dict[String(this.id)] = this; });
     domattribs.remove();
 
@@ -183,7 +188,7 @@ function item_open_success(data, status, xhr) {
 }
 
 function item_open(item_id) {
-    var item_url = virtual_root + "item/" + item_id;
+    var item_url = itemurls[item_id];
     var loading_id = "loading_" + item_id;
     var cell_id = $("#s" + item_id);
     if (cell_id.find("#" + loading_id).length > 0) {
