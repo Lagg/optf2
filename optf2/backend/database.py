@@ -99,6 +99,7 @@ def refresh_pack_cache(user):
         backpack_items = set()
         data = []
         attrdata = []
+        lastpack = get_pack_snapshot_for_user(user)
 
         try:
             packitems = list(pack)
@@ -112,8 +113,23 @@ def refresh_pack_cache(user):
                                    "custom_desc, style, quantity) VALUES ")
         theattrquery = web.db.SQLQuery("INSERT INTO attributes(id64, attrs) VALUES ")
 
+        deltapack = []
+        olditems = {}
+        if lastpack:
+            deltapack = pickle.loads(lastpack["backpack"])
+            for item in get_items_for_backpack(deltapack):
+                compitem = db_to_itemobj(item)
+                olditems[compitem["id"]] = compitem
+
         for item in packitems:
             backpack_items.add(item.get_id())
+
+            if item.get_id() in olditems:
+                compitem = item._item
+                olditem = olditems[compitem["id"]]
+                if dict(olditem.items() + compitem.items()) == olditem:
+                    continue
+
             rawattrs = item._item.get("attributes")
             if rawattrs:
                 rawattrs = pickle.dumps(rawattrs, pickle.HIGHEST_PROTOCOL)
@@ -143,8 +159,6 @@ def refresh_pack_cache(user):
 
         if len(data) > 0:
             database_obj.query(thequery)
-
-        lastpack = get_pack_snapshot_for_user(user)
 
         if not lastpack or db_pack_is_new(pickle.loads(str(lastpack["backpack"])), backpack_items):
             database_obj.insert("backpacks", id64 = user.get_id64(),
@@ -219,6 +233,17 @@ def fetch_item_for_id(iid):
     except IndexError:
         return None
 
+def get_items_for_backpack(backpack):
+    with database_obj.transaction():
+        query = web.db.SQLQuery(item_select_query + ' IN (' +
+                                web.db.SQLQuery.join([web.db.SQLParam(id64) for id64 in backpack], ", ") + ')')
+        dbitems = []
+
+        if len(backpack) > 0:
+            dbitems = database_obj.query(query)
+
+        return dbitems
+
 def load_pack_cached(user, stale = False, date = None):
     packresult = []
     thepack = get_pack_snapshot_for_user(user, date = date)
@@ -229,17 +254,8 @@ def load_pack_cached(user, stale = False, date = None):
             except: pass
     if thepack:
         schema = load_schema_cached(web.ctx.language)
-        with database_obj.transaction():
-            items = pickle.loads(str(thepack["backpack"]))
-            query = web.db.SQLQuery(item_select_query + ' IN (' +
-                                    web.db.SQLQuery.join([web.db.SQLParam(id64) for id64 in items], ", ") + ')')
-            dbitems = []
-
-            if len(items) > 0:
-                dbitems = database_obj.query(query)
-
-            packresult = [schema.create_item(db_to_itemobj(item)) for item in dbitems]
-        return packresult
+        dbitems = get_items_for_backpack(pickle.loads(thepack["backpack"]))
+        return [schema.create_item(db_to_itemobj(item)) for item in dbitems]
     return []
 
 def get_user_pack_views(user):
