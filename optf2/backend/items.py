@@ -197,7 +197,7 @@ def get_stats(items):
     return stats
 
 
-def process_attributes(items):
+def process_attributes(items, gift = False):
     """ Filters attributes for the item list,
     optf2-specific data is stored in item.optf2 """
 
@@ -220,6 +220,7 @@ def process_attributes(items):
         pb_level = item.get_level()
         custom_desc = item.get_custom_description()
         itype = item.get_type()
+        giftcontents = item.get_contents()
 
         if itype.startswith("TF_"):
             s1 = re.sub("(.)([A-Z][a-z]+)", "\\1 \\2", itype[3:])
@@ -240,23 +241,10 @@ def process_attributes(items):
             newattr = {}
             desc = theattr.get_description()
 
-            # Contained item is a schema id, this is an incredibly
-            # ugly hack but I'm too stubborn to make DB changes for this
             if theattr.get_name() == "referenced item def":
-                giftcontents = theattr.get_value()
-
-                if not isinstance(giftcontents, dict):
-                    giftcontents = schema[(int(giftcontents))]
-                else:
-                    giftcontents = schema.create_item(giftcontents)
-
-                giftcontents.optf2 = {}
-                giftcontents.optf2["gift_container_id"] = item.get_id()
-                item.optf2["gift_content"] = giftcontents.get_full_item_name(prefixes = qualitydict)
-                item.optf2["gift_quality"] = giftcontents.get_quality()["str"]
-                item.optf2["gift_item"] = giftcontents
-
-                newattr["description_string"] = 'Contains ' + item.optf2["gift_content"]
+                if not giftcontents:
+                    giftcontents = schema[int(theattr.get_value())]
+                newattr["description_string"] = 'Contains ' + giftcontents.get_full_item_name(prefixes = qualitydict)
                 newattr["hidden"] = False
 
             if theattr.get_name() == "set item tint RGB":
@@ -290,20 +278,20 @@ def process_attributes(items):
 
             if theattr.get_name() == "gifter account id":
                 newattr["description_string"] = "Gift"
-                item.optf2["gift_from"] = condensed_to_id64(theattr.get_value())
+                item.optf2["gifter_id"] = condensed_to_id64(theattr.get_value())
 
                 try:
-                    gifter = item.optf2["gift_from"]
+                    gifter = item.optf2["gifter_id"]
                     if gifter not in loaded_profiles:
                         user = database.load_profile_cached(gifter, stale = True)
                         loaded_profiles[gifter] = user
                     else:
                         user = loaded_profiles[gifter]
 
-                    item.optf2["gift_from_persona"] = user.get_persona()
-                    newattr["description_string"] = "Gift from " + item.optf2["gift_from_persona"]
+                    item.optf2["gifter_persona"] = user.get_persona()
+                    newattr["description_string"] = "Gift from " + item.optf2["gifter_persona"]
                 except:
-                    item.optf2["gift_from_persona"] = "this user"
+                    item.optf2["gifter_persona"] = "this user"
 
             if theattr.get_name() == "makers mark id":
                 crafter_id64 = condensed_to_id64(theattr.get_value())
@@ -339,18 +327,18 @@ def process_attributes(items):
 
             item.optf2["attrs"].append(steam.items.item_attribute(dict(theattr._attribute.items() + newattr.items())))
 
-        if "gift_item" in item.optf2:
-            item.optf2["gift_item"].optf2["gift_from_persona"] = item.optf2["gift_from_persona"]
-            item.optf2["gift_item"].optf2["gift_from"] = item.optf2["gift_from"]
-
         caps = item.get_capabilities()
         if caps:
             item.optf2["capabilities"] = [capabilitydict.get(cap, cap) for cap in caps]
 
+        if giftcontents:
+            item.optf2["contents"] = giftcontents
+            item.optf2["content_string"] = ('Contains <span class="prefix-{0}">{1}</span>').format(giftcontents.get_quality()["str"],
+                                                                                                   giftcontents.get_full_item_name(prefixes = qualitydict))
+
         quality_str = item.get_quality()["str"]
         full_qdict_name = item.get_full_item_name(prefixes = qualitydict)
         full_default_name = item.get_full_item_name({"normal": None, "unique": None})
-        is_gift_contents = "gift_container_id" in item.optf2
         color = item.optf2.get("color")
         paint_job = ""
         prefix = ""
@@ -363,7 +351,7 @@ def process_attributes(items):
                 paint_job = '<span><b style="color: #B8383B;">Pain</b><b style="color: #5885A2;">ted</b></span>'
             else:
                 paint_job = '<span style="color: {0}; font-weight: bold;">Painted</span>'.format(color)
-        if is_gift_contents:
+        if gift:
             prefix = '<span class="prefix-giftwrapped">Giftwrapped</span>'
         item.optf2["painted_text"] = paint_job
         item.optf2["dedicated_name"] = "{0} {1}{2}".format(_(prefix), _(full_default_name), _(craft_no))
@@ -374,7 +362,7 @@ def process_attributes(items):
 
         if color:
             paint_job = "Painted"
-        if is_gift_contents:
+        if gift:
             prefix = "Giftwrapped"
         item.optf2["title_name"] = "{0} {1} {2}{3}".format(_(prefix), _(paint_job), _(full_default_name), _(craft_no))
 
@@ -386,7 +374,6 @@ def process_attributes(items):
 
         newitems.append(item)
 
-    items = newitems
     return newitems
 
 def get_equippable_classes(items):

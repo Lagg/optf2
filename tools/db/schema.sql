@@ -20,7 +20,7 @@ CREATE TABLE IF NOT EXISTS items (id64 BIGINT UNSIGNED PRIMARY KEY,
                                   style TINYINT UNSIGNED,
                                   quantity INTEGER UNSIGNED DEFAULT 1);
 
-CREATE TABLE IF NOT EXISTS attributes (id64 BIGINT UNSIGNED PRIMARY KEY, attrs BLOB NOT NULL);
+CREATE TABLE IF NOT EXISTS attributes (id64 BIGINT UNSIGNED PRIMARY KEY, attrs BLOB NOT NULL, contents BLOB);
 
 CREATE TABLE IF NOT EXISTS backpacks (id64 BIGINT UNSIGNED, backpack BLOB, timestamp INTEGER UNSIGNED, INDEX (id64, timestamp));
 

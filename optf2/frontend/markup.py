@@ -49,13 +49,14 @@ def generate_cell(item, invalid = False, show_equipped = True):
               '<img class="item-image small" src="{4}" alt="{5}"/>' +
               '</a>').format(cell_class, quality, item_id, item_link, item.optf2["image_url"], item_id)
 
-    if "gift_content" in item.optf2:
-        markup += '<img src="' + item.optf2["gift_item"].get_image(item.ITEM_IMAGE_SMALL) + '" alt="0" class="item-image gift-preview"/>'
+    contents = item.optf2.get("contents")
+    if contents:
+        markup += '<img src="' + contents.get_image(item.ITEM_IMAGE_SMALL) + '" alt="0" class="item-image gift-preview"/>'
     if item.get_custom_name():
         markup += '<img src="' + static_prefix + 'name_tag.png" class="icon-name" alt="Named"/>'
     if item.get_custom_description():
         markup += '<img src="' + static_prefix + 'desc_tag.png" class="icon-desc"  alt="Described"/>'
-    if "gift_from" in item.optf2:
+    if "gifter_id" in item.optf2:
         markup += '<img src="' + static_prefix + 'gift_icon.png" class="icon-gift"  alt="Gift"/>'
     if "color" in item.optf2:
         markup += '<span class="paint_splotch" style="background: ' + item.optf2['color'] + ';">&nbsp;</span>'
@@ -73,8 +74,8 @@ def generate_cell(item, invalid = False, show_equipped = True):
 
     for attr in item.optf2["attrs"]:
         markup += '<div class="attr-' + attr.get_type().encode("utf-8") + '">'
-        if "gift_content" in item.optf2 and attr.get_name() == "referenced item def":
-            markup += 'Contains <span class="prefix-' + item.optf2['gift_quality'].encode("utf-8") + '">' + item.optf2["gift_content"].encode("utf-8") + '</span>'
+        if attr.get_name() == "referenced item def":
+            markup += item.optf2["content_string"]
         else:
             markup += attr.get_description_formatted().replace("\n", "<br/>").encode("utf-8")
         markup += '</div>'

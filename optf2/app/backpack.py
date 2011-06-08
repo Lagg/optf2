@@ -84,8 +84,12 @@ class item:
 
             item = itemtools.process_attributes([theitem])[0]
             if web.input().get("contents"):
-                itemcontents = item.optf2.get("gift_item")
-                if itemcontents: item = itemtools.process_attributes([itemcontents])[0]
+                itemcontents = item.optf2.get("contents")
+                if itemcontents:
+                    newitem = itemtools.process_attributes([itemcontents], gift = True)[0]
+                    newitem.optf2 = dict(item.optf2, **newitem.optf2)
+                    newitem.optf2["container_id"] = item.get_id()
+                    item = newitem
         except urllib2.URLError:
             return templates.error("Couldn't connect to Steam")
         except:
@@ -146,7 +150,7 @@ class fetch:
             if filter_quality:
                 items = itemtools.filter_by_quality(items, filter_quality)
 
-            itemtools.process_attributes(items)
+            items = itemtools.process_attributes(items)
             stats = itemtools.get_stats(items)
 
             baditems = itemtools.get_invalid_pos(items)
@@ -193,7 +197,7 @@ class feed:
         try:
             user = database.load_profile_cached(sid, stale = True)
             items = database.load_pack_cached(user)
-            itemtools.process_attributes(items)
+            items = itemtools.process_attributes(items)
         except Exception as E:
             return templates.error(str(E))
         web.header("Content-Type", "application/rss+xml")

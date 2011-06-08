@@ -1,6 +1,7 @@
 $def with (user, item, outdated)
 $ qitem = item.get_quality()
 $ extra = item.optf2
+$ contents = extra.get("contents")
 $if not user:
     $ usern = "Schema"
 $else:
@@ -40,11 +41,10 @@ $def generate_class_icon_link(classes):
   $for attr in extra["attrs"]:
       $ desc = attr.get_description_formatted()
       <div class="attr-${attr.get_type()}">
-        $if "gift_from" in extra and attr.get_name() == "gifter account id":
-            Gift from <a href="${virtual_root}user/${extra['gift_from']}">$extra["gift_from_persona"]</a>
-        $elif "gift_content" in extra and attr.get_name() == "referenced item def":
-            Contains <span class="prefix-${extra['gift_quality']}">$extra["gift_content"]</span>
-            <a href="${virtual_root}item/${item.get_id()}?contents=1">(more)</a>
+        $if "gifter_persona" in extra and attr.get_name() == "gifter account id":
+            Gift from <a href="${virtual_root}user/${extra['gifter_id']}">$extra["gifter_persona"]</a>
+        $elif contents and attr.get_name() == "referenced item def":
+            $:extra["content_string"] <a href="$qurl(contents = 1)">(more)</a>
         $elif "crafted_by_id64" in extra and attr.get_name() == "makers mark id":
             Crafted by <a href="${virtual_root}user/${extra['crafted_by_id64']}">$extra['crafted_by_persona']</a>
         $else:
@@ -62,10 +62,10 @@ $def generate_class_icon_link(classes):
       $ style = item.get_current_style_name()
       $if style: <div class="attr-neutral">Style: $style</div>
       $ serial = item.get_id()
-      $if "gift_from" in extra and not serial:
+      $if "container_id" in extra and not serial:
           <div class="attr-positive">
-            Unopened <a href="${virtual_root}item/${extra['gift_container_id']}">Gift</a> from
-            <a href="${virtual_root}user/${extra['gift_from']}">$extra["gift_from_persona"]</a>
+            Unopened <a href="${virtual_root}item/${extra['container_id']}">Gift</a> from
+            <a href="${virtual_root}user/${extra['gifter_id']}">$extra["gifter_persona"]</a>
           </div>
       $elif serial:
           <div class="attr-neutral">

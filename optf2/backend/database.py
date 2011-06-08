@@ -111,7 +111,7 @@ def refresh_pack_cache(user):
                                    "owner, sid, level, untradeable, " +
                                    "token, quality, custom_name, " +
                                    "custom_desc, style, quantity) VALUES ")
-        theattrquery = web.db.SQLQuery("INSERT INTO attributes(id64, attrs) VALUES ")
+        theattrquery = web.db.SQLQuery("INSERT INTO attributes(id64, attrs, contents) VALUES ")
 
         deltapack = []
         olditems = {}
@@ -133,7 +133,10 @@ def refresh_pack_cache(user):
             rawattrs = item._item.get("attributes")
             if rawattrs:
                 rawattrs = pickle.dumps(rawattrs, pickle.HIGHEST_PROTOCOL)
-                attrdata.append('(' + web.db.SQLParam(item.get_id()) + ', ' + web.db.SQLParam(rawattrs) + ')')
+                rawcontent = item.get_contents()
+                if rawcontent: rawcontent = pickle.dumps(rawcontent._item, pickle.HIGHEST_PROTOCOL)
+                attrdata.append('(' + web.db.SQLParam(item.get_id()) + ', ' + web.db.SQLParam(rawattrs) + ', ' +
+                                web.db.SQLParam(rawcontent) + ')')
 
             row = [item.get_id(), item.get_original_id(), user.get_id64(), item.get_schema_id(),
                    item.get_level(), item.is_untradable(),
@@ -145,7 +148,7 @@ def refresh_pack_cache(user):
             data.append('(' + web.db.SQLQuery.join([web.db.SQLParam(ival) for ival in row], ', ') + ')')
 
         thequery += web.db.SQLQuery.join(data, ', ')
-        thequery += (" ON DUPLICATE KEY UPDATE id64=VALUES(id64), oid64=VALUES(oid64), " +
+        thequery += (" ON DUPLICATE KEY UPDATE oid64=VALUES(oid64), " +
                      "owner=VALUES(owner), sid=VALUES(sid), level=VALUES(level), " +
                      "untradeable=VALUES(untradeable), token=VALUES(token), " +
                      "quality=VALUES(quality), custom_name=VALUES(custom_name), " +
@@ -153,7 +156,7 @@ def refresh_pack_cache(user):
                      "quantity=VALUES(quantity)")
 
         theattrquery += web.db.SQLQuery.join(attrdata, ', ')
-        theattrquery += " ON DUPLICATE KEY UPDATE id64=VALUES(id64), attrs=VALUES(attrs)"
+        theattrquery += " ON DUPLICATE KEY UPDATE attrs=VALUES(attrs), contents=VALUES(contents)"
         if len(attrdata) > 0:
             database_obj.query(theattrquery)
 
@@ -219,10 +222,12 @@ def db_to_itemobj(dbitem):
 
     rawattrs = dbitem["attributes"]
     if rawattrs: theitem["attributes"] = pickle.loads(rawattrs)
+    rawcontents = dbitem["contents"]
+    if rawcontents: theitem["contained_item"] = pickle.loads(rawcontents)
 
     return theitem
 
-item_select_query = web.db.SQLQuery("SELECT items.*, attributes.attrs as attributes FROM items " +
+item_select_query = web.db.SQLQuery("SELECT items.*, attributes.attrs as attributes, attributes.contents FROM items " +
                                     "LEFT JOIN attributes ON items.id64=attributes.id64 " +
                                     "WHERE items.id64")
 
