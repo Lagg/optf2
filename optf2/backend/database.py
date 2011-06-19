@@ -32,18 +32,20 @@ def cache_not_stale(row):
 def refresh_profile_cache(sid, vanity = None):
     user = steam.user.profile(sid)
     summary = user._summary_object
-    queryvars = {"id64": user.get_id64(),
-                 "timestamp": int(time()),
-                 "profile": pickle.dumps(summary, pickle.HIGHEST_PROTOCOL)}
+    profile = pickle.dumps(summary, pickle.HIGHEST_PROTOCOL)
+    vanitystr = vanity
 
-    if vanity: queryvars["vanity"] = vanity
-    if not sid.isdigit(): queryvars["vanity"] = sid
+    if not sid.isdigit(): vanitystr = sid
 
-    itervars = list(queryvars.iteritems())
-
-    database_obj.query("INSERT INTO profiles (" + web.db.SQLQuery.join([k for k,v in itervars], ", ") + ") VALUES " +
-                       "(" + web.db.SQLQuery.join([web.db.SQLParam(v) for k,v in itervars], ", ") + ")" +
-                       " ON DUPLICATE KEY UPDATE " + web.db.SQLQuery.join(["{0}=VALUES({0})".format(k) for k,v in itervars], ", "))
+    p = web.db.SQLParam
+    querystr = ("INSERT INTO profiles (id64, timestamp, profile, vanity) VALUES " +
+                "($id, $ts, $profile, $v)" +
+                " ON DUPLICATE KEY UPDATE " +
+                "timestamp = VALUES(timestamp), profile = VALUES(profile), vanity = VALUES(vanity)")
+    database_obj.query(querystr, vars = {"id": user.get_id64(),
+                                         "ts": int(time()),
+                                         "profile": profile,
+                                         "v": vanitystr})
 
     return user
 
@@ -94,73 +96,72 @@ def refresh_pack_cache(user):
     pack = gamelib.backpack(schema = load_schema_cached(web.ctx.language))
     pack.load(user)
     ts = int(time())
+    backpack_items = set()
+    data = []
+    attrdata = []
+    deltapack = []
+    olditems = {}
+
+    try:
+        packitems = list(pack)
+    except steam.items.ItemError:
+        pack.set_schema(load_schema_cached(web.ctx.language, fresh = True))
+        packitems = list(pack)
+
 
     with database_obj.transaction():
-        backpack_items = set()
-        data = []
-        attrdata = []
         lastpack = get_pack_snapshot_for_user(user)
-
-        try:
-            packitems = list(pack)
-        except steam.items.ItemError:
-            pack.set_schema(load_schema_cached(web.ctx.language, fresh = True))
-            packitems = list(pack)
-
-        thequery = web.db.SQLQuery("INSERT INTO items (id64, oid64, " +
-                                   "owner, sid, level, untradeable, " +
-                                   "token, quality, custom_name, " +
-                                   "custom_desc, style, quantity) VALUES ")
-        theattrquery = web.db.SQLQuery("INSERT INTO attributes(id64, attrs, contents) VALUES ")
-
-        deltapack = []
-        olditems = {}
         if lastpack:
             deltapack = pickle.loads(lastpack["backpack"])
             for item in get_items_for_backpack(deltapack):
                 compitem = db_to_itemobj(item)
                 olditems[compitem["id"]] = compitem
 
-        for item in packitems:
-            backpack_items.add(item.get_id())
+    for item in packitems:
+        backpack_items.add(item.get_id())
 
-            if item.get_id() in olditems:
-                compitem = item._item
-                olditem = olditems[compitem["id"]]
-                if dict(olditem.items() + compitem.items()) == olditem:
-                    continue
+        if item.get_id() in olditems:
+            compitem = item._item
+            olditem = olditems[compitem["id"]]
+            if dict(olditem.items() + compitem.items()) == olditem:
+                continue
 
-            rawattrs = item._item.get("attributes")
-            if rawattrs:
-                rawattrs = pickle.dumps(rawattrs, pickle.HIGHEST_PROTOCOL)
-                rawcontent = item.get_contents()
-                if rawcontent: rawcontent = pickle.dumps(rawcontent._item, pickle.HIGHEST_PROTOCOL)
-                attrdata.append('(' + web.db.SQLParam(item.get_id()) + ', ' + web.db.SQLParam(rawattrs) + ', ' +
-                                web.db.SQLParam(rawcontent) + ')')
+        rawattrs = item._item.get("attributes")
+        if rawattrs:
+            rawattrs = pickle.dumps(rawattrs, pickle.HIGHEST_PROTOCOL)
+            rawcontent = item.get_contents()
+            if rawcontent: rawcontent = pickle.dumps(rawcontent._item, pickle.HIGHEST_PROTOCOL)
+            attrdata.append('(' + web.db.SQLParam(item.get_id()) + ', ' + web.db.SQLParam(rawattrs) + ', ' +
+                            web.db.SQLParam(rawcontent) + ')')
 
-            row = [item.get_id(), item.get_original_id(), user.get_id64(), item.get_schema_id(),
-                   item.get_level(), item.is_untradable(),
-                   item.get_inventory_token(), item.get_quality()["id"],
-                   item.get_custom_name(), item.get_custom_description(),
-                   item.get_current_style_id(),
-                   item.get_quantity()]
+        row = [item.get_id(), item.get_original_id(), user.get_id64(), item.get_schema_id(),
+               item.get_level(), item.is_untradable(),
+               item.get_inventory_token(), item.get_quality()["id"],
+               item.get_custom_name(), item.get_custom_description(),
+               item.get_current_style_id(),
+               item.get_quantity()]
 
-            data.append('(' + web.db.SQLQuery.join([web.db.SQLParam(ival) for ival in row], ', ') + ')')
+        data.append('(' + web.db.SQLQuery.join([web.db.SQLParam(ival) for ival in row], ', ') + ')')
 
-        thequery += web.db.SQLQuery.join(data, ', ')
-        thequery += (" ON DUPLICATE KEY UPDATE oid64=VALUES(oid64), " +
-                     "owner=VALUES(owner), sid=VALUES(sid), level=VALUES(level), " +
-                     "untradeable=VALUES(untradeable), token=VALUES(token), " +
-                     "quality=VALUES(quality), custom_name=VALUES(custom_name), " +
-                     "custom_desc=VALUES(custom_desc), style=VALUES(style), " +
-                     "quantity=VALUES(quantity)")
-
-        theattrquery += web.db.SQLQuery.join(attrdata, ', ')
-        theattrquery += " ON DUPLICATE KEY UPDATE attrs=VALUES(attrs), contents=VALUES(contents)"
+    with database_obj.transaction():
         if len(attrdata) > 0:
+            theattrquery = web.db.SQLQuery("INSERT INTO attributes(id64, attrs, contents) VALUES " +
+                                           web.db.SQLQuery.join(attrdata, ', ') +
+                                           " ON DUPLICATE KEY UPDATE attrs=VALUES(attrs), contents=VALUES(contents)")
             database_obj.query(theattrquery)
 
         if len(data) > 0:
+            thequery = web.db.SQLQuery("INSERT INTO items (id64, oid64, " +
+                                       "owner, sid, level, untradeable, " +
+                                       "token, quality, custom_name, " +
+                                       "custom_desc, style, quantity) VALUES " +
+                                       web.db.SQLQuery.join(data, ', ') +
+                                       " ON DUPLICATE KEY UPDATE oid64=VALUES(oid64), " +
+                                       "owner=VALUES(owner), sid=VALUES(sid), level=VALUES(level), " +
+                                       "untradeable=VALUES(untradeable), token=VALUES(token), " +
+                                       "quality=VALUES(quality), custom_name=VALUES(custom_name), " +
+                                       "custom_desc=VALUES(custom_desc), style=VALUES(style), " +
+                                       "quantity=VALUES(quantity)")
             database_obj.query(thequery)
 
         if not lastpack or db_pack_is_new(pickle.loads(str(lastpack["backpack"])), backpack_items):
@@ -170,8 +171,7 @@ def refresh_pack_cache(user):
         elif lastpack:
             database_obj.update("backpacks", where = "id64 = $id64 AND timestamp = $ts",
                                 timestamp = ts, vars = {"id64": user.get_id64(), "ts": lastpack["timestamp"]})
-        return packitems
-    return []
+    return packitems
 
 def get_pack_timeline_for_user(user, tl_size = None):
     """ Returns None if a backpack couldn't be found, returns
@@ -241,15 +241,14 @@ def fetch_item_for_id(iid):
         return None
 
 def get_items_for_backpack(backpack):
-    with database_obj.transaction():
-        query = web.db.SQLQuery(item_select_query + ' IN (' +
-                                web.db.SQLQuery.join([web.db.SQLParam(id64) for id64 in backpack], ", ") + ')')
-        dbitems = []
+    query = web.db.SQLQuery(item_select_query + ' IN (' +
+                            web.db.SQLQuery.join([web.db.SQLParam(id64) for id64 in backpack], ", ") + ')')
+    dbitems = []
 
-        if len(backpack) > 0:
-            dbitems = database_obj.query(query)
+    if len(backpack) > 0:
+        dbitems = database_obj.query(query)
 
-        return dbitems
+    return dbitems
 
 def load_pack_cached(user, stale = False, date = None):
     packresult = []
@@ -289,7 +288,8 @@ def get_top_pack_views(limit = 10):
     """ Will return the top viewed backpacks sorted in descending order
     no more than limit rows will be returned """
 
-    result = database_obj.select("profiles", what = "bp_views, profile", where = "bp_views > 0",  order = "bp_views DESC", limit = limit)
+    result = database_obj.select("profiles", what = "bp_views, profile",
+                                 where = "bp_views > 0",  order = "bp_views DESC", limit = limit)
     profiles = []
     for row in result:
         profile = steam.user.profile(pickle.loads(row["profile"]))
