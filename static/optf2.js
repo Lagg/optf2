@@ -2,7 +2,7 @@ var current_page = 0;
 var page_switcher = document.createElement("div");
 var ispaginated = false;
 var last_dialog_size = null;
-var invalid_icon_url = virtual_root + "static/item_icons/Invalid_icon.png";
+var invalid_icon_url = static_prefix + "item_icons/Invalid_icon.png";
 var itemurls = {}
 
 $(document).ready(function(){

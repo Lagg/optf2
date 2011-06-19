@@ -15,6 +15,7 @@ OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 """
 
 import web, config, steam, database, re, operator, time
+from urlparse import urljoin
 
 qualitydict = {"unique": "The",
                "normal": ""}
@@ -60,9 +61,7 @@ def _(thestring):
 gamelib = getattr(steam, config.game_mode)
 
 def absolute_url(relative_url):
-    domain = web.ctx.homedomain
-    if domain.endswith('/'): domain = domain[:-1]
-    return domain + relative_url
+    return urljoin(web.ctx.homedomain, relative_url)
 
 def get_invalid_pos(items):
     poslist = []
@@ -201,7 +200,7 @@ def process_attributes(items, gift = False):
     """ Filters attributes for the item list,
     optf2-specific data is stored in item.optf2 """
 
-    default_item_image = config.virtual_root + "static/item_icons/Invalid_icon.png";
+    default_item_image = config.static_prefix + "item_icons/Invalid_icon.png";
     newitems = []
     schema = database.load_schema_cached(web.ctx.language)
     loaded_profiles = {}

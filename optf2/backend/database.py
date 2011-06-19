@@ -185,6 +185,8 @@ def get_pack_timeline_for_user(user, tl_size = None):
 
     if len(packrow) > 0:
         return packrow
+    else:
+        return []
 
 def get_pack_snapshot_for_user(user, date = None):
     """ Returns the backpack snapshot or None if it couldn't be found,
