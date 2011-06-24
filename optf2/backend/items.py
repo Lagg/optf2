@@ -246,20 +246,17 @@ def process_attributes(items, gift = False):
                 newattr["description_string"] = 'Contains ' + giftcontents.get_full_item_name(prefixes = qualitydict)
                 newattr["hidden"] = False
 
-            if theattr.get_name() == "set item tint RGB":
+            if (theattr.get_name() == "set item tint RGB" or
+                theattr.get_name() == "set item tint RGB 2"):
                 raw_rgb = int(theattr.get_value())
 
-                if raw_rgb == 1:
-                    # Team Spirit
-                    item_color = "url('{0}team_splotch.png')".format(config.static_prefix)
-                else:
-                    item_color = "#{0:02X}{1:02X}{2:02X}".format((raw_rgb >> 16) & 0xFF,
-                                                                 (raw_rgb >> 8) & 0xFF,
-                                                                 (raw_rgb) & 0xFF)
+                item_color = "#{0:02X}{1:02X}{2:02X}".format((raw_rgb >> 16) & 0xFF,
+                                                             (raw_rgb >> 8) & 0xFF,
+                                                             (raw_rgb) & 0xFF)
 
                 paint_can = schema.optf2_paints.get(raw_rgb)
                 if paint_can: item.optf2["paint_name"] = paint_can.get_name()
-                else: item.optf2["paint_name"] = "unknown paint"
+                elif "paint_name" not in item.optf2: item.optf2["paint_name"] = "unknown paint"
 
                 # Workaround until the icons for colored paint cans are correct
                 if (item._schema_item.get("name", "").startswith("Paint Can") and
@@ -268,7 +265,11 @@ def process_attributes(items, gift = False):
                                                                             item_color[1:])
                     item.optf2["image_url"] = absolute_url(paintcan_url)
                     item.optf2["image_url_large"] = absolute_url(paintcan_url)
-                item.optf2["color"] = item_color
+
+                if theattr.get_name().endswith("2"):
+                    item.optf2["color_2"] = item_color
+                else:
+                    item.optf2["color"] = item_color
                 continue
 
             if theattr.get_name() == "attach particle effect":
@@ -339,17 +340,17 @@ def process_attributes(items, gift = False):
         full_qdict_name = item.get_full_item_name(prefixes = qualitydict)
         full_default_name = item.get_full_item_name({"normal": None, "unique": None})
         color = item.optf2.get("color")
+        color_2 = item.optf2.get("color_2")
         paint_job = ""
         prefix = ""
         craft_no = item.optf2.get("craft_number", "")
         if craft_no: craft_no = " #" + craft_no
 
-        if color:
-            if color.startswith("url"):
-                color = "#FF00FF"
-                paint_job = '<span><b style="color: #B8383B;">Pain</b><b style="color: #5885A2;">ted</b></span>'
-            else:
-                paint_job = '<span style="color: {0}; font-weight: bold;">Painted</span>'.format(color)
+        if color and color_2:
+            paint_job = '<span><b style="color: {0};">Pain</b><b style="color: {1};">ted</b></span>'.format(color,
+                                                                                                            color_2)
+        elif color:
+            paint_job = '<span style="color: {0}; font-weight: bold;">Painted</span>'.format(color)
         if gift:
             prefix = '<span class="prefix-giftwrapped">Giftwrapped</span>'
         item.optf2["painted_text"] = paint_job

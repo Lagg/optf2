@@ -60,6 +60,8 @@ def generate_cell(item, invalid = False, show_equipped = True):
         markup += '<img src="' + static_prefix + 'gift_icon.png" class="icon-gift"  alt="Gift"/>'
     if "color" in item.optf2:
         markup += '<span class="paint_splotch" style="background: ' + item.optf2['color'] + ';">&nbsp;</span>'
+    if "color_2" in item.optf2:
+        markup += '<span class="paint_splotch secondary" style="background: ' + item.optf2['color_2'] + ';">&nbsp;</span>'
     if equippedstr:
         markup += '<span class="equipped">' + equippedstr + '</span>'
 
