@@ -89,6 +89,9 @@ def generate_cell(item, invalid = False, show_equipped = True):
         paintcan = item.optf2["paint_name"]
         markup += '<div class="attr-positive">{1} with {2}</div>'.format(item.optf2["painted_text"], item.get_name())
 
+    if "kill_count" in item.optf2:
+        markup += '<div class="attr-positive">Kills: ' + item.optf2["kill_count"] + '</div>'
+
     if item.is_untradable():
         markup += '<div class="attr-neutral">Untradable</div>'
         if "date_tradable" in item.optf2:

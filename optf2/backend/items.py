@@ -238,17 +238,22 @@ def process_attributes(items, gift = False):
 
         for theattr in attrs:
             newattr = {}
-            desc = theattr.get_description()
+            attrname = theattr.get_name()
 
-            if theattr.get_name() == "referenced item def":
+            if attrname == "referenced item def":
                 if not giftcontents:
                     giftcontents = schema[int(theattr.get_value())]
                 newattr["description_string"] = 'Contains ' + giftcontents.get_full_item_name(prefixes = qualitydict)
                 newattr["hidden"] = False
 
-            if (theattr.get_name() == "set item tint RGB" or
-                theattr.get_name() == "set item tint RGB 2"):
+            if (attrname == "set item tint RGB" or
+                attrname == "set item tint RGB 2"):
                 raw_rgb = int(theattr.get_value())
+
+                # Workaround for Team Spirit values still being 1
+                if raw_rgb == 1:
+                    raw_rgb = 12073019
+                    item.optf2["color_2"] = "#256D8D"
 
                 item_color = "#{0:02X}{1:02X}{2:02X}".format((raw_rgb >> 16) & 0xFF,
                                                              (raw_rgb >> 8) & 0xFF,
@@ -266,17 +271,17 @@ def process_attributes(items, gift = False):
                     item.optf2["image_url"] = absolute_url(paintcan_url)
                     item.optf2["image_url_large"] = absolute_url(paintcan_url)
 
-                if theattr.get_name().endswith("2"):
+                if attrname.endswith("2"):
                     item.optf2["color_2"] = item_color
                 else:
                     item.optf2["color"] = item_color
                 continue
 
-            if theattr.get_name() == "attach particle effect":
+            if attrname == "attach particle effect":
                 newattr["description_string"] = ("Effect: " +
                                                  particledict.get(int(theattr.get_value()), particledict[0]))
 
-            if theattr.get_name() == "gifter account id":
+            if attrname == "gifter account id":
                 newattr["description_string"] = "Gift"
                 item.optf2["gifter_id"] = condensed_to_id64(theattr.get_value())
 
@@ -293,7 +298,7 @@ def process_attributes(items, gift = False):
                 except:
                     item.optf2["gifter_persona"] = "this user"
 
-            if theattr.get_name() == "makers mark id":
+            if attrname == "makers mark id":
                 crafter_id64 = condensed_to_id64(theattr.get_value())
 
                 try:
@@ -310,14 +315,17 @@ def process_attributes(items, gift = False):
                 newattr["description_string"] = "Crafted by " + item.optf2["crafted_by_persona"]
                 newattr["hidden"] = False
 
-            if theattr.get_name() == "unique craft index":
+            if attrname == "unique craft index":
                 item.optf2["craft_number"] = str(int(theattr.get_value()))
 
-            if theattr.get_name() == "tradable after date":
+            if attrname == "tradable after date":
                 # WORKAROUND: For some reason this has the wrong type and is hidden,
                 # not sure if this should be in steamodd or not
                 d = time.gmtime(theattr.get_value())
                 item.optf2["date_tradable"] = time.strftime("%F %H:%M:%S", d)
+
+            if attrname == "kill eater":
+                item.optf2["kill_count"] = str(int(theattr.get_value()))
 
             if not newattr.get("hidden", theattr.is_hidden()):
                 newattr["description_string"] = web.websafe(newattr.get("description_string",

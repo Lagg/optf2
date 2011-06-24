@@ -58,6 +58,8 @@ $def generate_class_icon_link(classes):
       <div class="attr-positive">
         $:{item.optf2["painted_text"]} with ${item.optf2["paint_name"]}
       </div>
+  $if "kill_count" in item.optf2:
+      <div class="attr-positive">Kills: ${item.optf2["kill_count"]}</div>
   $if user:
       $ style = item.get_current_style_name()
       $if style: <div class="attr-neutral">Style: $style</div>
