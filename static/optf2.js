@@ -15,7 +15,7 @@ $(document).ready(function(){
     var domattribs = $(".item_attribs");
     var itemlinks = $(".item_link");
 
-    itemlinks.each(function() { itemurls[String($(this).parent().attr("id").slice(1))] = this.href; });
+    itemlinks.each(function() { itemurls[String($(this).parent().attr("id").slice(1))] = $(this).attr("href"); });
     itemlinks.contents().unwrap();
 
     domattribs.each(function() { this.id = "a" + $(this).parent().attr("id"); attrib_dict[String(this.id)] = this; });
@@ -158,7 +158,7 @@ function item_open_success(data, status, xhr) {
         dialog_height = last_dialog_size["height"];
     }
 
-    dialog_content.find("#item_attrs").append("<br/><br/><a class=\"button\" href=\"" + virtual_root + "item/" + item_id + "\">Link to this item</a>");
+    dialog_content.find("#item_attrs").append("<br/><br/><a class=\"button\" href=\"" + itemurls[item_id] + "\">Link to this item</a>");
     dialog_title.css({"font-size": "1.6em", "margin": "0", "padding": "0"});
 
     if ($(window).height() < dialog_height) {

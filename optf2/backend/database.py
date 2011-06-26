@@ -96,7 +96,7 @@ def refresh_pack_cache(user):
     pack = gamelib.backpack(schema = load_schema_cached(web.ctx.language))
     pack.load(user)
     ts = int(time())
-    backpack_items = set()
+    backpack_items = list()
     data = []
     attrdata = []
     deltapack = []
@@ -113,12 +113,18 @@ def refresh_pack_cache(user):
         lastpack = get_pack_snapshot_for_user(user)
         if lastpack:
             deltapack = pickle.loads(lastpack["backpack"])
-            for item in get_items_for_backpack(deltapack):
-                compitem = db_to_itemobj(item)
-                olditems[compitem["id"]] = compitem
+            for item in get_items_for_backpack(deltapack, user):
+                olditems[item["id"]] = item
 
     for item in packitems:
-        backpack_items.add(item.get_id())
+        if not is_item_unique(item):
+            # Store it directly in the mapping
+            item._item["inlineowner"] = user.get_id64()
+            item._item["inlinetimestamp"] = ts
+            backpack_items.append([item.get_id(), item.get_schema_id(), item.get_inventory_token()])
+            continue
+        else:
+            backpack_items.append(item.get_id())
 
         if item.get_id() in olditems:
             compitem = item._item
@@ -165,9 +171,10 @@ def refresh_pack_cache(user):
             database_obj.query(thequery)
 
         if not lastpack or db_pack_is_new(pickle.loads(str(lastpack["backpack"])), backpack_items):
-            database_obj.insert("backpacks", id64 = user.get_id64(),
-                                backpack = pickle.dumps(list(backpack_items), pickle.HIGHEST_PROTOCOL),
-                                timestamp = ts)
+            database_obj.query("INSERT INTO backpacks (id64, backpack, timestamp) VALUES ($id64, COMPRESS($bp), $ts)",
+                               vars = {"id64": user.get_id64(),
+                                       "bp": pickle.dumps(backpack_items, pickle.HIGHEST_PROTOCOL),
+                                       "ts": ts})
         elif lastpack:
             database_obj.update("backpacks", where = "id64 = $id64 AND timestamp = $ts",
                                 timestamp = ts, vars = {"id64": user.get_id64(), "ts": lastpack["timestamp"]})
@@ -181,6 +188,7 @@ def get_pack_timeline_for_user(user, tl_size = None):
                                   where = "id64 = $id64",
                                   order = "timestamp DESC",
                                   limit = tl_size,
+                                  what = "UNCOMPRESS(backpack) AS backpack, timestamp",
                                   vars = {"id64": user.get_id64()})
 
     if len(packrow) > 0:
@@ -190,14 +198,14 @@ def get_pack_timeline_for_user(user, tl_size = None):
 
 def get_pack_snapshot_for_user(user, date = None):
     """ Returns the backpack snapshot or None if it couldn't be found,
-    if date is not give the latest snapshot will be returned."""
+    if date is not given the latest snapshot will be returned."""
 
     tsstr = ""
     if date: tsstr = " AND timestamp = $ts"
 
     rows = database_obj.select("backpacks",
                                where = "id64 = $id64" + tsstr,
-                               what = "backpack, timestamp",
+                               what = "UNCOMPRESS(backpack) AS backpack, timestamp",
                                limit = 1,
                                order = "timestamp DESC",
                                vars = {"id64": user.get_id64(), "ts": date})
@@ -209,6 +217,9 @@ def get_pack_snapshot_for_user(user, date = None):
 
 
 def db_to_itemobj(dbitem):
+    if "id64" not in dbitem:
+        return {"id": dbitem[0], "defindex": dbitem[1], "inventory": dbitem[2]}
+
     theitem = {"id": dbitem["id64"],
                "original_id": dbitem["oid64"],
                "owner": dbitem["owner"],
@@ -233,22 +244,44 @@ item_select_query = web.db.SQLQuery("SELECT items.*, attributes.attrs as attribu
                                     "LEFT JOIN attributes ON items.id64=attributes.id64 " +
                                     "WHERE items.id64")
 
-def fetch_item_for_id(iid):
+def fetch_item_for_id(id64, user = None):
     try:
-        itemrow = database_obj.query(item_select_query + " = " + web.db.SQLParam(int(iid)))[0]
+        itemrow = database_obj.query(item_select_query + " = " + web.db.SQLParam(int(id64)))[0]
         return db_to_itemobj(itemrow)
     except IndexError:
-        return None
+        if user:
+            pack = get_pack_snapshot_for_user(user, date = web.input().get("ts"))
+            if not pack: return None
 
-def get_items_for_backpack(backpack):
+            items = pickle.loads(pack["backpack"])
+            for item in items:
+                try:
+                    packitem = db_to_itemobj(item)
+                except:
+                    continue
+                if int(packitem["id"]) == int(id64):
+                    return packitem
+
+def get_items_for_backpack(backpack, user, ts = None):
+    idlist = []
+    inlinelist = []
+
+    for item in backpack:
+        try: idlist.append(int(item))
+        except TypeError:
+            itemized = db_to_itemobj(item)
+            itemized["inlineowner"] = user.get_id64()
+            if ts: itemized["inlinetimestamp"] = ts
+            inlinelist.append(itemized)
+
     query = web.db.SQLQuery(item_select_query + ' IN (' +
-                            web.db.SQLQuery.join([web.db.SQLParam(id64) for id64 in backpack], ", ") + ')')
+                            web.db.SQLQuery.join(idlist, ", ") + ')')
     dbitems = []
 
-    if len(backpack) > 0:
+    if idlist and len(backpack) > 0:
         dbitems = database_obj.query(query)
 
-    return dbitems
+    return [db_to_itemobj(item) for item in dbitems] + inlinelist
 
 def load_pack_cached(user, stale = False, date = None):
     packresult = []
@@ -260,8 +293,8 @@ def load_pack_cached(user, stale = False, date = None):
             except: pass
     if thepack:
         schema = load_schema_cached(web.ctx.language)
-        dbitems = get_items_for_backpack(pickle.loads(thepack["backpack"]))
-        return [schema.create_item(db_to_itemobj(item)) for item in dbitems]
+        dbitems = get_items_for_backpack(pickle.loads(thepack["backpack"]), user, ts = thepack["timestamp"])
+        return [schema.create_item(item) for item in dbitems]
     return []
 
 def get_user_pack_views(user):
@@ -296,3 +329,27 @@ def get_top_pack_views(limit = 10):
         profiles.append((row["bp_views"], profile.get_primary_group() == config.valve_group_id, profile))
 
     return profiles
+
+def is_item_unique(item):
+    """ Checks if the item is different enough
+    from it's schema counterpart to be stored in the item table. """
+
+    schema = load_schema_cached(web.ctx.language)
+    sitem = schema[item.get_schema_id()]
+
+    if sitem.get_min_level() == sitem.get_max_level():
+        if item.get_level() != sitem.get_min_level():
+            return True
+    else: return True
+
+    if (item.get_quantity() != sitem.get_quantity() or
+        item.get_custom_name() or
+        item.get_custom_description() or
+        item.get_current_style_id() or
+        item._item.get("attributes") or
+        item.is_untradable() != sitem.is_untradable() or
+        item.get_quality()["id"] != sitem.get_quality()["id"] or
+        item.get_contents()):
+        return True
+    else:
+        return False

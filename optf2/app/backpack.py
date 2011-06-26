@@ -64,7 +64,7 @@ class item:
         schema = database.load_schema_cached(web.ctx.language)
         try:
             user = None
-            item_outdated = False
+            item_outdated = True
             idl = iid.split('/')
 
             if len(idl) == 1:
@@ -74,13 +74,25 @@ class item:
             try:
                 theitem = schema[long(id64)]
             except:
-                rawitem = database.fetch_item_for_id(id64)
+                ownerid = web.input().get("oid")
+                if ownerid: user = database.load_profile_cached(ownerid, stale = True)
+
+                rawitem = database.fetch_item_for_id(id64, user = user)
                 theitem = schema.create_item(rawitem)
-                user = database.load_profile_cached(str(rawitem["owner"]), stale = True)
+
+                if not user: user = database.load_profile_cached(str(rawitem["owner"]), stale = True)
+
                 if user:
                     backpack = database.get_pack_snapshot_for_user(user)
-                    if backpack and theitem.get_id() not in pickle.loads(str(backpack["backpack"])):
-                        item_outdated = True
+                    if backpack:
+                        for item in pickle.loads(str(backpack["backpack"])):
+                            try:
+                                dbitemid = int(item)
+                            except TypeError:
+                                dbitemid = item[0]
+                            if theitem.get_id() == dbitemid:
+                                item_outdated = False
+                                break
 
             item = itemtools.process_attributes([theitem])[0]
             if web.input().get("contents"):
