@@ -20,30 +20,6 @@ from urlparse import urljoin
 qualitydict = {"unique": "The",
                "normal": ""}
 
-# I don't like this either but Valve didn't expose them
-# through the API
-particledict = {0: "Invalid Particle",
-                1: "Particle 1",
-                2: "Flying Bits",
-                3: "Nemesis Burst",
-                4: "Community Sparkle",
-                5: "Holy Glow",
-                6: "Green Confetti",
-                7: "Purple Confetti",
-                8: "Haunted Ghosts",
-                9: "Green Energy",
-                10: "Purple Energy",
-                11: "Circling TF Logo",
-                12: "Massed Flies",
-                13: "Burning Flames",
-                14: "Scorching Flames",
-                15: "Searing Plasma",
-                16: "Vivid Plasma",
-                17: "Sunbeams",
-                18: "Circling Peace Sign",
-                19: "Circling Heart",
-                20: "Map Stamps"}
-
 # Capability string mapping, this will probably need localizing too
 capabilitydict = {"can_gift_wrap": "Gift wrappable",
                   "can_craft_count": "Can be a numbered craft",
@@ -86,10 +62,7 @@ def sort(items, sortby):
     items = list(items)
     itemcmp = None
 
-    if sortby == "time":
-        items.reverse()
-
-    if sortby == "serial":
+    if sortby == "serial" or sortby == "time":
         itemcmp = operator.methodcaller("get_id")
     elif sortby == "cell":
         itemcmp = operator.methodcaller("get_position")
@@ -132,6 +105,9 @@ def sort(items, sortby):
 
     if sortby == "cell" and highestpos > itemcount:
         itemcount = highestpos
+
+    if sortby == "time":
+        items.reverse()
 
     rem = itemcount % 50
     if rem != 0: itemcount += (50 - rem)
@@ -278,8 +254,12 @@ def process_attributes(items, gift = False):
                 continue
 
             if attrname == "attach particle effect":
-                newattr["description_string"] = ("Effect: " +
-                                                 particledict.get(int(theattr.get_value()), particledict[0]))
+                particles = schema.get_particle_systems()
+                particleid = int(theattr.get_value())
+                particlename = particles.get(particleid)
+                if particlename: particlename = particlename["name"]
+                else: particlename = str(particleid)
+                newattr["description_string"] = ("Effect: " + particlename)
 
             if attrname == "gifter account id":
                 newattr["description_string"] = "Gift"
