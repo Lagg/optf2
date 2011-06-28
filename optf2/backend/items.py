@@ -225,6 +225,7 @@ def process_attributes(items, gift = False):
             if (attrname == "set item tint RGB" or
                 attrname == "set item tint RGB 2"):
                 raw_rgb = int(theattr.get_value())
+                secondary_color = attrname.endswith("2")
 
                 # Workaround for Team Spirit values still being 1
                 if raw_rgb == 1:
@@ -240,14 +241,15 @@ def process_attributes(items, gift = False):
                 elif "paint_name" not in item.optf2: item.optf2["paint_name"] = "unknown paint"
 
                 # Workaround until the icons for colored paint cans are correct
-                if (item._schema_item.get("name", "").startswith("Paint Can") and
-                    raw_rgb != 0 and raw_rgb != 1):
+                if (not secondary_color and
+                    item._schema_item.get("name", "").startswith("Paint Can") and
+                    raw_rgb != 0):
                     paintcan_url = "{0}item_icons/Paint_Can_{1}.png".format(config.static_prefix,
                                                                             item_color[1:])
                     item.optf2["image_url"] = absolute_url(paintcan_url)
                     item.optf2["image_url_large"] = absolute_url(paintcan_url)
 
-                if attrname.endswith("2"):
+                if secondary_color:
                     item.optf2["color_2"] = item_color
                 else:
                     item.optf2["color"] = item_color
