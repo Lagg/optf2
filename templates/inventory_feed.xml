@@ -14,7 +14,7 @@ $def with (user, items)
   $items.reverse()
   $for item in items:
       <item>
-        $ permalink = "{0}{1}item/{2}".format(instance.homedomain, virtual_root, item.get_id())
+        $ permalink = "{0}{1}".format(instance.homedomain, markup.generate_item_url(item))
         $ level = item.optf2["level"]
         $ type = item.optf2["type"]
         $ name = item.get_custom_name()

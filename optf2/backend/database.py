@@ -249,9 +249,12 @@ def fetch_item_for_id(id64, user = None):
         itemrow = database_obj.query(item_select_query + " = " + web.db.SQLParam(int(id64)))[0]
         return db_to_itemobj(itemrow)
     except IndexError:
+        # Most of this is a temporary workaround until I add primary keys
+        # to the backpack table
         if user:
-            pack = get_pack_snapshot_for_user(user, date = web.input().get("ts"))
-            if not pack: return None
+            ts = web.input().get("ts")
+            pack = get_pack_snapshot_for_user(user, date = ts)
+            if not pack: pack = get_pack_snapshot_for_user(user)
 
             items = pickle.loads(pack["backpack"])
             for item in items:

@@ -17,6 +17,16 @@ OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 import web
 from config import static_prefix, virtual_root
 
+def generate_item_url(item):
+    ownerstr = ""
+    oid = item._item.get("inlineowner")
+    ts = item._item.get("inlinetimestamp")
+    if oid:
+        ownerstr += "?oid=" + str(oid)
+        if ts: ownerstr += "&ts=" + str(ts)
+
+    return "{0}item/{1}{2}".format(virtual_root, item.get_id(), ownerstr)
+
 def generate_cell(item, invalid = False, show_equipped = True):
     if not item: return '<div class="item_cell"></div>'
 
@@ -29,14 +39,7 @@ def generate_cell(item, invalid = False, show_equipped = True):
         schema_item = True
         item_id = item.get_schema_id()
 
-    ownerstr = ""
-    oid = item._item.get("inlineowner")
-    ts = item._item.get("inlinetimestamp")
-    if oid:
-        ownerstr += "?oid=" + str(oid)
-        if ts: ownerstr += "&ts=" + str(ts)
-
-    item_link = "{0}item/{1}{2}".format(virtual_root, item_id, ownerstr)
+    item_link = generate_item_url(item)
     quality = item.get_quality()["str"]
     equippedstr = ""
     quantity = item.get_quantity()
