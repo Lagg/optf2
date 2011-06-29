@@ -5,16 +5,17 @@ $def with (user, items)
   <channel>
     <title>$user.get_persona()'s TF2 Backpack</title>
     <generator>$project_name</generator>
-    <link>${instance.homedomain}${virtual_root}</link>
+    <link>$markup.absolute_url(virtual_root)</link>
     <image>
-      <link>${instance.homedomain}${virtual_root}</link>
-      <url>${instance.homedomain}${static_prefix}optf2_icon.png</url>
+      <link>$markup.absolute_url(virtual_root)</link>
+      <url>$markup.absolute_url(static_prefix + "optf2_icon.png")</url>
       <title>$project_name</title>
     </image>
-  $items.reverse()
   $for item in items:
+      $if not item:
+          $continue
       <item>
-        $ permalink = "{0}{1}".format(instance.homedomain, markup.generate_item_url(item))
+        $ permalink = markup.absolute_url(markup.generate_item_url(item))
         $ level = item.optf2["level"]
         $ type = item.optf2["type"]
         $ name = item.get_custom_name()

@@ -210,6 +210,7 @@ class feed:
             user = database.load_profile_cached(sid, stale = True)
             items = database.load_pack_cached(user)
             items = itemtools.process_attributes(items)
+            items = itemtools.sort(items, web.input().get("sort", "time"))
         except Exception as E:
             return templates.error(str(E))
         web.header("Content-Type", "application/rss+xml")

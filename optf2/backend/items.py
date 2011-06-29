@@ -15,7 +15,7 @@ OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 """
 
 import web, config, steam, database, re, operator, time
-from urlparse import urljoin
+from optf2.frontend.markup import absolute_url
 
 qualitydict = {"unique": "The",
                "normal": ""}
@@ -35,9 +35,6 @@ def _(thestring):
     return thestring.encode("utf-8")
 
 gamelib = getattr(steam, config.game_mode)
-
-def absolute_url(relative_url):
-    return urljoin(web.ctx.homedomain, relative_url)
 
 def get_invalid_pos(items):
     poslist = []

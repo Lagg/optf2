@@ -16,6 +16,10 @@ OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 import web
 from config import static_prefix, virtual_root
+from urlparse import urljoin
+
+def absolute_url(relative_url):
+    return urljoin(web.ctx.homedomain, relative_url)
 
 def generate_item_url(item):
     ownerstr = ""
