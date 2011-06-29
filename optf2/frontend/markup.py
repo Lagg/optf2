@@ -29,7 +29,7 @@ def generate_item_url(item):
         ownerstr += "?oid=" + str(oid)
         if ts: ownerstr += "&ts=" + str(ts)
 
-    return "{0}item/{1}{2}".format(virtual_root, item.get_id(), ownerstr)
+    return "{0}item/{1}{2}".format(virtual_root, item.get_id() or item.get_schema_id(), ownerstr)
 
 def generate_cell(item, invalid = False, show_equipped = True):
     if not item: return '<div class="item_cell"></div>'
