@@ -23,6 +23,7 @@ CREATE TABLE IF NOT EXISTS items (id64 BIGINT UNSIGNED PRIMARY KEY,
 CREATE TABLE IF NOT EXISTS attributes (id64 BIGINT UNSIGNED PRIMARY KEY, attrs BLOB NOT NULL, contents BLOB);
 
 CREATE TABLE IF NOT EXISTS backpacks (id64 BIGINT UNSIGNED NOT NULL, backpack BLOB NOT NULL,
-                                      timestamp INTEGER UNSIGNED NOT NULL, INDEX (id64, timestamp));
+                                      timestamp INTEGER UNSIGNED NOT NULL,
+                                      id INTEGER UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY, INDEX (id64));
 
 CREATE TABLE IF NOT EXISTS sessions (session_id CHAR(128) UNIQUE NOT NULL, atime timestamp NOT NULL default current_timestamp, data TEXT);

@@ -72,7 +72,16 @@ def load_profile_cached(sid, stale = False):
         return refresh_profile_cache(sid)
 
 def db_pack_is_new(lastpack, newpack):
-    return (sorted(lastpack) != sorted(newpack))
+    olditems = []
+    newitems = []
+    for i in lastpack:
+        try: olditems.append(int(i))
+        except: olditems.append(i[0])
+    for i in newpack:
+        try: newitems.append(int(i))
+        except: newitems.append(i[0])
+
+    return (sorted(olditems) != sorted(newitems))
 
 def load_schema_cached(lang, fresh = False):
     cachepath = os.path.join(config.cache_file_dir, "schema-" + config.game_mode + "-" + lang)
@@ -113,14 +122,13 @@ def refresh_pack_cache(user):
         lastpack = get_pack_snapshot_for_user(user)
         if lastpack:
             deltapack = pickle.loads(lastpack["backpack"])
-            for item in get_items_for_backpack(deltapack, user):
+            for item in get_items_for_backpack(deltapack):
                 olditems[item["id"]] = item
 
     for item in packitems:
         if not is_item_unique(item):
             # Store it directly in the mapping
-            item._item["inlineowner"] = user.get_id64()
-            item._item["inlinetimestamp"] = ts
+            item._item["inlinemapped"] = True
             backpack_items.append([item.get_id(), item.get_schema_id(), item.get_inventory_token()])
             continue
         else:
@@ -149,6 +157,7 @@ def refresh_pack_cache(user):
 
         data.append('(' + web.db.SQLQuery.join([web.db.SQLParam(ival) for ival in row], ', ') + ')')
 
+    last_packid = None
     with database_obj.transaction():
         if len(attrdata) > 0:
             theattrquery = web.db.SQLQuery("INSERT INTO attributes(id64, attrs, contents) VALUES " +
@@ -175,9 +184,15 @@ def refresh_pack_cache(user):
                                vars = {"id64": user.get_id64(),
                                        "bp": pickle.dumps(backpack_items, pickle.HIGHEST_PROTOCOL),
                                        "ts": ts})
+            last_packid = database_obj.query("SELECT LAST_INSERT_ID() AS lastid")[0]["lastid"]
         elif lastpack:
-            database_obj.update("backpacks", where = "id64 = $id64 AND timestamp = $ts",
-                                timestamp = ts, vars = {"id64": user.get_id64(), "ts": lastpack["timestamp"]})
+            database_obj.query ("UPDATE backpacks SET timestamp = $ts, backpack = COMPRESS($bp) WHERE id = $id",
+                                vars = {"id": lastpack["id"],
+                                        "bp": pickle.dumps(backpack_items, pickle.HIGHEST_PROTOCOL),
+                                        "ts": ts})
+            last_packid = lastpack["id"]
+
+    web.ctx.current_pid = last_packid
     return packitems
 
 def get_pack_timeline_for_user(user, tl_size = None):
@@ -188,7 +203,7 @@ def get_pack_timeline_for_user(user, tl_size = None):
                                   where = "id64 = $id64",
                                   order = "timestamp DESC",
                                   limit = tl_size,
-                                  what = "UNCOMPRESS(backpack) AS backpack, timestamp",
+                                  what = "id, timestamp",
                                   vars = {"id64": user.get_id64()})
 
     if len(packrow) > 0:
@@ -196,19 +211,19 @@ def get_pack_timeline_for_user(user, tl_size = None):
     else:
         return []
 
-def get_pack_snapshot_for_user(user, date = None):
+def get_pack_snapshot_for_user(user, id = None):
     """ Returns the backpack snapshot or None if it couldn't be found,
-    if date is not given the latest snapshot will be returned."""
+    if id is not given the latest snapshot will be returned."""
 
     tsstr = ""
-    if date: tsstr = " AND timestamp = $ts"
+    if id: tsstr = " AND id = $id"
 
     rows = database_obj.select("backpacks",
                                where = "id64 = $id64" + tsstr,
-                               what = "UNCOMPRESS(backpack) AS backpack, timestamp",
+                               what = "id, UNCOMPRESS(backpack) AS backpack, timestamp",
                                limit = 1,
                                order = "timestamp DESC",
-                               vars = {"id64": user.get_id64(), "ts": date})
+                               vars = {"id64": user.get_id64(), "id": id})
 
     if len(rows) > 0:
         return rows[0]
@@ -249,13 +264,8 @@ def fetch_item_for_id(id64, user = None):
         itemrow = database_obj.query(item_select_query + " = " + web.db.SQLParam(int(id64)))[0]
         return db_to_itemobj(itemrow)
     except IndexError:
-        # Most of this is a temporary workaround until I add primary keys
-        # to the backpack table
         if user:
-            ts = web.input().get("ts")
-            pack = get_pack_snapshot_for_user(user, date = ts)
-            if not pack: pack = get_pack_snapshot_for_user(user)
-
+            pack = get_pack_snapshot_for_user(user, id = web.input().get("pid"))
             items = pickle.loads(pack["backpack"])
             for item in items:
                 try:
@@ -265,7 +275,7 @@ def fetch_item_for_id(id64, user = None):
                 if int(packitem["id"]) == int(id64):
                     return packitem
 
-def get_items_for_backpack(backpack, user, ts = None):
+def get_items_for_backpack(backpack):
     idlist = []
     inlinelist = []
 
@@ -273,8 +283,7 @@ def get_items_for_backpack(backpack, user, ts = None):
         try: idlist.append(int(item))
         except TypeError:
             itemized = db_to_itemobj(item)
-            itemized["inlineowner"] = user.get_id64()
-            if ts: itemized["inlinetimestamp"] = ts
+            itemized["inlinemapped"] = True
             inlinelist.append(itemized)
 
     query = web.db.SQLQuery(item_select_query + ' IN (' +
@@ -286,17 +295,18 @@ def get_items_for_backpack(backpack, user, ts = None):
 
     return [db_to_itemobj(item) for item in dbitems] + inlinelist
 
-def load_pack_cached(user, stale = False, date = None):
-    packresult = []
-    thepack = get_pack_snapshot_for_user(user, date = date)
-    if not stale and not date:
+def load_pack_cached(user, stale = False, id = id):
+    thepack = get_pack_snapshot_for_user(user, id = id)
+    web.ctx.current_uid64 = user.get_id64()
+    if not stale and not id:
         if not cache_not_stale(thepack):
             try:
                 return refresh_pack_cache(user)
             except: pass
     if thepack:
+        web.ctx.current_pid = thepack["id"]
         schema = load_schema_cached(web.ctx.language)
-        dbitems = get_items_for_backpack(pickle.loads(thepack["backpack"]), user, ts = thepack["timestamp"])
+        dbitems = get_items_for_backpack(pickle.loads(thepack["backpack"]))
         return [schema.create_item(item) for item in dbitems]
     return []
 

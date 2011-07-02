@@ -83,9 +83,9 @@ $ rss = "{0}feed/{1}".format(virtual_root, user.get_id64())
       <div class="dropdown-menu">
         <b>Timeline</b>
         <ul style="min-width: 170px;">
-          <li><a href="$qurl(time = None)">Now</a></li>
+          <li><a href="$qurl(pid = None)">Now</a></li>
           $for ts in timestamps:
-              <li><a href="$qurl(time = ts[0])">$ts[1]</a></li>
+              <li><a href="$qurl(pid = ts[0])">$ts[1]</a></li>
         </ul>
       </div>
       $if opnet_map:

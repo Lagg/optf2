@@ -142,18 +142,18 @@ class fetch:
         query = web.input()
         sortby = query.get("sort", "cell")
         sortclass = query.get("sortclass")
-        packtime = query.get("time")
+        packid = query.get("pid")
         filter_quality = query.get("quality")
 
         try:
-            items = database.load_pack_cached(user, date = packtime)
+            items = database.load_pack_cached(user, id = packid)
             if not items and user.get_visibility() != "public":
                 raise steam.user.ProfileError("Backpack is private")
 
             timestamps = []
             for ts in database.get_pack_timeline_for_user(user, tl_size = 20):
                 prettyts = time.ctime(ts["timestamp"])
-                timestamps.append([ts["timestamp"], prettyts])
+                timestamps.append([ts["id"], prettyts])
 
             filter_classes = itemtools.get_equippable_classes(items)
             filter_qualities = itemtools.get_present_qualities(items)
