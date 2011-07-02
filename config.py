@@ -41,11 +41,6 @@ enable_fastcgi = False
 os.environ["SCRIPT_NAME"] = ''
 os.environ["REAL_SCRIPT_NAME"] = ''
 
-# The link to the news page/changelog
-# set this to None if you don't want
-# this shown. (Not recommended)
-news_url = "http://agg.optf2.com/log/?cat=5"
-
 # The starting size of the backpack
 backpack_padded_size = 300
 
