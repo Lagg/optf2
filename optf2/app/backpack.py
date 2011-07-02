@@ -146,7 +146,7 @@ class fetch:
         filter_quality = query.get("quality")
 
         try:
-            items = database.load_pack_cached(user, id = packid)
+            items = database.load_pack_cached(user, pid = packid)
             if not items and user.get_visibility() != "public":
                 raise steam.user.ProfileError("Backpack is private")
 

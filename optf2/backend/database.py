@@ -211,19 +211,19 @@ def get_pack_timeline_for_user(user, tl_size = None):
     else:
         return []
 
-def get_pack_snapshot_for_user(user, id = None):
+def get_pack_snapshot_for_user(user, pid = None):
     """ Returns the backpack snapshot or None if it couldn't be found,
     if id is not given the latest snapshot will be returned."""
 
     tsstr = ""
-    if id: tsstr = " AND id = $id"
+    if pid: tsstr = " AND id = $id"
 
     rows = database_obj.select("backpacks",
                                where = "id64 = $id64" + tsstr,
                                what = "id, UNCOMPRESS(backpack) AS backpack, timestamp",
                                limit = 1,
                                order = "timestamp DESC",
-                               vars = {"id64": user.get_id64(), "id": id})
+                               vars = {"id64": user.get_id64(), "id": pid})
 
     if len(rows) > 0:
         return rows[0]
@@ -265,7 +265,7 @@ def fetch_item_for_id(id64, user = None):
         return db_to_itemobj(itemrow)
     except IndexError:
         if user:
-            pack = get_pack_snapshot_for_user(user, id = web.input().get("pid"))
+            pack = get_pack_snapshot_for_user(user, pid = web.input().get("pid"))
             items = pickle.loads(pack["backpack"])
             for item in items:
                 try:
@@ -295,10 +295,10 @@ def get_items_for_backpack(backpack):
 
     return [db_to_itemobj(item) for item in dbitems] + inlinelist
 
-def load_pack_cached(user, stale = False, id = id):
-    thepack = get_pack_snapshot_for_user(user, id = id)
+def load_pack_cached(user, stale = False, pid = None):
+    thepack = get_pack_snapshot_for_user(user, pid = pid)
     web.ctx.current_uid64 = user.get_id64()
-    if not stale and not id:
+    if not stale and not pid:
         if not cache_not_stale(thepack):
             try:
                 return refresh_pack_cache(user)

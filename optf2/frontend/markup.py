@@ -25,7 +25,7 @@ def generate_item_url(item):
     ownerstr = ""
     if "inlinemapped" in item._item:
         ownerstr += "?oid=" + str(web.ctx.current_uid64)
-        if id: ownerstr += "&pid=" + str(web.ctx.current_pid)
+        ownerstr += "&pid=" + str(web.ctx.current_pid)
 
     return "{0}item/{1}{2}".format(virtual_root, item.get_id() or item.get_schema_id(), ownerstr)
 
