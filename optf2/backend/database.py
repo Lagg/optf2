@@ -14,7 +14,7 @@ ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
 OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 """
 
-import config, steam, urllib2, web, os
+import config, steam, urllib2, web, os, zlib
 import cPickle as pickle
 from cStringIO import StringIO
 from time import time
@@ -165,16 +165,16 @@ def refresh_pack_cache(user):
 
         lastpack = get_pack_snapshot_for_user(user)
         if not lastpack or db_pack_is_new(pickle.loads(str(lastpack["backpack"])), backpack_items):
-            database_obj.query("INSERT INTO backpacks (id64, backpack, timestamp) VALUES ($id64, COMPRESS($bp), $ts)",
+            database_obj.query("INSERT INTO backpacks (id64, backpack, timestamp) VALUES ($id64, $bp, $ts)",
                                vars = {"id64": user.get_id64(),
-                                       "bp": pickle.dumps(backpack_items, pickle.HIGHEST_PROTOCOL),
+                                       "bp": zlib.compress(pickle.dumps(backpack_items, pickle.HIGHEST_PROTOCOL)),
                                        "ts": ts})
             last_packid = database_obj.query("SELECT LAST_INSERT_ID() AS lastid")[0]["lastid"]
         elif lastpack:
-            database_obj.query ("UPDATE backpacks SET timestamp = $ts, backpack = COMPRESS($bp) WHERE id = $id",
-                                vars = {"id": lastpack["id"],
-                                        "bp": pickle.dumps(backpack_items, pickle.HIGHEST_PROTOCOL),
-                                        "ts": ts})
+            database_obj.query("UPDATE backpacks SET timestamp = $ts, backpack = $bp WHERE id = $id",
+                               vars = {"id": lastpack["id"],
+                                       "bp": zlib.compress(pickle.dumps(backpack_items, pickle.HIGHEST_PROTOCOL)),
+                                       "ts": ts})
             last_packid = lastpack["id"]
 
     web.ctx.current_pid = last_packid
@@ -205,13 +205,15 @@ def get_pack_snapshot_for_user(user, pid = None):
 
     rows = database_obj.select("backpacks",
                                where = "id64 = $id64" + tsstr,
-                               what = "id, UNCOMPRESS(backpack) AS backpack, timestamp",
+                               what = "id, backpack, timestamp",
                                limit = 1,
                                order = "timestamp DESC",
                                vars = {"id64": user.get_id64(), "id": pid})
 
     if len(rows) > 0:
-        return rows[0]
+        pack = rows[0]
+        pack["backpack"] = zlib.decompress(pack["backpack"])
+        return pack
     else:
         return None
 
