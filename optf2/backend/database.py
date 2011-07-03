@@ -108,22 +108,12 @@ def refresh_pack_cache(user):
     backpack_items = list()
     data = []
     attrdata = []
-    deltapack = []
-    olditems = {}
 
     try:
         packitems = list(pack)
     except steam.items.ItemError:
         pack.set_schema(load_schema_cached(web.ctx.language, fresh = True))
         packitems = list(pack)
-
-
-    with database_obj.transaction():
-        lastpack = get_pack_snapshot_for_user(user)
-        if lastpack:
-            deltapack = pickle.loads(lastpack["backpack"])
-            for item in get_items_for_backpack(deltapack):
-                olditems[item["id"]] = item
 
     for item in packitems:
         if not is_item_unique(item):
@@ -133,12 +123,6 @@ def refresh_pack_cache(user):
             continue
         else:
             backpack_items.append(item.get_id())
-
-        if item.get_id() in olditems:
-            compitem = item._item
-            olditem = olditems[compitem["id"]]
-            if dict(olditem.items() + compitem.items()) == olditem:
-                continue
 
         rawattrs = item._item.get("attributes")
         if rawattrs:
@@ -179,6 +163,7 @@ def refresh_pack_cache(user):
                                        "quantity=VALUES(quantity)")
             database_obj.query(thequery)
 
+        lastpack = get_pack_snapshot_for_user(user)
         if not lastpack or db_pack_is_new(pickle.loads(str(lastpack["backpack"])), backpack_items):
             database_obj.query("INSERT INTO backpacks (id64, backpack, timestamp) VALUES ($id64, COMPRESS($bp), $ts)",
                                vars = {"id64": user.get_id64(),
