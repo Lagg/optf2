@@ -331,7 +331,8 @@ def process_attributes(items, gift = False):
         paint_job = ""
         prefix = ""
         craft_no = item.optf2.get("craft_number", "")
-        if craft_no: craft_no = " #" + craft_no
+        if craft_no and not item.get_custom_name(): craft_no = " #" + craft_no
+        else: craft_no = ""
 
         if color and color_2:
             paint_job = '<span><b style="color: {0};">Pain</b><b style="color: {1};">ted</b></span>'.format(color,

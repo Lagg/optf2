@@ -64,6 +64,9 @@ $def generate_class_icon_link(classes):
       $ style = item.get_current_style_name()
       $if style: <div class="attr-neutral">Style: $style</div>
       $ serial = item.get_id()
+      $ craft_no = item.optf2.get("craft_number")
+      $if craft_no and item.get_custom_name():
+          <div class="attr-positive">Craft number: $craft_no</div>
       $if "container_id" in extra and not serial:
           <div class="attr-positive">
             Unopened <a href="${virtual_root}item/${extra['container_id']}">Gift</a> from

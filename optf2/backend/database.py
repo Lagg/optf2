@@ -16,7 +16,6 @@ OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 import config, steam, urllib2, web, os, zlib
 import cPickle as pickle
-from cStringIO import StringIO
 from time import time
 
 gamelib = getattr(steam, config.game_mode)
