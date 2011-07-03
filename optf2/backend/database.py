@@ -31,7 +31,7 @@ def cache_not_stale(row):
 def refresh_profile_cache(sid, vanity = None):
     user = steam.user.profile(sid)
     summary = user._summary_object
-    profile = pickle.dumps(summary, pickle.HIGHEST_PROTOCOL)
+    profile = zlib.compress(pickle.dumps(summary, pickle.HIGHEST_PROTOCOL))
     vanitystr = vanity
 
     if not sid.isdigit(): vanitystr = sid
@@ -58,7 +58,7 @@ def load_profile_cached(sid, stale = False):
             prow = database_obj.select("profiles", what = "profile, timestamp",
                                        where = "vanity = $v", vars = {"v": sid})[0]
 
-        pfile = pickle.loads(prow["profile"])
+        pfile = pickle.loads(zlib.decompress(prow["profile"]))
 
         if stale or cache_not_stale(prow):
             return steam.user.profile(pfile)
@@ -125,9 +125,9 @@ def refresh_pack_cache(user):
 
         rawattrs = item._item.get("attributes")
         if rawattrs:
-            rawattrs = pickle.dumps(rawattrs, pickle.HIGHEST_PROTOCOL)
+            rawattrs = zlib.compress(pickle.dumps(rawattrs, pickle.HIGHEST_PROTOCOL))
             rawcontent = item.get_contents()
-            if rawcontent: rawcontent = pickle.dumps(rawcontent._item, pickle.HIGHEST_PROTOCOL)
+            if rawcontent: rawcontent = zlib.compress(pickle.dumps(rawcontent._item, pickle.HIGHEST_PROTOCOL))
             attrdata.append('(' + web.db.SQLParam(item.get_id()) + ', ' + web.db.SQLParam(rawattrs) + ', ' +
                             web.db.SQLParam(rawcontent) + ')')
 
@@ -235,9 +235,9 @@ def db_to_itemobj(dbitem):
                "style": dbitem["style"]}
 
     rawattrs = dbitem["attributes"]
-    if rawattrs: theitem["attributes"] = pickle.loads(rawattrs)
+    if rawattrs: theitem["attributes"] = pickle.loads(zlib.decompress(rawattrs))
     rawcontents = dbitem["contents"]
-    if rawcontents: theitem["contained_item"] = pickle.loads(rawcontents)
+    if rawcontents: theitem["contained_item"] = pickle.loads(zlib.decompress(rawcontents))
 
     return theitem
 
@@ -324,7 +324,7 @@ def get_top_pack_views(limit = 10):
                                  where = "bp_views > 0",  order = "bp_views DESC", limit = limit)
     profiles = []
     for row in result:
-        profile = steam.user.profile(pickle.loads(row["profile"]))
+        profile = steam.user.profile(pickle.loads(zlib.decompress(row["profile"])))
         profiles.append((row["bp_views"], profile.get_primary_group() == config.valve_group_id, profile))
 
     return profiles
