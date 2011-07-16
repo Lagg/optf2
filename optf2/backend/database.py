@@ -75,10 +75,14 @@ def db_pack_is_new(lastpack, newpack):
     newitems = []
     for i in lastpack:
         try: olditems.append(int(i))
-        except: olditems.append(i[0])
+        except TypeError:
+            try: olditems.append(i[0])
+            except KeyError: olditems.append(i["id"])
     for i in newpack:
         try: newitems.append(int(i))
-        except: newitems.append(i[0])
+        except TypeError:
+            try: newitems.append(i[0])
+            except KeyError: newitems.append(i["id"])
 
     return (sorted(olditems) != sorted(newitems))
 
@@ -104,9 +108,6 @@ def refresh_pack_cache(user):
     pack = gamelib.backpack(schema = load_schema_cached(web.ctx.language))
     pack.load(user)
     ts = int(time())
-    backpack_items = list()
-    data = []
-    attrdata = []
 
     try:
         packitems = list(pack)
@@ -114,54 +115,9 @@ def refresh_pack_cache(user):
         pack.set_schema(load_schema_cached(web.ctx.language, fresh = True))
         packitems = list(pack)
 
-    for item in packitems:
-        if not is_item_unique(item):
-            # Store it directly in the mapping
-            item._item["inlinemapped"] = True
-            backpack_items.append([item.get_id(), item.get_schema_id(), item.get_inventory_token()])
-            continue
-        else:
-            backpack_items.append(item.get_id())
-
-        rawattrs = item._item.get("attributes")
-        if rawattrs:
-            rawattrs = zlib.compress(pickle.dumps(rawattrs, pickle.HIGHEST_PROTOCOL))
-            rawcontent = item.get_contents()
-            if rawcontent: rawcontent = zlib.compress(pickle.dumps(rawcontent._item, pickle.HIGHEST_PROTOCOL))
-            attrdata.append('(' + web.db.SQLParam(item.get_id()) + ', ' + web.db.SQLParam(rawattrs) + ', ' +
-                            web.db.SQLParam(rawcontent) + ')')
-
-        row = [item.get_id(), item.get_original_id(), user.get_id64(), item.get_schema_id(),
-               item.get_level(), item.is_untradable(),
-               item.get_inventory_token(), item.get_quality()["id"],
-               item.get_custom_name(), item.get_custom_description(),
-               item.get_current_style_id(),
-               item.get_quantity()]
-
-        data.append('(' + web.db.SQLQuery.join([web.db.SQLParam(ival) for ival in row], ', ') + ')')
-
     last_packid = None
+    backpack_items = [item._item for item in packitems]
     with database_obj.transaction():
-        if len(attrdata) > 0:
-            theattrquery = web.db.SQLQuery("INSERT INTO attributes(id64, attrs, contents) VALUES " +
-                                           web.db.SQLQuery.join(attrdata, ', ') +
-                                           " ON DUPLICATE KEY UPDATE attrs=VALUES(attrs), contents=VALUES(contents)")
-            database_obj.query(theattrquery)
-
-        if len(data) > 0:
-            thequery = web.db.SQLQuery("INSERT INTO items (id64, oid64, " +
-                                       "owner, sid, level, untradeable, " +
-                                       "token, quality, custom_name, " +
-                                       "custom_desc, style, quantity) VALUES " +
-                                       web.db.SQLQuery.join(data, ', ') +
-                                       " ON DUPLICATE KEY UPDATE oid64=VALUES(oid64), " +
-                                       "owner=VALUES(owner), sid=VALUES(sid), level=VALUES(level), " +
-                                       "untradeable=VALUES(untradeable), token=VALUES(token), " +
-                                       "quality=VALUES(quality), custom_name=VALUES(custom_name), " +
-                                       "custom_desc=VALUES(custom_desc), style=VALUES(style), " +
-                                       "quantity=VALUES(quantity)")
-            database_obj.query(thequery)
-
         lastpack = get_pack_snapshot_for_user(user)
         if not lastpack or db_pack_is_new(pickle.loads(str(lastpack["backpack"])), backpack_items):
             database_obj.query("INSERT INTO backpacks (id64, backpack, timestamp) VALUES ($id64, $bp, $ts)",
@@ -218,6 +174,8 @@ def get_pack_snapshot_for_user(user, pid = None):
 
 
 def db_to_itemobj(dbitem):
+    if "id" in dbitem:
+        return dbitem
     if "id64" not in dbitem:
         return {"id": dbitem[0], "defindex": dbitem[1], "inventory": dbitem[2]}
 
@@ -245,21 +203,24 @@ item_select_query = web.db.SQLQuery("SELECT items.*, attributes.attrs as attribu
                                     "LEFT JOIN attributes ON items.id64=attributes.id64 " +
                                     "WHERE items.id64")
 
-def fetch_item_for_id(id64, user = None):
-    try:
+def fetch_item_for_id(id64):
+    pid = web.input().get("pid")
+
+    if not pid:
         itemrow = database_obj.query(item_select_query + " = " + web.db.SQLParam(int(id64)))[0]
         return db_to_itemobj(itemrow)
-    except IndexError:
-        if user:
-            pack = get_pack_snapshot_for_user(user, pid = web.input().get("pid"))
-            items = pickle.loads(pack["backpack"])
-            for item in items:
-                try:
-                    packitem = db_to_itemobj(item)
-                except:
-                    continue
-                if int(packitem["id"]) == int(id64):
-                    return packitem
+
+    pack = database_obj.select("backpacks", where = "id = $pid",
+                               vars = {"pid": pid})[0]
+    items = pickle.loads(zlib.decompress(pack["backpack"]))
+    for item in items:
+        try:
+            packitem = db_to_itemobj(item)
+        except:
+            continue
+        if int(packitem["id"]) == int(id64):
+            packitem["owner"] = pack["id64"]
+            return packitem
 
 def get_items_for_backpack(backpack):
     idlist = []
