@@ -52,7 +52,7 @@ def refresh_profile_cache(sid, vanity = None):
     user = steam.user.profile(sid)
     summary = user._summary_object
     vanitystr = vanity
-    gameinfo = user.get_current_game()
+    gameinfo = user.get_current_game() or {}
 
     if not sid.isdigit(): vanitystr = sid
 
