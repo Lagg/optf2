@@ -27,9 +27,9 @@ CREATE TABLE IF NOT EXISTS items (id64 BIGINT UNSIGNED PRIMARY KEY,
                                   custom_name VARCHAR(40),
                                   custom_desc VARCHAR(80),
                                   style TINYINT UNSIGNED,
-                                  quantity INTEGER UNSIGNED DEFAULT 1 NOT NULL);
+                                  quantity INTEGER UNSIGNED DEFAULT 1 NOT NULL) ENGINE MyISAM;
 
-CREATE TABLE IF NOT EXISTS attributes (id64 BIGINT UNSIGNED PRIMARY KEY, attrs BLOB NOT NULL, contents BLOB);
+CREATE TABLE IF NOT EXISTS attributes (id64 BIGINT UNSIGNED PRIMARY KEY, attrs BLOB NOT NULL, contents BLOB) ENGINE MyISAM;
 
 CREATE TABLE IF NOT EXISTS backpacks (id64 BIGINT UNSIGNED NOT NULL, backpack MEDIUMBLOB NOT NULL,
                                       timestamp INTEGER UNSIGNED NOT NULL,
