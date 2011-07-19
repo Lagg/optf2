@@ -1,9 +1,18 @@
 
-CREATE TABLE IF NOT EXISTS search_count (id64 BIGINT UNSIGNED NOT NULL, ip VARCHAR(200) NOT NULL);
+CREATE TABLE IF NOT EXISTS search_count (id64 BIGINT UNSIGNED NOT NULL, ip VARCHAR(40) NOT NULL);
 
 CREATE TABLE IF NOT EXISTS profiles (id64 BIGINT UNSIGNED PRIMARY KEY,
-                                     vanity TEXT,
-                                     profile BLOB NOT NULL,
+                                     persona VARCHAR(32),
+                                     vanity VARCHAR(32),
+                                     real_name VARCHAR(60),
+                                     last_server_ip VARCHAR(40),
+                                     last_app_id INT UNSIGNED,
+                                     last_game_info TEXT,
+                                     profile_url TEXT,
+                                     avatar_url TEXT,
+                                     primary_group BIGINT UNSIGNED,
+                                     profile_status TINYINT UNSIGNED,
+                                     online_status TINYINT UNSIGNED,
                                      timestamp INTEGER NOT NULL,
                                      bp_views INTEGER UNSIGNED NOT NULL DEFAULT 0);
 

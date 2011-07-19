@@ -90,7 +90,6 @@ body { background: #181818; color: white; font-family: Arial, Helvetica, sans-se
 .paint_splotch {
     position: absolute;
     top: 6px; left: 6px;
-    font-weight: bold;
     width: 10px;
     height: 10px;
     -moz-border-radius: 10px;

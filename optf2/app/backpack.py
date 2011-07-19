@@ -131,7 +131,7 @@ class fetch:
 
         try:
             items = database.load_pack_cached(user, pid = packid)
-            if not items and user.get_visibility() != "public":
+            if not items and user.get_visibility() != 3:
                 raise steam.user.ProfileError("Backpack is private")
 
             timestamps = []

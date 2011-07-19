@@ -28,46 +28,73 @@ def cache_not_stale(row):
     else:
         return False
 
+def db_to_profileobj(db):
+    profile = {"steamid": db["id64"],
+               "communityvisibilitystate": db["profile_status"],
+               "personaname": db["persona"],
+               "avatar": db["avatar_url"],
+               "avatarmedium": db["avatar_url"],
+               "avatarfull": db["avatar_url"],
+               "personastate": db["online_status"],
+               "realname": db["real_name"],
+               "primaryclanid": db["primary_group"],
+               "gameserverip": db["last_server_ip"],
+               "gameextrainfo": db["last_game_info"],
+               "gameid": db["last_app_id"],
+               "profileurl": db["profile_url"]
+               }
+    for k in profile.keys():
+        if profile[k] == None: del profile[k]
+
+    return profile
+
 def refresh_profile_cache(sid, vanity = None):
     user = steam.user.profile(sid)
     summary = user._summary_object
-    profile = zlib.compress(pickle.dumps(summary, pickle.HIGHEST_PROTOCOL))
     vanitystr = vanity
+    gameinfo = user.get_current_game()
 
     if not sid.isdigit(): vanitystr = sid
 
-    p = web.db.SQLParam
-    querystr = ("INSERT INTO profiles (id64, timestamp, profile, vanity) VALUES " +
-                "($id, $ts, $profile, $v)" +
+    querystr = ("INSERT INTO profiles (id64, persona, vanity, real_name, last_server_ip " +
+                ", last_app_id, last_game_info, profile_url, avatar_url, primary_group, " +
+                "profile_status, online_status, timestamp) VALUES " +
+                "($id, $persona, $vanity, $realname, $lastip, $lastapp, $lastinfo, $purl, $aurl, " +
+                "$group, $pstatus, $ostatus, $ts)" +
                 " ON DUPLICATE KEY UPDATE " +
-                "timestamp = VALUES(timestamp), profile = VALUES(profile), vanity = VALUES(vanity)")
+                "timestamp = VALUES(timestamp), vanity = VALUES(vanity)" +
+                ", persona = VALUES(persona), real_name = VALUES(real_name), last_server_ip = VALUES(last_server_ip)" +
+                ", last_app_id = VALUES(last_app_id), last_game_info = VALUES(last_game_info)" +
+                ", profile_url = VALUES(profile_url), avatar_url = VALUES(avatar_url), primary_group = VALUES(primary_group)" +
+                ", profile_status = VALUES(profile_status), online_status = VALUES(online_status)")
     database_obj.query(querystr, vars = {"id": user.get_id64(),
                                          "ts": int(time()),
-                                         "profile": profile,
-                                         "v": vanitystr})
+                                         "vanity": vanitystr,
+                                         "persona": user.get_persona(),
+                                         "realname": user.get_real_name(),
+                                         "lastip": gameinfo.get("server"),
+                                         "lastapp": gameinfo.get("id"),
+                                         "lastinfo": gameinfo.get("extra"),
+                                         "purl": user.get_profile_url(),
+                                         "aurl": user.get_avatar_url(user.AVATAR_SMALL),
+                                         "group": user.get_primary_group(),
+                                         "pstatus": user.get_visibility(),
+                                         "ostatus": user.get_status()})
 
     return user
 
 def load_profile_cached(sid, stale = False):
-    user = steam.user.profile()
     try:
         if sid.isdigit():
-            prow = database_obj.select("profiles", what = "profile, timestamp",
-                                       where = "id64 = $id64", vars = {"id64": int(sid)})[0]
+            prow = database_obj.select("profiles", where = "id64 = $id64", vars = {"id64": int(sid)})[0]
         else:
-            prow = database_obj.select("profiles", what = "profile, timestamp",
-                                       where = "vanity = $v", vars = {"v": sid})[0]
+            prow = database_obj.select("profiles", where = "vanity = $v", vars = {"v": sid})[0]
+    except IndexError:
+        return refresh_profile_cache(sid)
 
-        pfile = pickle.loads(zlib.decompress(prow["profile"]))
-
-        if stale or cache_not_stale(prow):
-            return steam.user.profile(pfile)
-        else:
-            try:
-                return refresh_profile_cache(sid)
-            except:
-                return steam.user.profile(pfile)
-    except:
+    if stale or cache_not_stale(prow):
+        return steam.user.profile(db_to_profileobj(prow))
+    else:
         return refresh_profile_cache(sid)
 
 def db_pack_is_new(lastpack, newpack):
@@ -281,12 +308,11 @@ def get_top_pack_views(limit = 10):
     """ Will return the top viewed backpacks sorted in descending order
     no more than limit rows will be returned """
 
-    result = database_obj.select("profiles", what = "bp_views, profile",
+    result = database_obj.select("profiles", what = "bp_views, persona, primary_group, id64",
                                  where = "bp_views > 0",  order = "bp_views DESC", limit = limit)
     profiles = []
     for row in result:
-        profile = steam.user.profile(pickle.loads(zlib.decompress(row["profile"])))
-        profiles.append((row["bp_views"], profile.get_primary_group() == config.valve_group_id, profile))
+        profiles.append((row["bp_views"], row["primary_group"] == config.valve_group_id, row["persona"], row["id64"]))
 
     return profiles
 

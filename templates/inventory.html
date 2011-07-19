@@ -4,14 +4,15 @@ $ profileurl = user.get_profile_url()
 $ realn = user.get_real_name()
 $var title: $project_name - $usern's Backpack
 $ rss = "{0}feed/{1}".format(virtual_root, user.get_id64())
+$ onlinestates = {0: "offline", 1: "online", 2: "busy", 3: "away", 4: "snooze"}
 <div id="header" style="position: relative;">
   <div class="toolbar" style="margin: 0 0 15px 0;">
   $ cgame = user.get_current_game()
-  $ cstatus = user.get_status()
+  $ cstatus = onlinestates.get(user.get_status(), "offline")
   $ name_suffix = ""
   $if isvalve:
       $ name_suffix = '<img src="{0}valve.png" alt="Valve" title="Valve Employee"/>'.format(static_prefix)
-  $if user.get_visibility() != "public":
+  $if user.get_visibility() != 3:
       $ name_suffix += '<span class="attr-negative" style="font-weight: normal;"> (private)</span>'
     <div class="tool" style="padding-right: 0; border: 0;">
       <a href="$profileurl">

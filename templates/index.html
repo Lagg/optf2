@@ -11,5 +11,5 @@ $for row in countlist:
     $if row[1]:
         $ name_suffix = ' <img src="{0}valve.png" alt="Valve" title="Valve Employee"/>'.format(static_prefix)
     $else: $ name_suffix = ""
-    <tr class="row_${loop.parity}"><td><a href="${virtual_root}user/$row[2].get_id64()">$row[2].get_persona()$:name_suffix</a></td><td>$row[0]</td></tr>
+    <tr class="row_${loop.parity}"><td><a href="${virtual_root}user/$row[3]">$row[2]$:name_suffix</a></td><td>$row[0]</td></tr>
 </table>
