@@ -34,6 +34,7 @@ def generate_cell(item, invalid = False, show_equipped = True):
     item_id = item.get_id()
     schema_item = False
     equipped = (len(item.get_equipped_classes()) > 0)
+    untradable = item.is_untradable()
 
     if not show_equipped: equipped = False
     if not item_id:
@@ -55,6 +56,7 @@ def generate_cell(item, invalid = False, show_equipped = True):
 
     cell_class = "item_cell"
     if not schema_item and item.get_position() <= -1: cell_class += " undropped"
+    if untradable: cell_class += " untradable"
 
     markup = ('<div class="{0} cell-{1}" id="s{2}">' +
               '<a class="item_link" href="{3}">' +
@@ -107,7 +109,7 @@ def generate_cell(item, invalid = False, show_equipped = True):
     if "craft_number" in item.optf2 and item.get_custom_name():
         markup += '<div class="attr-positive">Craft number: ' + item.optf2["craft_number"] + '</div>'
 
-    if item.is_untradable():
+    if untradable:
         markup += '<div class="attr-neutral">Untradable</div>'
         if "date_tradable" in item.optf2:
             markup += '<div class="attr-neutral">Tradable after: {0}</div>'.format(item.optf2["date_tradable"])

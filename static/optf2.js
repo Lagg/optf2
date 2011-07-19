@@ -62,6 +62,14 @@ $(document).ready(function(){
         }
     });
 
+    var untradable_toggler = document.createElement("div");
+    untradable_toggler.innerHTML = "Toggle Untradable";
+    $(untradable_toggler).addClass("button");
+    $(untradable_toggler).appendTo("#option-controls");
+    $(untradable_toggler).click(function() {
+        fade_untradable();
+    });
+
     cells.hover(function() {
         var attribs = $(attrib_dict["a" + this.id])
         var currentoffset = $(this).offset();
@@ -302,4 +310,8 @@ function get_cookie(cookie) {
 
 function set_cookie(cookie, val) {
     document.cookie = cookie + "=" + val+"; path=/";
+}
+
+function fade_untradable() {
+    $(".item_cell[class~=untradable]").toggleClass("faded");
 }
