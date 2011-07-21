@@ -199,10 +199,11 @@ function item_open(item_id) {
     var item_url = itemurls[item_id];
     var loading_id = "loading_" + item_id;
     var cell_id = $("#s" + item_id);
-    if (cell_id.find("#" + loading_id).length > 0) {
+    if ($("#" + loading_id).length > 0) {
         return;
     }
-    cell_id.prepend("<div id=\"" + loading_id + "\"><b>Loading...</b></div>");
+    cell_id.prepend("<img id=\"" + loading_id + "\" style=\"position: absolute; top: 37.5px; left: 37.5px;\" src=\"" +
+                    static_prefix + "loading.gif\" alt=\"Loading...\"/>");
     var oldcontent = $("body").find(".dedicated_item");
     var reallyoldcontent = null;
     for (var i = 0; i < oldcontent.length; i++) {
