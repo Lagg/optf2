@@ -233,7 +233,8 @@ def process_attributes(items, gift = False):
                                                              (raw_rgb >> 8) & 0xFF,
                                                              (raw_rgb) & 0xFF)
 
-                paint_can = schema.optf2_paints.get(raw_rgb)
+                try: paint_can = schema[schema.optf2_paints.get(str(raw_rgb))]
+                except KeyError: paint_can = None
                 if paint_can: item.optf2["paint_name"] = paint_can.get_name()
                 elif "paint_name" not in item.optf2: item.optf2["paint_name"] = "unknown paint"
 
