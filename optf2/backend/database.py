@@ -14,27 +14,29 @@ ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
 OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 """
 
-import config, steam, urllib2, web, os, zlib, json
+import config, steam, urllib2, web, os, zlib, marshal
 import cPickle as pickle
 from time import time
 
 gamelib = getattr(steam, config.game_mode)
 
 database_obj = config.database_obj
+schema_obj = {}
 
 class cached_item_schema(gamelib.item_schema):
     def _download(self, lang):
         self._language = lang
         cachepath = os.path.join(config.cache_file_dir, "schema-" + config.game_mode + "-" + lang)
-        schema_dict = ""
 
         if os.path.exists(cachepath) and not self.load_fresh:
-            schema_dict = open(cachepath, "r").read()
+            return open(cachepath, "rb").read()
         else:
-            schema_dict = gamelib.item_schema._download(self, lang)
-            open(cachepath, "w").write(schema_dict)
+            dumped = marshal.dumps(gamelib.item_schema._deserialize(self, gamelib.item_schema._download(self, lang)))
+            open(cachepath, "wb").write(dumped)
+            return dumped
 
-        return schema_dict
+    def _deserialize(self, schema):
+        return marshal.loads(schema)
 
     def __init__(self, lang = None, fresh = False):
         self.load_fresh = fresh
@@ -44,14 +46,14 @@ class cached_item_schema(gamelib.item_schema):
         gamelib.item_schema.__init__(self, lang)
 
         if os.path.exists(paintcache) and not self.load_fresh:
-            self.optf2_paints = json.load(open(paintcache, "rb"))
+            self.optf2_paints = marshal.load(open(paintcache, "rb"))
         else:
             for item in self:
                 if item._schema_item.get("name", "").startswith("Paint Can"):
                     for attr in item:
                         if attr.get_name().startswith("set item tint RGB"):
                             self.optf2_paints[int(attr.get_value())] = item.get_schema_id()
-            json.dump(self.optf2_paints, open(paintcache, "wb"))
+            marshal.dump(self.optf2_paints, open(paintcache, "wb"))
 
 def cache_not_stale(row):
     if row and "timestamp" in row:
@@ -145,7 +147,12 @@ def db_pack_is_new(lastpack, newpack):
     return (sorted(olditems) != sorted(newitems))
 
 def load_schema_cached(lang, fresh = False):
-    return cached_item_schema(lang = lang, fresh = fresh)
+    if lang in schema_obj and not fresh:
+        return schema_obj[lang]
+    else:
+        schema = cached_item_schema(lang = lang, fresh = fresh)
+        schema_obj[lang] = schema
+        return schema
 
 def refresh_pack_cache(user):
     pack = gamelib.backpack(schema = load_schema_cached(web.ctx.language))
