@@ -294,7 +294,6 @@ def get_items_for_backpack(backpack):
 
 def load_pack_cached(user, stale = False, pid = None):
     thepack = get_pack_snapshot_for_user(user, pid = pid)
-    web.ctx.current_uid64 = user.get_id64()
     if not stale and not pid:
         if not cache_not_stale(thepack):
             try:

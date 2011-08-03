@@ -1,7 +1,7 @@
 import socket, web, os
 
 # Valid games so far are p2 and tf2
-game_mode = "p2"
+game_mode = "tf2"
 
 # You probably want this to be
 # an absolute path if you're not running the built-in server
@@ -48,7 +48,7 @@ backpack_padded_size = 300
 # have sensitive data in it that
 # shouldn't be publicly accessible
 
-cache_file_dir = "/home/anthony/.cache/steamodd"
+cache_file_dir = "/tmp/opnet-cache"
 
 if not os.path.exists(cache_file_dir):
     os.makedirs(cache_file_dir)
@@ -62,7 +62,7 @@ web.config.session_parameters["cookie_name"] = "optf2_session_id"
 # Database parameters
 database = {"username": "root",
             "password": "",
-            "database": "optf2_dev",
+            "database": "optf2",
             "host": "localhost"}
 
 # Only tested with mysql, previously worked on sqlite but I don't recommend it.
