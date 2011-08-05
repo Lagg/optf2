@@ -125,10 +125,15 @@ def load_profile_cached(sid, stale = False):
     except IndexError:
         return refresh_profile_cache(sid)
 
+    user = steam.user.profile(db_to_profileobj(prow))
+
     if stale or cache_not_stale(prow):
-        return steam.user.profile(db_to_profileobj(prow))
+        return user
     else:
-        return refresh_profile_cache(sid)
+        try:
+            return refresh_profile_cache(sid)
+        except:
+            return user
 
 def db_pack_is_new(lastpack, newpack):
     olditems = []
