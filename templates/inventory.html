@@ -1,4 +1,4 @@
-$def with (user, isvalve, items, views, filter_classes, baditems, stats, timestamps, filter_qualities, total_pages)
+$def with (user, isvalve, items, views, filter_classes, baditems, stats, timestamps, filter_qualities, total_pages, appid)
 $ usern = user.get_persona()
 $ profileurl = user.get_profile_url()
 $ realn = user.get_real_name()
@@ -105,7 +105,7 @@ $ onlinestates = {0: "offline", 1: "online", 2: "busy", 3: "away", 4: "snooze"}
 <div id="content">
   $if len(items) <= 0 and len(baditems) <= 0:
       <h2>Empty!</h2>
-  <div id="backpack" style="width: 1040px;">
+  <div id="backpack" style="width: 1040px;" class="bp-${appid}-${user.get_id64()}">
     $if len(baditems) > 0:
         <div id="page-0" class="backpack-page">
           $for item in baditems:

@@ -90,8 +90,7 @@ class item:
             return templates.error("Couldn't connect to Steam")
         except:
             return templates.item_error_notfound(id64)
-        # TODO: Figure out how to not hardcode the number between the appid and item number
-        return templates.item(user, item, item_outdated, schema._app_id)
+        return templates.item(user, item, item_outdated)
 
 class fetch:
     def _get_page_for_sid(self, sid):
@@ -177,6 +176,7 @@ class fetch:
 
         views = database.get_user_pack_views(user)
         isvalve = (user.get_primary_group() == config.valve_group_id)
+        schema = database.load_schema_cached(web.ctx.language)
 
         web.ctx.env["optf2_rss_url"] = "{0}feed/{1}".format(config.virtual_root, user.get_id64())
         web.ctx.env["optf2_rss_title"] = "{0}'s Backpack".format(user.get_persona().encode("utf-8"))
@@ -184,7 +184,7 @@ class fetch:
         return templates.inventory(user, isvalve, items, views,
                                    filter_classes, baditems,
                                    stats, timestamps, filter_qualities,
-                                   total_pages)
+                                   total_pages, schema._app_id)
 
     def GET(self, sid):
         return self._get_page_for_sid(sid)
