@@ -82,6 +82,13 @@ $(document).ready(function(){
         attribs.show();
         currentoffset["top"] += $(this).height() + 5;
         currentoffset["left"] -= (attribs.width() / 3.4);
+
+        /* Check if attribs go off the document */
+        if (currentoffset["left"] < 0) { currentoffset["left"] = 0; }
+        if((currentoffset["left"] + attribs.width()) > document.documentElement.clientWidth) {
+            currentoffset["left"] = document.documentElement.clientWidth - attribs.width();
+        }
+
         attribs.offset(currentoffset);
         if (attribs.length > 0) {
             var scrollh = $(document).scrollTop();
