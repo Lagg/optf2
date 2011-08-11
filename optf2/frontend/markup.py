@@ -59,9 +59,10 @@ def generate_cell(item, invalid = False, show_equipped = True):
     if untradable: cell_class += " untradable"
 
     markup = ('<div class="{0} cell-{1}" id="s{2}">' +
-              '<a class="item_link" href="{3}">' +
-              '<img class="item-image small" src="{4}" alt="{5}"/>' +
-              '</a>').format(cell_class, quality, item_id, item_link, item.optf2["image_url"], item_id)
+              '<a class="item-link" href="{3}">' +
+              '</a>' +
+              '<img class="item-image small" src="{4}" alt="{5}"/>'
+              ).format(cell_class, quality, item_id, item_link, item.optf2["image_url"], item_id)
 
     contents = item.optf2.get("contents")
     if contents:

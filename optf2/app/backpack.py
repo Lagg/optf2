@@ -90,7 +90,8 @@ class item:
             return templates.error("Couldn't connect to Steam")
         except:
             return templates.item_error_notfound(id64)
-        return templates.item(user, item, item_outdated)
+        # TODO: Figure out how to not hardcode the number between the appid and item number
+        return templates.item(user, item, item_outdated, schema._app_id)
 
 class fetch:
     def _get_page_for_sid(self, sid):

@@ -13,10 +13,8 @@ $(document).ready(function(){
     var attrib_dict = {};
 
     var domattribs = $(".item_attribs");
-    var itemlinks = $(".item_link");
 
-    itemlinks.each(function() { itemurls[String($(this).parent().attr("id").slice(1))] = $(this).attr("href"); });
-    itemlinks.contents().unwrap();
+    $(".item-link").each(function() { itemurls[String($(this).parent().attr("id").slice(1))] = $(this).attr("href"); });
 
     domattribs.each(function() { this.id = "a" + $(this).parent().attr("id"); attrib_dict[String(this.id)] = this; });
     domattribs.remove();
@@ -100,8 +98,9 @@ $(document).ready(function(){
         $(".item_attribs").remove();
     });
 
-    cells.click(function() {
-        item_open(this.id.slice(1));
+    $(".item-link").click(function(event) {
+        event.preventDefault();
+        item_open($(this).parent().attr("id").slice(1));
     });
 
     $(".item-image").one("error", function() {
@@ -166,7 +165,7 @@ function item_open_success(data, status, xhr) {
         dialog_height = last_dialog_size["height"];
     }
 
-    dialog_content.find("#item_attrs").append("<br/><br/><a class=\"button\" href=\"" + itemurls[item_id] + "\">Link to this item</a>");
+    dialog_content.find(".item-attrs .button-list").append("<li><a class=\"button\" href=\"" + itemurls[item_id] + "\">Link to this item</a></li>");
     dialog_title.css({"font-size": "1.6em", "margin": "0", "padding": "0"});
 
     if ($(window).height() < dialog_height) {
@@ -202,7 +201,7 @@ function item_open(item_id) {
     if ($("#" + loading_id).length > 0) {
         return;
     }
-    cell_id.prepend("<img id=\"" + loading_id + "\" style=\"position: absolute; top: 37.5px; left: 37.5px;\" src=\"" +
+    cell_id.prepend("<img id=\"" + loading_id + "\" style=\"z-index: 5; position: absolute; top: 37.5px; left: 37.5px;\" src=\"" +
                     static_prefix + "loading.gif\" alt=\"Loading...\"/>");
     var oldcontent = $("body").find(".dedicated_item");
     var reallyoldcontent = null;

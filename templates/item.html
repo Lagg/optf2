@@ -1,4 +1,4 @@
-$def with (user, item, outdated)
+$def with (user, item, outdated, appid)
 $ qitem = item.get_quality()
 $ extra = item.optf2
 $ contents = extra.get("contents")
@@ -126,9 +126,12 @@ $def generate_class_icon_link(classes):
             $for cap in item.optf2["capabilities"]:
                 <li style="padding: 2px 0 2px 0;">$cap</li>
           </ul>
-  <br/><a class="button" href="$item_wiki_url">$wiki_map[0] article</a>
+  <ul class="button-list">
+    <li><a class="button" href="$item_wiki_url">$wiki_map[0] article</a></li>
   $if user:
-      <br/><br/><a class="button" href="${virtual_root}item/${item.get_schema_id()}">Schema version</a>
+      <li><a class="button" href="${user.get_profile_url()}inventory/#${appid}_2_${item.get_id()}">Steam inventory</a></li>
+      <li><a class="button" href="${virtual_root}item/${item.get_schema_id()}">Schema version</a></li>
+  </ul>
   </div>
   </div>
 </div>
