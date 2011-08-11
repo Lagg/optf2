@@ -28,8 +28,8 @@ $def generate_class_icon_link(classes):
 <div id="content">
   <div id="item_stats" class="dedicated_item">
   <img class="item-image large" src="$extra['image_url_large']" alt="$usern $extra['title_name']"/>
-  <img id="stat_vertrule" src="${static_prefix}vertical.gif" height="600" width="1" alt="divider"/>
-  <div id="item_attrs">
+  <img class="stat_vertrule" src="${static_prefix}vertical.gif" height="100%" width="1" alt="divider"/>
+  <div class="item-attrs">
   $ item_wiki_url = wiki_map[1] + encode_url(item.get_name())
   <div class="item-level">
     Level $extra["level"] $extra["type"]
@@ -50,23 +50,32 @@ $def generate_class_icon_link(classes):
         $else:
             $:desc.replace("\n", "<br/>")
       </div>
+  $if "kill_count" in item.optf2:
+      <div class="attr-positive">Kills: ${item.optf2["kill_count"]}</div>
+  $ craft_no = item.optf2.get("craft_number")
+  $if craft_no and item.get_custom_name():
+      <div class="attr-positive">Craft number: $craft_no</div>
+  $ style = item.get_current_style_name()
+  $if style: <div class="attr-neutral">Style: $style</div>
+  $ quantity = item.get_quantity()
+  $if quantity > 1:
+      <div class="attr-neutral">
+        Uses: $quantity
+      </div>
   $if item.is_untradable():
-      <div class="attr-neutral">Untradable</div>
       $if "date_tradable" in extra:
           <div class="attr-neutral">Tradable after: $extra["date_tradable"]</div>
+      $else:
+          <div class="attr-neutral">Untradable</div>
+
+  <img src="${static_prefix}vertical.gif" height="1" width="100%" alt="divider"/>
+
   $if "paint_name" in item.optf2:
       <div class="attr-positive">
         $:{item.optf2["painted_text"]} with ${item.optf2["paint_name"]}
       </div>
-  $if "kill_count" in item.optf2:
-      <div class="attr-positive">Kills: ${item.optf2["kill_count"]}</div>
   $if user:
-      $ style = item.get_current_style_name()
-      $if style: <div class="attr-neutral">Style: $style</div>
       $ serial = item.get_id()
-      $ craft_no = item.optf2.get("craft_number")
-      $if craft_no and item.get_custom_name():
-          <div class="attr-positive">Craft number: $craft_no</div>
       $if "container_id" in extra and not serial:
           <div class="attr-positive">
             Unopened <a href="${virtual_root}item/${extra['container_id']}">Gift</a> from
@@ -92,11 +101,6 @@ $def generate_class_icon_link(classes):
         $else:
             No
       </div>
-      $ quantity = item.get_quantity()
-      $if quantity > 1:
-          <div class="attr-neutral">
-            Uses: $quantity
-          </div>
       $if outdated:
           <div class="attr-negative" style="font-weight: normal">
             This item is out of date. It may have been deleted or customized.

@@ -148,8 +148,7 @@ function item_resize_event(event, ui) {
                       Math.min(ui.size.height - 100, 512));
 
     item.height(ui.size.height);
-    item.width(image.width() + item.find("#item_attrs").width() + 50);
-    item.find("#stat_vertrule").height(ui.size.height);
+    item.width(image.width() + item.find(".item-attrs").width() + 50);
 }
 
 function item_open_success(data, status, xhr) {
