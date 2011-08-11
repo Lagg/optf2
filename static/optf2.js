@@ -11,16 +11,22 @@ $(document).ready(function(){
     var hashpart = document.location.hash;
     var thepage = hashpart.substring(6) - 1;
     var attrib_dict = {};
-    var bpinfo = $("#backpack").attr("class").split("-");
+    var bpinfo = $("#backpack").attr("class");
     /* TODO: This whole thing is ugly. Also this context number needs to be easier to grab. */
-    steam_inventory_prefix = "http://steamcommunity.com/profiles/" + bpinfo[2] + "/inventory#" + bpinfo[1] + "_2_";
+    steam_inventory_prefix = null;
+    if (bpinfo) {
+        bpinfo = bpinfo.split("-");
+        steam_inventory_prefix = "http://steamcommunity.com/profiles/" + bpinfo[2] + "/inventory#" + bpinfo[1] + "_2_";
+    }
 
     var domattribs = $(".item_attribs");
 
     $(".item-link").each(function() {
         var idpart = String($(this).parent().attr("id").slice(1));
         itemurls[idpart] = $(this).attr("href");
-        this.href = steam_inventory_prefix + idpart;
+        if (steam_inventory_prefix) { 
+            this.href = steam_inventory_prefix + idpart;
+        }
     });
 
     domattribs.each(function() { this.id = "a" + $(this).parent().attr("id"); attrib_dict[String(this.id)] = this; });
@@ -180,7 +186,9 @@ function item_open_success(data, status, xhr) {
 
     var dialog_buttons = dialog_content.find(".item-attrs .button-list");
     dialog_buttons.append("<li><a class=\"button\" href=\"" + itemurls[item_id] + "\">Link to this item</a></li>");
-    dialog_buttons.append("<li><a class=\"button\" href=\"" + steam_inventory_prefix + item_id + "\">Steam inventory</a></li>");
+    if (steam_inventory_prefix) {
+        dialog_buttons.append("<li><a class=\"button\" href=\"" + steam_inventory_prefix + item_id + "\">Steam inventory</a></li>");
+    }
     dialog_title.css({"font-size": "1.6em", "margin": "0", "padding": "0"});
 
     if ($(window).height() < dialog_height) {
