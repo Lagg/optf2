@@ -191,13 +191,10 @@ def process_attributes(items, gift = False):
         max_level = item.get_max_level()
         pb_level = item.get_level()
         custom_desc = item.get_custom_description()
-        itype = item.get_type()
         giftcontents = item.get_contents()
 
-        if itype.startswith("TF_"):
-            s1 = re.sub("(.)([A-Z][a-z]+)", "\\1 \\2", itype[3:])
-            itype = re.sub("([a-z0-9])([A-Z])", "\\1 \\2", s1)
-            itype = itype.replace("_", "")
+        itype = item.get_type()
+        if itype.startswith("TF_"): itype = ""
         item.optf2["type"] = itype
 
         if custom_desc: item.optf2["description"] = custom_desc
