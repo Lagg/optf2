@@ -1,4 +1,4 @@
-import steam, urllib2, json
+import steam, urllib2
 import cPickle as pickle
 from optf2.backend import database
 from optf2.backend import items as itemtools
@@ -6,7 +6,6 @@ import web
 import time
 import config
 import template
-import api
 
 templates = template.template
 
@@ -93,7 +92,7 @@ class item:
         return templates.item(user, item, item_outdated)
 
 class fetch:
-    def _get_page_for_sid(self, sid):
+    def GET(self, sid):
         if not sid:
             return templates.error("Need an ID")
         try:
@@ -101,27 +100,7 @@ class fetch:
         except urllib2.URLError:
             return templates.error("Couldn't connect to Steam")
         except steam.user.ProfileError as E:
-            search = json.loads(api.search_profile().GET(sid))
-            nuser = None
-            for result in search:
-                if result["persona"] == sid:
-                    nuser = result["id"]
-                    break
-            for result in search:
-                if result["persona"].lower() == sid.lower():
-                    nuser = result["id"]
-                    break
-            for result in search:
-                if result["persona"].lower().find(sid.lower()) != -1:
-                    nuser = result["id"]
-                    break
-            if nuser:
-                try:
-                    user = database.load_profile_cached(nuser)
-                except:
-                    return templates.error("Failed to load user profile")
-            else:
-                return templates.error("Bad profile name ({0})".format(E))
+            return templates.error(E)
 
         query = web.input()
         sortby = query.get("sort", "cell")
@@ -185,9 +164,6 @@ class fetch:
                                    filter_classes, baditems,
                                    stats, timestamps, filter_qualities,
                                    total_pages, schema._app_id)
-
-    def GET(self, sid):
-        return self._get_page_for_sid(sid)
 
 class feed:
     def GET(self, sid):
