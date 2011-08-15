@@ -93,6 +93,9 @@ class item:
 
 class fetch:
     def GET(self, sid):
+        sid = sid.strip('/').split('/')
+        if len(sid) > 0: sid = sid[-1]
+
         if not sid:
             return templates.error("Need an ID")
         try:

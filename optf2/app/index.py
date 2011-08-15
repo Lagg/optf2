@@ -1,4 +1,4 @@
-import template, web, config, os, json
+import template, web, config, json
 from optf2.backend import database
 import api
 
@@ -9,10 +9,8 @@ class main:
         if not user:
             return template.template.index(database.get_top_pack_views(limit = config.top_backpack_rows))
 
-        basei = user.find('/')
-        baseurl = user
-
-        if basei > -1: baseurl = os.path.basename(user[:basei])
+        baseurl = user.strip('/').split('/')
+        if len(baseurl) > 0: baseurl = baseurl[-1]
 
         try: prof = database.load_profile_cached(baseurl)
         except: prof = None
