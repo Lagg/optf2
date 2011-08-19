@@ -107,6 +107,9 @@ def generate_cell(item, invalid = False, show_equipped = True):
     if "kill_count" in item.optf2:
         markup += '<div class="attr-positive">Kills: ' + item.optf2["kill_count"] + '</div>'
 
+    if "kill_count_2" in item.optf2:
+        markup += '<div class="attr-positive">Special kills: ' + item.optf2["kill_count_2"] + '</div>'
+
     if "craft_number" in item.optf2 and item.get_custom_name():
         markup += '<div class="attr-positive">Craft number: ' + item.optf2["craft_number"] + '</div>'
 

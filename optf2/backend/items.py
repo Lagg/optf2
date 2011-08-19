@@ -304,6 +304,9 @@ def process_attributes(items, gift = False):
             if attrname == "kill eater":
                 item.optf2["kill_count"] = str(int(theattr.get_value()))
 
+            if attrname == "kill eater 2":
+                item.optf2["kill_count_2"] = str(int(theattr.get_value()))
+
             if not newattr.get("hidden", theattr.is_hidden()):
                 newattr["description_string"] = web.websafe(newattr.get("description_string",
                                                                         theattr.get_description()))

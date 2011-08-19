@@ -52,6 +52,8 @@ $def generate_class_icon_link(classes):
       </div>
   $if "kill_count" in item.optf2:
       <div class="attr-positive">Kills: ${item.optf2["kill_count"]}</div>
+  $if "kill_count_2" in item.optf2:
+      <div class="attr-positive">Special kills: ${item.optf2["kill_count_2"]}</div>
   $ craft_no = item.optf2.get("craft_number")
   $if craft_no and item.get_custom_name():
       <div class="attr-positive">Craft number: $craft_no</div>
