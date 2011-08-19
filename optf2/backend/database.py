@@ -15,12 +15,15 @@ OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 """
 
 import config, steam, urllib2, web, os, zlib, marshal
+import couchdb
 import cPickle as pickle
 from time import time
 
 gamelib = getattr(steam, config.game_mode)
 
 database_obj = config.database_obj
+couch_obj = couchdb.Server()
+
 schema_obj = {}
 
 class cached_item_schema(gamelib.item_schema):
@@ -85,47 +88,39 @@ def refresh_profile_cache(sid, vanity = None):
     user = steam.user.profile(sid)
     summary = user._summary_object
     vanitystr = vanity
-    gameinfo = user.get_current_game() or {}
+    profiledb = couch_obj["profiles"]
+    uid = str(user.get_id64())
 
     if not sid.isdigit(): vanitystr = sid
 
-    querystr = ("INSERT INTO profiles (id64, persona, vanity, real_name, last_server_ip " +
-                ", last_app_id, last_game_info, profile_url, avatar_url, primary_group, " +
-                "profile_status, online_status, timestamp) VALUES " +
-                "($id, $persona, $vanity, $realname, $lastip, $lastapp, $lastinfo, $purl, $aurl, " +
-                "$group, $pstatus, $ostatus, $ts)" +
-                " ON DUPLICATE KEY UPDATE " +
-                "timestamp = VALUES(timestamp), vanity = VALUES(vanity)" +
-                ", persona = VALUES(persona), real_name = VALUES(real_name), last_server_ip = VALUES(last_server_ip)" +
-                ", last_app_id = VALUES(last_app_id), last_game_info = VALUES(last_game_info)" +
-                ", profile_url = VALUES(profile_url), avatar_url = VALUES(avatar_url), primary_group = VALUES(primary_group)" +
-                ", profile_status = VALUES(profile_status), online_status = VALUES(online_status)")
-    database_obj.query(querystr, vars = {"id": user.get_id64(),
-                                         "ts": int(time()),
-                                         "vanity": vanitystr,
-                                         "persona": user.get_persona(),
-                                         "realname": user.get_real_name(),
-                                         "lastip": gameinfo.get("server"),
-                                         "lastapp": gameinfo.get("id"),
-                                         "lastinfo": gameinfo.get("extra"),
-                                         "purl": user.get_profile_url(),
-                                         "aurl": user.get_avatar_url(user.AVATAR_SMALL),
-                                         "group": user.get_primary_group(),
-                                         "pstatus": user.get_visibility(),
-                                         "ostatus": user.get_status()})
+    summary["vanity"] = vanitystr
+    summary["_id"] = uid
+    summary["timestamp"] = time()
+
+    try:
+        summary["_rev"] = profiledb[uid]["_rev"]
+    except couchdb.ResourceNotFound:
+        pass
+
+    profiledb.save(summary)
 
     return user
 
 def load_profile_cached(sid, stale = False):
+    profiledb = couch_obj["profiles"]
+
     try:
         if sid.isdigit():
-            prow = database_obj.select("profiles", where = "id64 = $id64", vars = {"id64": int(sid)})[0]
+            prow = profiledb[sid]
         else:
-            prow = database_obj.select("profiles", where = "vanity = $v", vars = {"v": sid})[0]
-    except IndexError:
+            vres = profiledb.view("_design/views/_view/vanity", include_docs = True)
+            prow = list(vres[sid])
+            if len(prow) > 0: prow = prow[0].doc
+            else: prow = None
+    except couchdb.ResourceNotFound:
         return refresh_profile_cache(sid)
 
-    user = steam.user.profile(db_to_profileobj(prow))
+    user = steam.user.profile(prow)
 
     if stale or cache_not_stale(prow):
         return user
