@@ -309,22 +309,19 @@ def load_pack_cached(user, stale = False, pid = None):
 def get_user_pack_views(user):
     """ Returns the viewcount of a user's backpack """
 
-    views = 0
-    uid64 = user.get_id64()
-    ipaddr = web.ctx.ip
+    viewdb = couch_obj[config.game_mode + "_viewcounts"]
+    uid = str(user.get_id64())
+    ip = web.ctx.ip
+    ipkey = (uid + "-" + ip)
 
-    with database_obj.transaction():
-        count = database_obj.select("search_count", where = "id64 = $id64 AND ip = $ip",
-                                    vars = {"ip": ipaddr, "id64": uid64})
-        if len(count) <= 0:
-            database_obj.insert("search_count", ip = ipaddr, id64 = uid64)
-            database_obj.query("UPDATE profiles SET bp_views = bp_views + 1 WHERE id64 = $id64",
-                               vars = {"id64": user.get_id64(), "c": views})
+    countdoc = viewdb.get(uid, {"_id": uid, "c": 0})
 
-        views = database_obj.select("profiles", what = "bp_views", where = "id64 = $id64",
-                                    vars = {"id64": uid64})[0]["bp_views"]
+    if ipkey not in viewdb:
+        viewdb.save({"_id": ipkey})
+        countdoc["c"] += 1
+        viewdb.save(countdoc)
 
-    return views
+    return countdoc["c"]
 
 def get_top_pack_views(limit = 10):
     """ Will return the top viewed backpacks sorted in descending order
