@@ -13,6 +13,7 @@ urls = (
     config.virtual_root + "loadout/(.+)", app.backpack.loadout,
     config.virtual_root + "persona/(.+)", app.api.persona,
     config.virtual_root + "comp/(.+)", app.api.search_profile,
+    config.virtual_root + "wiki/attributes", app.api.wiki_attributes,
     config.virtual_root + "attrib_dump", app.schema_list.attributes,
     config.virtual_root + "schema_dump", app.schema_list.items,
     config.virtual_root + "about", app.static.about,

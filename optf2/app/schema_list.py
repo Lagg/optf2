@@ -75,11 +75,6 @@ class attributes:
 
                 return templates.schema_dump(itemtools.process_attributes(attached_items), [], attrdump = attachment_check)
 
-            if query.get("wikitext"):
-                web.header("Content-Type", "text/plain; charset=UTF-8")
-                return web.template.render(config.template_dir,
-                                           globals = template.globals).attrib_wiki_dump(attribs)
-
             return templates.attrib_dump(attribs)
         except:
             return templates.error("Couldn't load attributes")

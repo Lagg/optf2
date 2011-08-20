@@ -1,4 +1,5 @@
-import web, urllib2, json, steam, os
+import web, urllib2, json, steam, os, config
+from optf2.backend import database
 
 class search_profile:
     """ Searches for an account matching the username given in the query
@@ -53,3 +54,41 @@ class persona:
         else:
             return callback + '(' + json.dumps(theobject) + ');'
 
+
+class wiki_attributes:
+    def GET(self):
+        attrs = {}
+        sattrs = None
+
+        for lang in config.valid_languages:
+            schema = database.cached_item_schema(lang = lang)
+            sattrs = schema.get_attributes()
+            for attr in sattrs:
+                aid = attr.get_id()
+                if aid not in attrs:
+                    attrs[aid] = {}
+                desc = attr.get_description()
+                if desc:
+                    attrs[aid][lang] = desc.replace('\n', "<br/>").replace("%s1", "n")
+
+        web.header("Content-Type", "text/plain; charset=UTF-8")
+        output = ""
+
+        for attr in sattrs:
+            descstring = ""
+            notestring = ""
+            attrdict = attrs[attr.get_id()]
+
+            if attrdict: descstring = "{{{{lang|{0}}}}}"
+            if not attrdict or attrdict.get("en", "").find("Attrib_") != -1: notestring = "Hidden or unused"
+
+            midstring = []
+            for k, v in attrdict.iteritems():
+                midstring.append(k + "=" + v.encode("utf-8"))
+
+            descstring = descstring.format("|".join(midstring))
+
+            output += "|-\n{{{{Item Attribute|id={0}|name={1}|description={2}|value-type={3}|class={4}|effect-type={5}|notes={6}}}}}\n".format(
+                attr.get_id(), attr.get_name(), descstring, attr.get_value_type() or "", attr.get_class(), attr.get_type(), notestring)
+
+        return output
