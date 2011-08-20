@@ -72,7 +72,7 @@ class wiki_attributes:
                     attrs[aid][lang] = desc.replace('\n', "<br/>").replace("%s1", "n")
 
         web.header("Content-Type", "text/plain; charset=UTF-8")
-        output = ""
+        output = "{{List of item attributes/Header}}\n"
 
         for attr in sattrs:
             descstring = ""
@@ -91,4 +91,5 @@ class wiki_attributes:
             output += "|-\n{{{{Item Attribute|id={0}|name={1}|description={2}|value-type={3}|class={4}|effect-type={5}|notes={6}}}}}\n".format(
                 attr.get_id(), attr.get_name(), descstring, attr.get_value_type() or "", attr.get_class(), attr.get_type(), notestring)
 
+        output += "|}"
         return output
