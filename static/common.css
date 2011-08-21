@@ -38,21 +38,21 @@ body { background: #181818; color: white; font-family: Arial, Helvetica, sans-se
 #page-counter { font-weight: bold; font-size: 13px; margin: 0 5px 0 5px; }
 
 .item-description, .item-level { color: white; font-size: 1.09em; }
-.item-name { overflow: hidden; font-size: 1.10em }
+.item-name { overflow: hidden; font-size: 1.10em; font-weight: bold; }
 .item-link { width: 100%; height: 100%; position: absolute; top: 0; left: 0; z-index: 5; }
 .attr-negative, .attr-negative:visited { color: #ff0000; }
 .attr-positive, .attr-positive:visited { color: #1a82ff; }
 .attr-neutral, .attr-neutral:visited { color: #dbdbdb; }
 
-.prefix-unique { color: #ffd700; font-weight: bold; }
-.prefix-community { color: #70b04a; font-weight: bold; }
-.prefix-developer { color: #a50f79; font-weight: bold; }
-.prefix-normal { color: #b2b2b2; font-weight: bold; }
-.prefix-selfmade { color: #70b04a; font-weight: bold; }
-.prefix-vintage { color: #476291; font-weight: bold; }
-.prefix-rarity4 { color: #8650ac; font-weight: bold; }
-.prefix-rarity1 { color: #4d7455; font-weight: bold; }
-.prefix-strange { color: #cd9b1d; font-weight: bold; }
+.prefix-unique { color: #ffd700; }
+.prefix-community { color: #70b04a; }
+.prefix-developer { color: #a50f79; }
+.prefix-normal { color: #b2b2b2; }
+.prefix-selfmade { color: #70b04a; }
+.prefix-vintage { color: #476291; }
+.prefix-rarity4 { color: #8650ac; }
+.prefix-rarity1 { color: #4d7455; }
+.prefix-strange { color: #cd9b1d; }
 .prefix-giftwrapped { color: #cf2700; }
 
 .item_cell {
@@ -88,6 +88,8 @@ body { background: #181818; color: white; font-family: Arial, Helvetica, sans-se
 .icon-gift { position: absolute; right: 53px; top: 3px; }
 .icon-desc { position: absolute; right: 27px; top: 3px; }
 .icon-name { position: absolute; right: 2px; top: 3px; }
+.icon-particle { position: absolute; left: 6px; bottom: 6px; width: 20px; height: 20px; }
+.icon-particle[class~=large] { position: absolute; left: 6px; bottom: 6px; width: 200px; height: 200px; }
 
 .paint_splotch {
     position: absolute;

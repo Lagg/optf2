@@ -127,6 +127,9 @@ $(document).ready(function(){
         this.src = invalid_icon_url;
         $(this).addClass("invalid");
     });
+    $(".icon-particle").one("error", function() {
+        $(this).remove();
+    });
 
     $(".button").mousedown(function() { return false; });
 

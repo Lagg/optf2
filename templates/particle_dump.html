@@ -1,0 +1,20 @@
+$def with (particles)
+$var title: $project_name - All Particles
+
+<div id="header">
+  <h2>All particle effects</h2>
+</div>
+<div id="content">
+  <div id="backpack">
+  $for k, particle in particles.iteritems():
+      <div class="item_cell" id="s${particle['id']}">
+        <img class="item-image small" src="${static_prefix}particle_icons/${particle['id']}.png" alt="${particle['id']}"/>
+        <div class="tooltip">
+          <div class="item-name">$particle["name"]</div>
+          <div class="item-level">Level 100 Pilk Icon</div>
+          <div class="attr-neutral">ID: $particle["id"]</div>
+          <div class="attr-positive">System name: $particle["system"]</div>
+        </div>
+      </div>
+  </div>
+</div>

@@ -257,6 +257,7 @@ def process_attributes(items, gift = False):
                 if particlename: particlename = particlename["name"]
                 else: particlename = str(particleid)
                 newattr["description_string"] = ("Effect: " + particlename)
+                item.optf2["particle-id"] = particleid
 
             if attrname == "gifter account id":
                 newattr["description_string"] = "Gift"

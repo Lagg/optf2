@@ -79,3 +79,12 @@ class attributes:
         except:
             return templates.error("Couldn't load attributes")
 
+class particles:
+    def GET(self):
+        try:
+            schema = database.load_schema_cached(web.ctx.language)
+            particles = schema.get_particle_systems()
+
+            return templates.particle_dump(particles)
+        except KeyboardInterrupt:
+            return templates.error("Couldn't load particle systems")
