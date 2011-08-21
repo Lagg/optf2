@@ -19,7 +19,7 @@ $(document).ready(function(){
         steam_inventory_prefix = "http://steamcommunity.com/profiles/" + bpinfo[2] + "/inventory#" + bpinfo[1] + "_2_";
     }
 
-    var domattribs = $(".item_attribs");
+    var domattribs = $(".tooltip");
 
     $(".item-link").each(function() {
         var idpart = String($(this).parent().attr("id").slice(1));
@@ -115,7 +115,7 @@ $(document).ready(function(){
     });
 
     $(document).scroll(function() {
-        $(".item_attribs").remove();
+        $(".tooltip").remove();
     });
 
     $(".item-link").click(function(event) {

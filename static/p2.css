@@ -28,7 +28,7 @@ body { background: #d8d8d8; color: black; }
 
 }
 .item_cell:hover { background: #f2f2f2; }
-.item_attribs {
+.tooltip {
     background: #919191;
     border-color: #8d8c8c;
     -moz-border-radius: 0;

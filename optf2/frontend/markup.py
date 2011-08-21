@@ -80,7 +80,7 @@ def generate_cell(item, invalid = False, show_equipped = True):
     if equippedstr:
         markup += '<span class="equipped">' + equippedstr + '</span>'
 
-    markup += '<div class="item_attribs">' + item.optf2["cell_name"]
+    markup += '<div class="tooltip">' + item.optf2["cell_name"]
 
     painty = item.optf2.get("painted_text", "")
 
