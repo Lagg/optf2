@@ -148,16 +148,18 @@ $(document).ready(function(){
     search.focusout(function() { if(this.value.length == 0) { this.value = default_search; } });
 });
 
-function item_image_resize(img, iw, ih, w, h) {
-    var ratio = Math.min(w / iw, h / ih);
+function preserved_ar_resize(elem, ew, eh, w, h) {
+    var ratio = Math.min(w / ew, h / eh);
 
-    img.width(ratio * iw);
-    img.height(ratio * ih);
+    elem.width(ratio * ew);
+    elem.height(ratio * eh);
 }
 
 function item_resize_event(event, ui) {
     var item = $(event.target);
     var image = item.find(".item-image");
+    var container = item.find(".item-zoom");
+
 
     if (ui.size == undefined) {
         ui.size = {"height":  item.height(),
@@ -166,9 +168,14 @@ function item_resize_event(event, ui) {
         last_dialog_size = ui.size;
     }
 
-    item_image_resize(image, image.width(), image.height(),
-                      Math.min(ui.size.width - 200, 512),
-                      Math.min(ui.size.height - 100, 512));
+    preserved_ar_resize(image, image.width(), image.height(),
+                        Math.min(ui.size.width - 200, 512),
+                        Math.min(ui.size.height - 100, 512));
+
+    var particle = item.find(".icon-particle");
+    preserved_ar_resize(particle, particle.width(), particle.height(),
+                        Math.min(container.width()/2.5, 200),
+                        Math.min(container.height()/2.5, 200));
 
     item.height(ui.size.height);
     item.width(image.width() + item.find(".item-attrs").width() + 50);

@@ -202,6 +202,13 @@ img { border: 0; }
     border-radius: 13px;
 }
 
+.item-zoom {
+    max-width: 512px;
+    max-height: 512px;
+    float: left;
+    position: relative;
+}
+
 .item-attrs {
     float: left;
     width: 250px;
