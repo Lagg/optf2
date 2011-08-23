@@ -15,7 +15,7 @@ OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 """
 
 import config, steam, urllib2, web, os, zlib, marshal
-import couchdb
+import couchdbkit as couchdb
 import cPickle as pickle
 from time import time
 
@@ -102,7 +102,7 @@ def refresh_profile_cache(sid, vanity = None):
     except couchdb.ResourceNotFound:
         pass
 
-    profiledb.save(summary)
+    profiledb.save_doc(summary)
 
     return user
 
@@ -314,12 +314,13 @@ def get_user_pack_views(user):
     ip = web.ctx.ip
     ipkey = (uid + "-" + ip)
 
-    countdoc = viewdb.get(uid, {"_id": uid, "c": 0})
+    try: countdoc = viewdb.get(uid)
+    except couchdb.ResourceNotFound: countdoc = {"_id": uid, "c": 0}
 
     if ipkey not in viewdb:
-        viewdb.save({"_id": ipkey})
+        viewdb.save_doc({"_id": ipkey})
         countdoc["c"] += 1
-        viewdb.save(countdoc)
+        viewdb.save_doc(countdoc)
 
     return countdoc["c"]
 
