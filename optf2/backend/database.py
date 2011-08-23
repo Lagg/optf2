@@ -158,6 +158,7 @@ def refresh_pack_cache(user):
     pack = gamelib.backpack(schema = load_schema_cached(web.ctx.language))
     pack.load(user)
     ts = int(time())
+    itemdb = couch_obj["items"]
 
     try:
         packitems = list(pack)
@@ -166,7 +167,32 @@ def refresh_pack_cache(user):
         packitems = list(pack)
 
     last_packid = None
-    backpack_items = [item._item for item in packitems]
+    backpack_items = {}
+
+    for item in packitems:
+        iid = str(item.get_id())
+        item._item["_id"] = iid
+        item._item["owner"] = user.get_id64()
+        backpack_items[iid] = item._item
+
+    olditems = itemdb.view("_all_docs", include_docs = True)[sorted(backpack_items.keys(), key = int)]
+    for item in olditems:
+        olditem = item.get("doc")
+        if not olditem: continue
+
+        oldid = olditem["_id"]
+        newitem = backpack_items.get(oldid)
+
+        if newitem:
+            newitem["_rev"] = olditem["_rev"]
+            if newitem != olditem:
+                backpack_items[oldid]["_rev"] = olditem["_rev"]
+            else:
+                del backpack_items[oldid]
+
+    itemdb.save_docs(sorted(backpack_items.values(), cmp = lambda x, y: cmp(x["id"], y["id"])))
+
+    backpack_items = backpack_items.values()
     with database_obj.transaction():
         lastpack = get_pack_snapshot_for_user(user)
         if not lastpack or db_pack_is_new(pickle.loads(str(lastpack["backpack"])), backpack_items):
@@ -254,23 +280,14 @@ item_select_query = web.db.SQLQuery("SELECT items.*, attributes.attrs as attribu
                                     "WHERE items.id64")
 
 def fetch_item_for_id(id64):
-    pid = web.input().get("pid")
+    itemdb = couch_obj["items"]
 
-    if not pid:
-        itemrow = database_obj.query(item_select_query + " = " + web.db.SQLParam(int(id64)))[0]
-        return db_to_itemobj(itemrow)
+    try:
+        item = itemdb[str(id64)]
+    except couchdb.ResourceNotFound:
+        return None
 
-    pack = database_obj.select("backpacks", where = "id = $pid",
-                               vars = {"pid": pid})[0]
-    items = pickle.loads(zlib.decompress(pack["backpack"]))
-    for item in items:
-        try:
-            packitem = db_to_itemobj(item)
-        except:
-            continue
-        if int(packitem["id"]) == int(id64):
-            packitem["owner"] = pack["id64"]
-            return packitem
+    return item
 
 def get_items_for_backpack(backpack):
     idlist = []
