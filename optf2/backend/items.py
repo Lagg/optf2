@@ -308,6 +308,9 @@ def process_attributes(items, gift = False):
             if attrname == "kill eater 2":
                 item.optf2["kill_count_2"] = str(int(theattr.get_value()))
 
+            if attrname == "unlimited quantity":
+                item._item["quantity"] = 1
+
             if not newattr.get("hidden", theattr.is_hidden()):
                 newattr["description_string"] = web.websafe(newattr.get("description_string",
                                                                         theattr.get_description()))
@@ -332,35 +335,33 @@ def process_attributes(items, gift = False):
         color_2 = item.optf2.get("color_2")
         paint_job = ""
         prefix = ""
-        craft_no = item.optf2.get("craft_number", "")
-        if craft_no and not item.get_custom_name(): craft_no = " #" + craft_no
-        else: craft_no = ""
 
         if color and color_2:
             paint_job = '<span><b style="color: {0};">Pain</b><b style="color: {1};">ted</b></span>'.format(color,
                                                                                                             color_2)
         elif color:
             paint_job = '<span style="color: {0}; font-weight: bold;">Painted</span>'.format(color)
+
         if gift:
             prefix = '<span class="prefix-giftwrapped">Giftwrapped</span>'
-        item.optf2["painted_text"] = paint_job
-        item.optf2["dedicated_name"] = "{0} {1}{2}".format(_(prefix), _(full_default_name), _(craft_no))
 
-        item.optf2["cell_name"] = '<div class="prefix-{0} item-name">{1}{2}</div>'.format(_(quality_str),
-                                                                                          _(full_qdict_name),
-                                                                                          _(craft_no))
+        item.optf2["painted_text"] = paint_job
+        item.optf2["dedicated_name"] = "{0} {1}".format(_(prefix), _(full_default_name))
+
+        item.optf2["cell_name"] = '<div class="prefix-{0} item-name">{1}</div>'.format(_(quality_str),
+                                                                                       _(full_qdict_name))
 
         if color:
             paint_job = "Painted"
         if gift:
             prefix = "Giftwrapped"
-        item.optf2["title_name"] = "{0} {1} {2}{3}".format(_(prefix), _(paint_job), _(full_default_name), _(craft_no))
+        item.optf2["title_name"] = "{0} {1} {2}".format(_(prefix), _(paint_job), _(full_default_name))
 
         if color:
             paint_job = "(Painted)"
         else:
             paint_job = ""
-        item.optf2["feed_name"] = "{0}{2} {1}".format(_(full_qdict_name), _(paint_job), _(craft_no))
+        item.optf2["feed_name"] = "{0} {1}".format(_(full_qdict_name), _(paint_job))
 
         newitems.append(item)
 
