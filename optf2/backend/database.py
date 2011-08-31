@@ -97,12 +97,7 @@ def refresh_profile_cache(sid, vanity = None):
     summary["_id"] = uid
     summary["timestamp"] = time()
 
-    try:
-        summary["_rev"] = profiledb[uid]["_rev"]
-    except couchdb.ResourceNotFound:
-        pass
-
-    profiledb.save_doc(summary)
+    profiledb.save_doc(summary, force_update = True)
 
     return user
 
@@ -159,6 +154,7 @@ def refresh_pack_cache(user):
     pack.load(user)
     ts = int(time())
     itemdb = couch_obj["items"]
+    packdb = couch_obj["backpacks"]
 
     try:
         packitems = list(pack)
@@ -175,7 +171,13 @@ def refresh_pack_cache(user):
         item._item["owner"] = user.get_id64()
         backpack_items[iid] = item._item
 
-    olditems = itemdb.view("_all_docs", include_docs = True)[sorted(backpack_items.keys(), key = int)]
+    sorteddbkeys = sorted(backpack_items.keys(), key = int)
+
+    packmap = {"_id": str(user.get_id64()), "timestamp": ts,
+               "map": sorteddbkeys}
+    packdb.save_doc(packmap, force_update = True)
+
+    olditems = itemdb.view("_all_docs", include_docs = True)[sorteddbkeys]
     for item in olditems:
         olditem = item.get("doc")
         if not olditem: continue
@@ -192,62 +194,30 @@ def refresh_pack_cache(user):
 
     itemdb.save_docs(sorted(backpack_items.values(), cmp = lambda x, y: cmp(x["id"], y["id"])))
 
-    backpack_items = backpack_items.values()
-    with database_obj.transaction():
-        lastpack = get_pack_snapshot_for_user(user)
-        if not lastpack or db_pack_is_new(pickle.loads(str(lastpack["backpack"])), backpack_items):
-            database_obj.query("INSERT INTO backpacks (id64, backpack, timestamp) VALUES ($id64, $bp, $ts)",
-                               vars = {"id64": user.get_id64(),
-                                       "bp": zlib.compress(pickle.dumps(backpack_items, pickle.HIGHEST_PROTOCOL)),
-                                       "ts": ts})
-            last_packid = database_obj.query("SELECT LAST_INSERT_ID() AS lastid")[0]["lastid"]
-        elif lastpack:
-            database_obj.query("UPDATE backpacks SET timestamp = $ts, backpack = $bp WHERE id = $id",
-                               vars = {"id": lastpack["id"],
-                                       "bp": zlib.compress(pickle.dumps(backpack_items, pickle.HIGHEST_PROTOCOL)),
-                                       "ts": ts})
-            last_packid = lastpack["id"]
-
-    web.ctx.current_pid = last_packid
     return packitems
 
 def get_pack_timeline_for_user(user, tl_size = None):
     """ Returns None if a backpack couldn't be found, returns
     tl_size rows from the timeline
     """
-    packrow = database_obj.select("backpacks",
-                                  where = "id64 = $id64",
-                                  order = "timestamp DESC",
-                                  limit = tl_size,
-                                  what = "id, timestamp",
-                                  vars = {"id64": user.get_id64()})
 
-    if len(packrow) > 0:
-        return packrow
-    else:
+    packdb = couch_obj["backpacks"]
+
+    try:
+        return [packdb[str(user.get_id64())]]
+    except couchdb.ResourceNotFound:
         return []
 
 def get_pack_snapshot_for_user(user, pid = None):
     """ Returns the backpack snapshot or None if it couldn't be found,
     if id is not given the latest snapshot will be returned."""
 
-    tsstr = ""
-    if pid: tsstr = " AND id = $id"
+    packdb = couch_obj["backpacks"]
 
-    rows = database_obj.select("backpacks",
-                               where = "id64 = $id64" + tsstr,
-                               what = "id, backpack, timestamp",
-                               limit = 1,
-                               order = "timestamp DESC",
-                               vars = {"id64": user.get_id64(), "id": pid})
-
-    if len(rows) > 0:
-        pack = rows[0]
-        pack["backpack"] = zlib.decompress(pack["backpack"])
-        return pack
-    else:
+    try:
+        return packdb[str(user.get_id64())]
+    except couchdb.ResourceNotFound:
         return None
-
 
 def db_to_itemobj(dbitem):
     if "id" in dbitem:
@@ -290,24 +260,15 @@ def fetch_item_for_id(id64):
     return item
 
 def get_items_for_backpack(backpack):
-    idlist = []
-    inlinelist = []
+    itemdb = couch_obj["items"]
 
-    for item in backpack:
-        try: idlist.append(int(item))
-        except TypeError:
-            itemized = db_to_itemobj(item)
-            itemized["inlinemapped"] = True
-            inlinelist.append(itemized)
+    dbitems = itemdb.view("_all_docs", include_docs = True)[backpack]
+    realitems = []
+    for item in dbitems:
+        if "doc" in item:
+            realitems.append(item["doc"])
 
-    query = web.db.SQLQuery(item_select_query + ' IN (' +
-                            web.db.SQLQuery.join(idlist, ", ") + ')')
-    dbitems = []
-
-    if idlist and len(backpack) > 0:
-        dbitems = database_obj.query(query)
-
-    return [db_to_itemobj(item) for item in dbitems] + inlinelist
+    return realitems
 
 def load_pack_cached(user, stale = False, pid = None):
     thepack = get_pack_snapshot_for_user(user, pid = pid)
@@ -317,9 +278,8 @@ def load_pack_cached(user, stale = False, pid = None):
                 return refresh_pack_cache(user)
             except: pass
     if thepack:
-        web.ctx.current_pid = thepack["id"]
         schema = load_schema_cached(web.ctx.language)
-        dbitems = get_items_for_backpack(pickle.loads(thepack["backpack"]))
+        dbitems = get_items_for_backpack(thepack["map"])
         return [schema.create_item(item) for item in dbitems]
     return []
 
