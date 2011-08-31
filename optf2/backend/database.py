@@ -60,7 +60,7 @@ class cached_item_schema(gamelib.item_schema):
 
 def cache_not_stale(row):
     if row and "timestamp" in row:
-        return (int(time()) - row["timestamp"]) < config.cache_pack_refresh_interval
+        return (time() - row["timestamp"]) < config.cache_pack_refresh_interval
     else:
         return False
 
@@ -103,17 +103,16 @@ def refresh_profile_cache(sid, vanity = None):
 
 def load_profile_cached(sid, stale = False):
     profiledb = couch_obj["profiles"]
+    sid = str(sid)
 
     try:
-        if sid.isdigit():
-            prow = profiledb[sid]
-        else:
-            vres = profiledb.view("_design/views/_view/vanity", include_docs = True)
-            prow = list(vres[sid])
-            if len(prow) > 0: prow = prow[0].doc
-            else: prow = None
+        prow = profiledb[sid]
     except couchdb.ResourceNotFound:
-        return refresh_profile_cache(sid)
+        vres = profiledb.view("views/vanity", include_docs = True, key = sid)
+        if len(vres) > 0:
+            prow = vres.one()["doc"]
+        else:
+            return refresh_profile_cache(sid)
 
     user = steam.user.profile(prow)
 
