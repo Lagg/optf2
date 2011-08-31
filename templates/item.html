@@ -35,9 +35,7 @@ $def generate_class_icon_link(classes):
   <img class="stat_vertrule" src="${static_prefix}vertical.gif" height="100%" width="1" alt="divider"/>
   <div class="item-attrs">
   $ item_wiki_url = wiki_map[1] + encode_url(item.get_name())
-  <div class="item-level">
-    Level $extra["level"] $extra["type"]
-  </div>
+  $:extra["level_string"]
   $if extra["description"]:
       <div class="item-description">
         $:extra["description"].replace("\n", "<br/>")
@@ -54,11 +52,11 @@ $def generate_class_icon_link(classes):
         $else:
             $:desc.replace("\n", "<br/>")
       </div>
-  $if "kill_count" in item.optf2:
-      <div class="attr-positive">Kills: ${item.optf2["kill_count"]}</div>
-  $if "kill_count_2" in item.optf2:
-      <div class="attr-positive">Special kills: ${item.optf2["kill_count_2"]}</div>
-  $ craft_no = item.optf2.get("craft_number")
+  $if "kill_count" in extra:
+      <div class="attr-positive">$extra["kill_type"]: $extra["kill_count"]</div>
+  $if "kill_count_2" in extra:
+      <div class="attr-positive">$extra["kill_type_2"]: $extra["kill_count_2"]</div>
+  $ craft_no = extra.get("craft_number")
   $if craft_no and item.get_custom_name():
       <div class="attr-positive">Craft number: $craft_no</div>
   $ style = item.get_current_style_name()
@@ -76,9 +74,9 @@ $def generate_class_icon_link(classes):
 
   <img src="${static_prefix}vertical.gif" height="1" width="100%" alt="divider"/>
 
-  $if "paint_name" in item.optf2:
+  $if "paint_name" in extra:
       <div class="attr-positive">
-        $:{item.optf2["painted_text"]} with ${item.optf2["paint_name"]}
+        $:{extra["painted_text"]} with ${extra["paint_name"]}
       </div>
   $if user:
       $ serial = item.get_id()
@@ -130,10 +128,10 @@ $def generate_class_icon_link(classes):
           <div class="attr-neutral">
             Slot: $slot.title()
           </div>
-      $if "capabilities" in item.optf2:
+      $if "capabilities" in extra:
           <ul class="capability-list">
             <lh>Capabilities</lh>
-            $for cap in item.optf2["capabilities"]:
+            $for cap in extra["capabilities"]:
                 <li style="padding: 2px 0 2px 0;">$cap</li>
           </ul>
   <ul class="button-list">

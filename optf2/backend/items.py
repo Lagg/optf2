@@ -187,6 +187,7 @@ def process_attributes(items, gift = False):
         item.optf2["description"] = item.get_description()
         item.optf2["image_url"] = item.get_image(item.ITEM_IMAGE_SMALL) or default_item_image
         item.optf2["image_url_large"] = item.get_image(item.ITEM_IMAGE_LARGE) or default_item_image
+        item.optf2["rank_name"] = ""
         min_level = item.get_min_level()
         max_level = item.get_max_level()
         pb_level = item.get_level()
@@ -302,14 +303,31 @@ def process_attributes(items, gift = False):
                 d = time.gmtime(theattr.get_value())
                 item.optf2["date_tradable"] = time.strftime("%F %H:%M:%S", d)
 
+            killtypestrings = schema.get_kill_types()
+            defaulttype = killtypestrings.get(0, "Broken")
             if attrname == "kill eater":
-                item.optf2["kill_count"] = str(int(theattr.get_value()))
+                item.optf2["kill_type"] = defaulttype
+                item.optf2["kill_count"] = int(theattr.get_value())
 
             if attrname == "kill eater 2":
-                item.optf2["kill_count_2"] = str(int(theattr.get_value()))
+                item.optf2["kill_count_2"] = int(theattr.get_value())
+
+            if attrname == "kill eater score type":
+                item.optf2["kill_type"] = killtypestrings.get(int(theattr.get_value()), defaulttype)
+            if attrname == "kill eater score type 2":
+                item.optf2["kill_type_2"] = killtypestrings.get(int(theattr.get_value()), defaulttype)
 
             if attrname == "unlimited quantity":
                 item._item["quantity"] = 1
+
+            if "kill_count" in item.optf2:
+                kill_count = item.optf2["kill_count"]
+                kill_count_2 = item.optf2.get("kill_count_2")
+                for rank in schema.get_kill_ranks():
+                    if ((kill_count and kill_count < rank["required_score"]) or
+                        (kill_count_2 and kill_count_2 < rank["required_score"])):
+                        item.optf2["rank_name"] = rank["name"]
+                        break
 
             if not newattr.get("hidden", theattr.is_hidden()):
                 newattr["description_string"] = web.websafe(newattr.get("description_string",
@@ -362,6 +380,13 @@ def process_attributes(items, gift = False):
         else:
             paint_job = ""
         item.optf2["feed_name"] = "{0} {1}".format(_(full_qdict_name), _(paint_job))
+
+        levelprefix = "Level " + str(item.optf2["level"]) + " "
+        if item.optf2["rank_name"]:
+            levelprefix = ""
+        item.optf2["level_string"] = '<div class="item-level">{0}{1} {2}</div>'.format(levelprefix,
+                                                                                       item.optf2["rank_name"],
+                                                                                       item.optf2["type"].encode("utf-8"))
 
         newitems.append(item)
 

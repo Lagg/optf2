@@ -86,8 +86,7 @@ def generate_cell(item, invalid = False, show_equipped = True):
 
     painty = item.optf2.get("painted_text", "")
 
-    markup += '<div class="item-level">Level {0} {1}</div>'.format(item.optf2["level"],
-                                                                       item.optf2["type"].encode("utf-8"))
+    markup += item.optf2["level_string"]
 
     if item.optf2["description"]: markup += '<div class="item-description">' + item.optf2["description"].replace("\n", "<br/>").encode("utf-8") + '</div>'
 
@@ -107,10 +106,10 @@ def generate_cell(item, invalid = False, show_equipped = True):
         markup += '<div class="attr-positive">{1} with {2}</div>'.format(item.optf2["painted_text"], item.get_name())
 
     if "kill_count" in item.optf2:
-        markup += '<div class="attr-positive">Kills: ' + item.optf2["kill_count"] + '</div>'
+        markup += '<div class="attr-positive">{0}: {1}</div>'.format(item.optf2["kill_type"], item.optf2["kill_count"])
 
     if "kill_count_2" in item.optf2:
-        markup += '<div class="attr-positive">Special kills: ' + item.optf2["kill_count_2"] + '</div>'
+        markup += '<div class="attr-positive">{0}: {1}</div>'.format(item.optf2["kill_type_2"], item.optf2["kill_count_2"])
 
     if "craft_number" in item.optf2 and item.get_custom_name():
         markup += '<div class="attr-positive">Craft number: ' + item.optf2["craft_number"] + '</div>'
