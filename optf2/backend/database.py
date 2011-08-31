@@ -304,11 +304,13 @@ def get_top_pack_views(limit = 10):
     """ Will return the top viewed backpacks sorted in descending order
     no more than limit rows will be returned """
 
-    result = database_obj.select("profiles", what = "bp_views, persona, primary_group, id64",
-                                 where = "bp_views > 0",  order = "bp_views DESC", limit = limit)
+    countdb = couch_obj[config.game_mode + "_viewcounts"]
+    result = countdb.view("views/counts", descending = True, limit = limit)
+
     profiles = []
     for row in result:
-        profiles.append((row["bp_views"], row["primary_group"] == config.valve_group_id, row["persona"], row["id64"]))
+        prof = load_profile_cached(row["id"], stale = True)
+        profiles.append((row["key"], prof.get_primary_group() == config.valve_group_id, prof.get_persona(), prof.get_id64()))
 
     return profiles
 
