@@ -193,6 +193,11 @@ def process_attributes(items, gift = False):
         pb_level = item.get_level()
         custom_desc = item.get_custom_description()
         giftcontents = item.get_contents()
+        killtypestrings = schema.get_kill_types()
+        defaulttype = killtypestrings.get(0, "Broken")
+
+        item.optf2["kill_type"] = defaulttype
+        item.optf2["kill_type_2"] = defaulttype
 
         itype = item.get_type()
         if itype.startswith("TF_"): itype = ""
@@ -303,10 +308,7 @@ def process_attributes(items, gift = False):
                 d = time.gmtime(theattr.get_value())
                 item.optf2["date_tradable"] = time.strftime("%F %H:%M:%S", d)
 
-            killtypestrings = schema.get_kill_types()
-            defaulttype = killtypestrings.get(0, "Broken")
             if attrname == "kill eater":
-                item.optf2["kill_type"] = defaulttype
                 item.optf2["kill_count"] = int(theattr.get_value())
 
             if attrname == "kill eater 2":
