@@ -1,5 +1,5 @@
 from openid.consumer import consumer
-from openid.store import sqlstore
+from openid.store import filestore
 import optf2.backend.openid as ooid
 import template
 import web, os, config
@@ -8,7 +8,7 @@ templates = template.template
 
 class openid_consume:
     def GET(self):
-        openid_store = sqlstore.MySQLStore(config.database_obj._db_cursor().connection)
+        openid_store = filestore.FileOpenIDStore(os.path.join(config.cache_file_dir, "OpenIDStore"))
 
         dance = consumer.Consumer(ooid.gsession, openid_store)
         openid_realm = web.ctx.homedomain

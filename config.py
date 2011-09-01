@@ -1,4 +1,4 @@
-import socket, web, os
+import socket, web, os, couchdbkit
 
 # Valid games so far are p2 and tf2
 game_mode = "tf2"
@@ -59,15 +59,8 @@ socket.setdefaulttimeout(2)
 web.config.session_parameters["timeout"] = 86400
 web.config.session_parameters["cookie_name"] = "optf2_session_id"
 
-# Database parameters
-database = {"username": "root",
-            "password": "",
-            "database": "optf2",
-            "host": "localhost"}
-
-# Only tested with mysql, previously worked on sqlite but I don't recommend it.
-database_obj = web.database(dbn = "mysql", db = database["database"], user = database["username"],
-                            pw = database["password"], host = database["host"])
+# couchdb automatically uses localhost:5984
+database_server = couchdbkit.Server()
 
 # A list of valid ISO language codes
 valid_languages = ["da", "nl", "en", "fi", "fr", "de", "it", "ja",

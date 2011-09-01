@@ -21,8 +21,7 @@ from time import time
 
 gamelib = getattr(steam, config.game_mode)
 
-database_obj = config.database_obj
-couch_obj = couchdb.Server()
+couch_obj = config.database_server
 
 schema_obj = {}
 

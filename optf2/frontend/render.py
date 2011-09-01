@@ -37,6 +37,6 @@ def internalerror():
 
 application.add_processor(web.loadhook(lang_hook))
 
-session = web.session.Session(application, web.session.DBStore(config.database_obj, "sessions"))
+session = web.session.Session(application, web.session.DiskStore(os.path.join(config.cache_file_dir, "Sessions")))
 
 if not web.config.debug: application.internalerror = internalerror
