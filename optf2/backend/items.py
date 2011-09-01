@@ -324,9 +324,9 @@ def process_attributes(items, gift = False):
                 kill_count = item.optf2["kill_count"]
                 kill_count_2 = item.optf2.get("kill_count_2")
                 for rank in schema.get_kill_ranks():
+                    item.optf2["rank_name"] = rank["name"]
                     if ((kill_count and kill_count < rank["required_score"]) or
                         (kill_count_2 and kill_count_2 < rank["required_score"])):
-                        item.optf2["rank_name"] = rank["name"]
                         break
 
             if not newattr.get("hidden", theattr.is_hidden()):
