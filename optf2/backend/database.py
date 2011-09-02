@@ -83,6 +83,9 @@ def db_to_profileobj(db):
 
     return profile
 
+def get_mode_db(name):
+    return couch_obj[config.game_mode + "_" + name]
+
 def refresh_profile_cache(sid, vanity = None):
     user = steam.user.profile(sid)
     summary = user._summary_object
@@ -107,7 +110,7 @@ def load_profile_cached(sid, stale = False):
     try:
         prow = profiledb[sid]
     except couchdb.ResourceNotFound:
-        vres = profiledb.view("views/vanity", include_docs = True, key = sid)
+        vres = profiledb.view("views/vanity", include_docs = True)[sid]
         if len(vres) > 0:
             prow = vres.one()["doc"]
         else:
@@ -124,20 +127,7 @@ def load_profile_cached(sid, stale = False):
             return user
 
 def db_pack_is_new(lastpack, newpack):
-    olditems = []
-    newitems = []
-    for i in lastpack:
-        try: olditems.append(int(i))
-        except TypeError:
-            try: olditems.append(i[0])
-            except KeyError: olditems.append(i["id"])
-    for i in newpack:
-        try: newitems.append(int(i))
-        except TypeError:
-            try: newitems.append(i[0])
-            except KeyError: newitems.append(i["id"])
-
-    return (sorted(olditems) != sorted(newitems))
+    return (olditems != newitems)
 
 def load_schema_cached(lang, fresh = False):
     if lang in schema_obj and not fresh:
@@ -150,9 +140,9 @@ def load_schema_cached(lang, fresh = False):
 def refresh_pack_cache(user):
     pack = gamelib.backpack(schema = load_schema_cached(web.ctx.language))
     pack.load(user)
-    ts = int(time())
-    itemdb = couch_obj["items"]
-    packdb = couch_obj["backpacks"]
+    ts = time()
+    itemdb = get_mode_db("items")
+    packdb = get_mode_db("backpacks")
 
     try:
         packitems = list(pack)
@@ -164,16 +154,22 @@ def refresh_pack_cache(user):
     backpack_items = {}
 
     for item in packitems:
-        iid = str(item.get_id())
+        iid = str(item.get_id()).decode("utf-8")
         item._item["_id"] = iid
         item._item["owner"] = user.get_id64()
         backpack_items[iid] = item._item
 
     sorteddbkeys = sorted(backpack_items.keys(), key = int)
 
-    packmap = {"_id": str(user.get_id64()), "timestamp": ts,
+    lastpack = get_pack_snapshot_for_user(user)
+    packmap = {"_id": str(user.get_id64()) + "-" + str(ts), "timestamp": ts,
                "map": sorteddbkeys}
-    packdb.save_doc(packmap, force_update = True)
+
+    if lastpack:
+        if packmap["map"] == lastpack["map"]:
+            packdb.delete_doc(lastpack["_id"])
+
+    packdb.save_doc(packmap)
 
     olditems = itemdb.view("_all_docs", include_docs = True)[sorteddbkeys]
     for item in olditems:
@@ -199,10 +195,12 @@ def get_pack_timeline_for_user(user, tl_size = None):
     tl_size rows from the timeline
     """
 
-    packdb = couch_obj["backpacks"]
+    packdb = get_mode_db("backpacks")
 
     try:
-        return [packdb[str(user.get_id64())]]
+        uid = str(user.get_id64())
+        results = packdb.view("views/timeline", limit = tl_size, descending = True)[[uid, {}]:[uid]]
+        return [res["key"][1] for res in results]
     except couchdb.ResourceNotFound:
         return []
 
@@ -210,11 +208,16 @@ def get_pack_snapshot_for_user(user, pid = None):
     """ Returns the backpack snapshot or None if it couldn't be found,
     if id is not given the latest snapshot will be returned."""
 
-    packdb = couch_obj["backpacks"]
+    packdb = get_mode_db("backpacks")
 
     try:
-        return packdb[str(user.get_id64())]
+        tspart = pid
+        if not tspart: tspart = str(get_pack_timeline_for_user(user, tl_size = 1)[0])
+
+        return packdb[str(user.get_id64()) + '-' + tspart]
     except couchdb.ResourceNotFound:
+        return None
+    except IndexError:
         return None
 
 def db_to_itemobj(dbitem):
@@ -248,7 +251,7 @@ item_select_query = web.db.SQLQuery("SELECT items.*, attributes.attrs as attribu
                                     "WHERE items.id64")
 
 def fetch_item_for_id(id64):
-    itemdb = couch_obj["items"]
+    itemdb = get_mode_db("items")
 
     try:
         item = itemdb[str(id64)]
@@ -258,7 +261,7 @@ def fetch_item_for_id(id64):
     return item
 
 def get_items_for_backpack(backpack):
-    itemdb = couch_obj["items"]
+    itemdb = get_mode_db("items")
 
     dbitems = itemdb.view("_all_docs", include_docs = True)[backpack]
     realitems = []
@@ -284,7 +287,7 @@ def load_pack_cached(user, stale = False, pid = None):
 def get_user_pack_views(user):
     """ Returns the viewcount of a user's backpack """
 
-    viewdb = couch_obj[config.game_mode + "_viewcounts"]
+    viewdb = get_mode_db("viewcounts")
     uid = str(user.get_id64())
     ip = web.ctx.ip
     ipkey = (uid + "-" + ip)
@@ -303,7 +306,7 @@ def get_top_pack_views(limit = 10):
     """ Will return the top viewed backpacks sorted in descending order
     no more than limit rows will be returned """
 
-    countdb = couch_obj[config.game_mode + "_viewcounts"]
+    countdb = get_mode_db("viewcounts")
     result = countdb.view("views/counts", descending = True, limit = limit)
 
     profiles = []

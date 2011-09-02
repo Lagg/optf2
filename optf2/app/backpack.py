@@ -118,8 +118,8 @@ class fetch:
 
             timestamps = []
             for ts in database.get_pack_timeline_for_user(user, tl_size = 20):
-                prettyts = time.ctime(ts["timestamp"])
-                timestamps.append([ts["_id"], prettyts])
+                prettyts = time.ctime(ts)
+                timestamps.append([ts, prettyts])
 
             filter_classes = itemtools.get_equippable_classes(items)
             filter_qualities = itemtools.get_present_qualities(items)
