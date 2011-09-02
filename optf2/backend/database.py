@@ -308,11 +308,13 @@ def get_top_pack_views(limit = 10):
 
     countdb = get_mode_db("viewcounts")
     result = countdb.view("views/counts", descending = True, limit = limit)
+    counts = {}
+    for count in result: counts[count["id"]] = count["key"]
 
     profiles = []
-    for row in result:
-        prof = load_profile_cached(row["id"], stale = True)
-        profiles.append((row["key"], prof.get_primary_group() == config.valve_group_id, prof.get_persona(), prof.get_id64()))
+    for row in couch_obj["profiles"].view("_all_docs", include_docs = True)[[doc["id"] for doc in result]]:
+        prof = steam.user.profile(row["doc"])
+        profiles.append((counts[row["id"]], prof.get_primary_group() == config.valve_group_id, prof.get_persona(), prof.get_id64()))
 
     return profiles
 
