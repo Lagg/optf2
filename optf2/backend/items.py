@@ -187,7 +187,6 @@ def process_attributes(items, gift = False):
         item.optf2["description"] = item.get_description()
         item.optf2["image_url"] = item.get_image(item.ITEM_IMAGE_SMALL) or default_item_image
         item.optf2["image_url_large"] = item.get_image(item.ITEM_IMAGE_LARGE) or default_item_image
-        item.optf2["rank_name"] = ""
         min_level = item.get_min_level()
         max_level = item.get_max_level()
         pb_level = item.get_level()
@@ -198,6 +197,10 @@ def process_attributes(items, gift = False):
 
         item.optf2["kill_type"] = defaulttype
         item.optf2["kill_type_2"] = defaulttype
+
+        rank = item.get_rank()
+        if rank: item.optf2["rank_name"] = rank["name"]
+        else: item.optf2["rank_name"] = ""
 
         itype = item.get_type()
         if itype.startswith("TF_"): itype = ""
@@ -321,15 +324,6 @@ def process_attributes(items, gift = False):
 
             if attrname == "unlimited quantity":
                 item._item["quantity"] = 1
-
-            if "kill_count" in item.optf2:
-                kill_count = item.optf2["kill_count"]
-                kill_count_2 = item.optf2.get("kill_count_2")
-                for rank in schema.get_kill_ranks():
-                    item.optf2["rank_name"] = rank["name"]
-                    if ((kill_count and kill_count < rank["required_score"]) or
-                        (kill_count_2 and kill_count_2 < rank["required_score"])):
-                        break
 
             if not newattr.get("hidden", theattr.is_hidden()):
                 newattr["description_string"] = web.websafe(newattr.get("description_string",
