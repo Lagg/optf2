@@ -52,7 +52,7 @@ body { background: #181818; color: white; font-family: Arial, Helvetica, sans-se
 .prefix-vintage { color: #476291; }
 .prefix-rarity4 { color: #8650ac; }
 .prefix-rarity1 { color: #4d7455; }
-.prefix-strange { color: #cd9b1d; }
+.prefix-strange { color: #cf6a32; }
 .prefix-giftwrapped { color: #cf2700; }
 
 .item_cell {
@@ -83,7 +83,7 @@ body { background: #181818; color: white; font-family: Arial, Helvetica, sans-se
 .cell-vintage { border-color: #476291; }
 .cell-rarity4 { border-color: #8650ac; }
 .cell-rarity1 { border-color: #4d7455; }
-.cell-strange { border-color: #cd9b1d; }
+.cell-strange { border-color: #cf6a32; }
 
 .icon-gift { position: absolute; right: 53px; top: 3px; }
 .icon-desc { position: absolute; right: 27px; top: 3px; }
