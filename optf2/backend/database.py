@@ -14,9 +14,8 @@ ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
 OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 """
 
-import config, steam, urllib2, web, os, zlib, marshal
+import config, steam, urllib2, web, os, marshal
 import couchdbkit as couchdb
-import cPickle as pickle
 from time import time
 
 gamelib = getattr(steam, config.game_mode)
@@ -63,26 +62,6 @@ def cache_not_stale(row):
     else:
         return False
 
-def db_to_profileobj(db):
-    profile = {"steamid": db["id64"],
-               "communityvisibilitystate": db["profile_status"],
-               "personaname": db["persona"],
-               "avatar": db["avatar_url"],
-               "avatarmedium": db["avatar_url"],
-               "avatarfull": db["avatar_url"],
-               "personastate": db["online_status"],
-               "realname": db["real_name"],
-               "primaryclanid": db["primary_group"],
-               "gameserverip": db["last_server_ip"],
-               "gameextrainfo": db["last_game_info"],
-               "gameid": db["last_app_id"],
-               "profileurl": db["profile_url"]
-               }
-    for k in profile.keys():
-        if profile[k] == None: del profile[k]
-
-    return profile
-
 def get_mode_db(name):
     return couch_obj[config.game_mode + "_" + name]
 
@@ -125,9 +104,6 @@ def load_profile_cached(sid, stale = False):
             return refresh_profile_cache(sid)
         except:
             return user
-
-def db_pack_is_new(lastpack, newpack):
-    return (olditems != newitems)
 
 def load_schema_cached(lang, fresh = False):
     if lang in schema_obj and not fresh:
@@ -220,36 +196,6 @@ def get_pack_snapshot_for_user(user, pid = None):
     except IndexError:
         return None
 
-def db_to_itemobj(dbitem):
-    if "id" in dbitem:
-        return dbitem
-    if "id64" not in dbitem:
-        return {"id": dbitem[0], "defindex": dbitem[1], "inventory": dbitem[2]}
-
-    theitem = {"id": dbitem["id64"],
-               "original_id": dbitem["oid64"],
-               "owner": dbitem["owner"],
-               "defindex": dbitem["sid"],
-               "level": dbitem["level"],
-               "quantity": dbitem["quantity"],
-               "flag_cannot_trade": dbitem["untradeable"],
-               "inventory": dbitem["token"],
-               "quality": dbitem["quality"],
-               "custom_name": dbitem["custom_name"],
-               "custom_desc": dbitem["custom_desc"],
-               "style": dbitem["style"]}
-
-    rawattrs = dbitem["attributes"]
-    if rawattrs: theitem["attributes"] = pickle.loads(zlib.decompress(rawattrs))
-    rawcontents = dbitem["contents"]
-    if rawcontents: theitem["contained_item"] = pickle.loads(zlib.decompress(rawcontents))
-
-    return theitem
-
-item_select_query = web.db.SQLQuery("SELECT items.*, attributes.attrs as attributes, attributes.contents FROM items " +
-                                    "LEFT JOIN attributes ON items.id64=attributes.id64 " +
-                                    "WHERE items.id64")
-
 def fetch_item_for_id(id64):
     itemdb = get_mode_db("items")
 
@@ -317,27 +263,3 @@ def get_top_pack_views(limit = 10):
         profiles.append((counts[row["id"]], prof.get_primary_group() == config.valve_group_id, prof.get_persona(), prof.get_id64()))
 
     return profiles
-
-def is_item_unique(item):
-    """ Checks if the item is different enough
-    from it's schema counterpart to be stored in the item table. """
-
-    schema = load_schema_cached(web.ctx.language)
-    sitem = schema[item.get_schema_id()]
-
-    if sitem.get_min_level() == sitem.get_max_level():
-        if item.get_level() != sitem.get_min_level():
-            return True
-    else: return True
-
-    if (item.get_quantity() != sitem.get_quantity() or
-        item.get_custom_name() or
-        item.get_custom_description() or
-        item.get_current_style_id() or
-        item._item.get("attributes") or
-        item.is_untradable() != sitem.is_untradable() or
-        item.get_quality()["id"] != sitem.get_quality()["id"] or
-        item.get_contents()):
-        return True
-    else:
-        return False
