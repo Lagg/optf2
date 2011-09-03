@@ -408,14 +408,6 @@ def get_equippable_classes(items):
 
     return ordered_classes
 
-def _quality_sort(x, y):
-    px = x["prettystr"]
-    py = y["prettystr"]
-
-    if px < py: return -1
-    elif px > py: return 1
-    else: return 0
-
 def get_present_qualities(items):
     """ Returns a sorted list of qualities that are in this set
     of items """
@@ -430,7 +422,7 @@ def get_present_qualities(items):
             qualities.add(quality["id"])
             qlist.append(quality)
 
-    qlist.sort(cmp = _quality_sort)
+    qlist.sort(key = lambda q: q["prettystr"])
     return qlist
 
 def get_present_capabilities(items):

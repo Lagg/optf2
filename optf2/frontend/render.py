@@ -4,7 +4,7 @@ from optf2.frontend import markup as markuptools
 import optf2.app as app
 import logging, traceback
 
-logging.basicConfig(filename = os.path.join(config.cache_file_dir, config.game_mode + ".log"), level = logging.DEBUG)
+logging.basicConfig(filename = os.path.join(config.cache_file_dir, config.game_mode + ".log"), level = logging.ERROR)
 
 urls = (
     config.virtual_root + "user/(.*)", app.backpack.fetch,

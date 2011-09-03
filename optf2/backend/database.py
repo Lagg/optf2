@@ -135,7 +135,7 @@ def refresh_pack_cache(user):
         item._item["owner"] = user.get_id64()
         backpack_items[iid] = item._item
 
-    sorteddbkeys = sorted(backpack_items.keys(), key = int)
+    sorteddbkeys = sorted(backpack_items.keys())
 
     lastpack = get_pack_snapshot_for_user(user)
     packmap = {"_id": str(user.get_id64()) + "-" + str(ts), "timestamp": ts,
@@ -162,7 +162,7 @@ def refresh_pack_cache(user):
             else:
                 del backpack_items[oldid]
 
-    itemdb.save_docs(sorted(backpack_items.values(), cmp = lambda x, y: cmp(x["id"], y["id"])))
+    itemdb.save_docs(sorted(backpack_items.values(), key = lambda item: item["_id"]))
 
     return packitems
 
