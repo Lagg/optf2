@@ -56,9 +56,6 @@ $def generate_class_icon_link(classes):
       <div class="attr-positive">$extra["kill_type"]: $extra["kill_count"]</div>
   $if "kill_count_2" in extra:
       <div class="attr-positive">$extra["kill_type_2"]: $extra["kill_count_2"]</div>
-  $ craft_no = extra.get("craft_number")
-  $if craft_no and item.get_custom_name():
-      <div class="attr-positive">Craft number: $craft_no</div>
   $ style = item.get_current_style_name()
   $if style: <div class="attr-neutral">Style: $style</div>
   $ quantity = item.get_quantity()
@@ -67,10 +64,7 @@ $def generate_class_icon_link(classes):
         Uses: $quantity
       </div>
   $if item.is_untradable():
-      $if "date_tradable" in extra:
-          <div class="attr-neutral">Tradable after: $extra["date_tradable"]</div>
-      $else:
-          <div class="attr-neutral">Untradable</div>
+       <div class="attr-neutral">Untradable</div>
 
   <img src="${static_prefix}vertical.gif" height="1" width="100%" alt="divider"/>
 

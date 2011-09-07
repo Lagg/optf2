@@ -111,13 +111,8 @@ def generate_cell(item, invalid = False, show_equipped = True):
     if "kill_count_2" in item.optf2:
         markup += '<div class="attr-positive">{0}: {1}</div>'.format(item.optf2["kill_type_2"], item.optf2["kill_count_2"])
 
-    if "craft_number" in item.optf2 and item.get_custom_name():
-        markup += '<div class="attr-positive">Craft number: ' + item.optf2["craft_number"] + '</div>'
-
     if untradable:
         markup += '<div class="attr-neutral">Untradable</div>'
-        if "date_tradable" in item.optf2:
-            markup += '<div class="attr-neutral">Tradable after: {0}</div>'.format(item.optf2["date_tradable"])
 
     markup += '</div></div>\n'
 

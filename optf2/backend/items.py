@@ -303,13 +303,15 @@ def process_attributes(items, gift = False):
                 newattr["hidden"] = False
 
             if attrname == "unique craft index":
-                item.optf2["craft_number"] = str(int(theattr.get_value()))
+                newattr["description_string"] = "Craft number: " + str(int(theattr.get_value()))
+                newattr["hidden"] = False
 
             if attrname == "tradable after date":
                 # WORKAROUND: For some reason this has the wrong type and is hidden,
                 # not sure if this should be in steamodd or not
                 d = time.gmtime(theattr.get_value())
-                item.optf2["date_tradable"] = time.strftime("%F %H:%M:%S", d)
+                newattr["description_string"] = "Tradable after: " + time.strftime("%F %H:%M:%S", d)
+                newattr["hidden"] = False
 
             if attrname == "kill eater":
                 item.optf2["kill_count"] = int(theattr.get_value())
