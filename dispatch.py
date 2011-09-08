@@ -23,6 +23,9 @@ from optf2.frontend import render
 openid.set_session(render.session)
 import web
 
+# wsgi
+application = render.application.wsgifunc()
+
 if config.enable_fastcgi:
     web.wsgi.runwsgi = lambda func, addr=None: web.wsgi.runfcgi(func, addr)
 
