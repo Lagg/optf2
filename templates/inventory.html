@@ -1,9 +1,9 @@
-$def with (user, isvalve, items, views, filter_classes, baditems, stats, timestamps, filter_qualities, total_pages, appid)
+$def with (user, isvalve, items, views, filter_classes, baditems, stats, filter_qualities, total_pages, appid)
 $ usern = user.get_persona()
 $ profileurl = user.get_profile_url()
 $ realn = user.get_real_name()
 $var title: $project_name - $usern's Backpack
-$ rss = "{0}feed/{1}".format(virtual_root, user.get_id64())
+$ rss = markup.generate_mode_url("feed/{0}".format(user.get_id64()))
 $ onlinestates = {0: "offline", 1: "online", 2: "busy", 3: "away", 4: "snooze"}
 <div id="header" style="position: relative;">
   <div class="toolbar" style="margin: 0 0 15px 0;">
@@ -82,22 +82,13 @@ $ onlinestates = {0: "offline", 1: "online", 2: "busy", 3: "away", 4: "snooze"}
         </ul>
       </div>
       <div class="dropdown-menu">
-        <b>Timeline</b>
-        <ul style="min-width: 170px;">
-          <li><a href="$qurl(pid = None)">Now</a></li>
-          $for ts in timestamps:
-              <li><a href="$qurl(pid = ts[0])">$ts[1]</a></li>
+        <b>OPNet</b>
+        <ul>
+          $for k, v in game_modes.iteritems():
+              <li><a href="${virtual_root}${k}/user/${user.get_id64()}">$v</a></li>
         </ul>
       </div>
-      $if opnet_map:
-          <div class="dropdown-menu">
-            <b>OPNet</b>
-            <ul>
-              $for k, v in opnet_map.iteritems():
-                  <li><a href="${v}user/${user.get_id64()}">$k</a></li>
-            </ul>
-          </div>
-      <a class="button" href="${virtual_root}loadout/${user.get_id64()}">Loadouts</a>
+      <a class="button" href="$markup.generate_mode_url('loadout/{0}'.format(user.get_id64()))">Loadouts</a>
       <a class="button" href="$rss">RSS</a>
     </div>
   </div>

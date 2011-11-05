@@ -15,8 +15,7 @@ body { background: #181818; color: white; font-family: Arial, Helvetica, sans-se
     border: 1px solid #555555;
     position: relative;
     margin: 30px;
-    padding-top: 2.8em;
-    padding-left: 2.8em;
+    padding: 2.8em 1.3em 0em 1.3em;
 }
 .loadout-box .titlebar {
     position: absolute;
@@ -297,7 +296,7 @@ a.button { text-decoration: none; }
     z-index: 30;
     min-width: 100px;
 }
-.dropdown-menu ul li { text-align: left; border-bottom: 1px solid white; }
+.dropdown-menu ul li { text-align: left; padding: 0 3px 0 3px; border-bottom: 1px solid white; }
 .dropdown-menu ul li:hover { background: #404040; }
 .dropdown-menu:hover ul { display: block; }
 

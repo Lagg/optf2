@@ -56,9 +56,10 @@ class persona:
 
 
 class wiki_attributes:
-    def GET(self):
+    def GET(self, app):
         attrs = {}
         sattrs = None
+        web.ctx.current_game = app
 
         for lang in config.valid_languages:
             schema = database.cached_item_schema(lang = lang)

@@ -1,5 +1,6 @@
 import template, web, config, json
 from optf2.backend import database
+from optf2.frontend.markup import generate_mode_url
 import api
 
 class main:
@@ -16,7 +17,7 @@ class main:
         except: prof = None
 
         if prof:
-            raise web.seeother(config.virtual_root + "user/" + str(prof.get_id64()))
+            raise web.seeother(generate_mode_url("user/" + str(prof.get_id64())))
 
         search = json.loads(api.search_profile().GET(user))
         nuser = user

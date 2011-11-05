@@ -1,7 +1,9 @@
-import socket, web, os, couchdbkit
+import socket, web, os
 
-# Valid games so far are p2 and tf2
-game_mode = "tf2"
+# See steamodd for supported modes
+game_modes = {"p2": "Portal 2",
+              "tf2b": "Team Fortress 2 Beta",
+              "tf2": "Team Fortress 2"}
 
 # You probably want this to be
 # an absolute path if you're not running the built-in server
@@ -59,9 +61,6 @@ socket.setdefaulttimeout(2)
 web.config.session_parameters["timeout"] = 86400
 web.config.session_parameters["cookie_name"] = "optf2_session_id"
 
-# couchdb automatically uses localhost:5984
-database_server = couchdbkit.Server()
-
 # A list of valid ISO language codes
 valid_languages = ["da", "nl", "en", "fi", "fr", "de", "it", "ja",
                    "ko", "no", "pl", "pt", "ru", "zh", "es", "sv"]
@@ -69,11 +68,6 @@ valid_languages = ["da", "nl", "en", "fi", "fr", "de", "it", "ja",
 wiki_mapping = {"p2": ("Portal Wiki", "http://theportalwiki.com/wiki/"),
                 "tf2": ("Official TF Wiki", "http://wiki.teamfortress.com/wiki/")}
 wiki_mapping["tf2b"] = wiki_mapping["tf2"]
-
-# Optional mapping of other OP websites that will be used similarly to virtual_root
-opnet_mapping = {"OPTF2": "http://optf2.com/",
-                 "OPP2": "http://p2.optf2.com/",
-                 "OPTF2Beta": "http://beta.optf2.com/"}
 
 # The 64 bit ID of the Valve group (this is how I check
 # if the user is a Valve employee)

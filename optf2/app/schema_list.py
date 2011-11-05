@@ -24,8 +24,9 @@ templates = template.template
 class items:
     """ Dumps every item in the schema in a pretty way """
 
-    def GET(self):
+    def GET(self, app):
         try:
+            web.ctx.current_game = app
             query = web.input()
             items = database.load_schema_cached(web.ctx.language)
             filter_qualities = itemtools.get_present_qualities(items)
@@ -54,8 +55,9 @@ class items:
 class attributes:
     """ Dumps all schema attributes in a pretty way """
 
-    def GET(self):
+    def GET(self, app):
         try:
+            web.ctx.current_game = app
             query = web.input()
             schema = database.load_schema_cached(web.ctx.language)
             attribs = schema.get_attributes()
@@ -80,8 +82,9 @@ class attributes:
             return templates.error("Couldn't load attributes")
 
 class particles:
-    def GET(self):
+    def GET(self, app):
         try:
+            web.ctx.current_game = app
             schema = database.load_schema_cached(web.ctx.language)
             particles = schema.get_particle_systems()
 

@@ -2,6 +2,7 @@ $def with (user, item, outdated)
 $ qitem = item.get_quality()
 $ extra = item.optf2
 $ contents = extra.get("contents")
+$ current_wiki = wiki_map[instance.current_game]
 $if not user:
     $ usern = "Schema"
 $else:
@@ -10,19 +11,19 @@ $var title: $project_name - $usern $extra["title_name"]
 $def generate_class_icon_link(classes):
     $for ec in classes:
         $if user:
-            $ classlink = "{0}loadout/{1}#{2}".format(virtual_root, user.get_id64(), ec)
+            $ classlink = markup.generate_mode_url("loadout/{0}#{1}".format(user.get_id64(), ec))
         $else:
-            $ classlink = wiki_map[1] + ec
+            $ classlink = current_wiki[1] + ec
         <a href="$classlink"><img src="${static_prefix}${ec}_icon.png" title="$ec" alt="$ec"/></a>&nbsp;
 <div id="header">
   <h1 class="prefix-${qitem['str']}">
     $if not user:
         $ plink_user = "from_schema"
-        $ urlpart = "schema_dump"
+        $ urlpart = "items"
     $else:
         $ plink_user = user.get_id64()
         $ urlpart = "user/{0}".format(plink_user)
-    <a href="${virtual_root}${urlpart}">$usern</a> $:extra["dedicated_name"]
+    <a href="$markup.generate_mode_url(urlpart)">$usern</a> $:extra["dedicated_name"]
   </h1>
 </div>
 <div id="content">
@@ -34,7 +35,7 @@ $def generate_class_icon_link(classes):
     </div>
   <img class="stat_vertrule" src="${static_prefix}vertical.gif" height="100%" width="1" alt="divider"/>
   <div class="item-attrs">
-  $ item_wiki_url = wiki_map[1] + encode_url(item.get_name())
+  $ item_wiki_url = current_wiki[1] + encode_url(item.get_name())
   $:extra["level_string"]
   $if extra["description"]:
       <div class="item-description">
@@ -129,9 +130,9 @@ $def generate_class_icon_link(classes):
                 <li style="padding: 2px 0 2px 0;">$cap</li>
           </ul>
   <ul class="button-list">
-    <li><a class="button" href="$item_wiki_url">$wiki_map[0] article</a></li>
+    <li><a class="button" href="$item_wiki_url">$current_wiki[0] article</a></li>
   $if user:
-      <li><a class="button" href="${virtual_root}item/${item.get_schema_id()}">Schema version</a></li>
+      <li><a class="button" href="$markup.generate_item_url(item)">Schema version</a></li>
   </ul>
   </div>
   </div>

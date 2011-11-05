@@ -34,8 +34,6 @@ capabilitydict = {"can_gift_wrap": "Gift wrappable",
 def _(thestring):
     return thestring.encode("utf-8")
 
-gamelib = getattr(steam, config.game_mode)
-
 def get_invalid_pos(items):
     poslist = []
     invalid_items = []
@@ -176,7 +174,7 @@ def process_attributes(items, gift = False):
     default_item_image = config.static_prefix + "item_icons/Invalid_icon.png";
     newitems = []
     schema = database.load_schema_cached(web.ctx.language)
-    loaded_profiles = {}
+    profiles = {}
 
     for item in items:
         if not item: continue
@@ -269,37 +267,12 @@ def process_attributes(items, gift = False):
                 item.optf2["particle-id"] = particleid
 
             if attrname == "gifter account id":
-                newattr["description_string"] = "Gift"
-                item.optf2["gifter_id"] = condensed_to_id64(theattr.get_value())
-
-                try:
-                    gifter = item.optf2["gifter_id"]
-                    if gifter not in loaded_profiles:
-                        user = database.load_profile_cached(gifter, stale = True)
-                        loaded_profiles[gifter] = user
-                    else:
-                        user = loaded_profiles[gifter]
-
-                    item.optf2["gifter_persona"] = user.get_persona()
-                    newattr["description_string"] = "Gift from " + item.optf2["gifter_persona"]
-                except:
-                    item.optf2["gifter_persona"] = "this user"
+                newattr["description_string"] = "Gift from {0}"
+                profiles[condensed_to_id64(theattr.get_value())] = None
 
             if attrname == "makers mark id":
-                crafter_id64 = condensed_to_id64(theattr.get_value())
-
-                try:
-                    if crafter_id64 not in loaded_profiles:
-                        user = database.load_profile_cached(crafter_id64, stale = True)
-                        loaded_profiles[crafter_id64] = user
-                    else:
-                        user = loaded_profiles[crafter_id64]
-                    item.optf2["crafted_by_persona"] = user.get_persona()
-                except:
-                    item.optf2["crafted_by_persona"] = "this user"
-
-                item.optf2["crafted_by_id64"] = crafter_id64
-                newattr["description_string"] = "Crafted by " + item.optf2["crafted_by_persona"]
+                profiles[condensed_to_id64(theattr.get_value())] = None
+                newattr["description_string"] = "Crafted by {0}"
                 newattr["hidden"] = False
 
             if attrname == "unique craft index":

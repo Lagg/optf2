@@ -21,12 +21,19 @@ from urlparse import urljoin
 def absolute_url(relative_url):
     return urljoin(web.ctx.homedomain, relative_url)
 
-def generate_item_url(item):
-    ownerstr = ""
-    pid = getattr(web.ctx, "current_pid", None)
-    if pid: ownerstr = "?pid=" + str(web.ctx.current_pid)
+def generate_mode_url(path):
+    """ Generates a URL appropriate for the current mode
+    with path appended to it. """
+    try:
+        cg = web.ctx.current_game
+    except AttributeError:
+        print("Couldn't get current game mode, falling back to tf2")
+        cg = "tf2"
 
-    return "{0}item/{1}{2}".format(virtual_root, item.get_id() or item.get_schema_id(), ownerstr)
+    return virtual_root + cg + "/" + path
+
+def generate_item_url(item):
+    return generate_mode_url("item/" + str(item.get_id() or item.get_schema_id()))
 
 def generate_cell(item, invalid = False, show_equipped = True):
     if not item: return '<div class="item_cell"></div>'

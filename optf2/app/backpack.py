@@ -2,6 +2,7 @@ import steam, urllib2
 import cPickle as pickle
 from optf2.backend import database
 from optf2.backend import items as itemtools
+from optf2.frontend.markup import generate_mode_url
 import web
 import time
 import config
@@ -12,7 +13,8 @@ templates = template.template
 class loadout:
     """ User loadout lists """
 
-    def GET(self, user):
+    def GET(self, game, user):
+        web.ctx.current_game = game
         try:
             userp = database.load_profile_cached(user)
             items = database.load_pack_cached(userp)
@@ -59,23 +61,13 @@ class loadout:
             return templates.error("Couldn't load loadout page")
 
 class item:
-    def GET(self, iid):
+    def GET(self, app, iid):
+        web.ctx.current_game = app
         schema = database.load_schema_cached(web.ctx.language)
+        user = None
+        item_outdated = False
         try:
-            user = None
-            item_outdated = False
-            idl = iid.split('/')
-
-            if len(idl) == 1:
-                idl.append(idl[0])
-            id64 = idl[1]
-
-            try:
-                theitem = schema[long(id64)]
-            except:
-                rawitem = database.fetch_item_for_id(id64)
-                theitem = schema.create_item(rawitem)
-                user = database.load_profile_cached(str(rawitem["owner"]), stale = True)
+            theitem = schema[long(iid)]
 
             item = itemtools.process_attributes([theitem])[0]
             if web.input().get("contents"):
@@ -88,11 +80,12 @@ class item:
         except urllib2.URLError:
             return templates.error("Couldn't connect to Steam")
         except:
-            return templates.item_error_notfound(id64)
+            return templates.item_error_notfound(iid)
         return templates.item(user, item, item_outdated)
 
 class fetch:
-    def GET(self, sid):
+    def GET(self, game, sid):
+        web.ctx.current_game = game
         sid = sid.strip('/').split('/')
         if len(sid) > 0: sid = sid[-1]
 
@@ -115,11 +108,6 @@ class fetch:
             items = database.load_pack_cached(user, pid = packid)
             if not items and user.get_visibility() != 3:
                 raise steam.user.ProfileError("Backpack is private")
-
-            timestamps = []
-            for ts in database.get_pack_timeline_for_user(user, tl_size = 20):
-                prettyts = time.ctime(ts)
-                timestamps.append([ts, prettyts])
 
             filter_classes = itemtools.get_equippable_classes(items)
             filter_qualities = itemtools.get_present_qualities(items)
@@ -160,16 +148,17 @@ class fetch:
         isvalve = (user.get_primary_group() == config.valve_group_id)
         schema = database.load_schema_cached(web.ctx.language)
 
-        web.ctx.env["optf2_rss_url"] = "{0}feed/{1}".format(config.virtual_root, user.get_id64())
+        web.ctx.env["optf2_rss_url"] = generate_mode_url("feed/" + str(user.get_id64()))
         web.ctx.env["optf2_rss_title"] = "{0}'s Backpack".format(user.get_persona().encode("utf-8"))
 
         return templates.inventory(user, isvalve, items, views,
                                    filter_classes, baditems,
-                                   stats, timestamps, filter_qualities,
+                                   stats, filter_qualities,
                                    total_pages, schema._app_id)
 
 class feed:
-    def GET(self, sid):
+    def GET(self, game, sid):
+        web.ctx.current_game = game
         try:
             user = database.load_profile_cached(sid, stale = True)
             items = database.load_pack_cached(user)

@@ -18,9 +18,7 @@ OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 import config
 import steam
 steam.set_api_key(config.api_key)
-from optf2.backend import openid
 from optf2.frontend import render
-openid.set_session(render.session)
 import web
 
 # wsgi

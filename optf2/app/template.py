@@ -1,6 +1,5 @@
 from optf2.backend import items as itemtools
 from optf2.frontend import markup as markuptools
-from optf2.backend import openid
 import web, config
 
 # These should stay explicit
@@ -10,13 +9,11 @@ globals = {"virtual_root": config.virtual_root,
            "len": len,
            "instance": web.ctx,
            "project_name": config.project_name,
-           "wiki_map": config.wiki_mapping[config.game_mode],
+           "wiki_map": config.wiki_mapping,
            "qurl": web.http.changequery,
            "iurl": web.input,
            "markup": markuptools,
-           "get_openid": openid.get_id,
-           "game_mode": config.game_mode,
-           "opnet_map": config.opnet_mapping
+           "game_modes": config.game_modes,
            }
 
 template = web.template.render(config.template_dir, base = "base",

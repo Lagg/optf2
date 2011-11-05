@@ -9,7 +9,7 @@ $def with (content)
     <meta name="keywords" content="p2, portal 2, tf2, team fortress 2, steam, steam api, backpack, backpack viewer"/>
     <link rel="stylesheet" type="text/css" href="${static_prefix}juicss/jquery-ui-1.8.9.custom.css"/>
     <link rel="stylesheet" type="text/css" href="${static_prefix}common.css"/>
-    <link rel="stylesheet" type="text/css" href="${static_prefix}${game_mode}.css"/>
+    <!-- Remind Lagg to do fix this <link rel="stylesheet" type="text/css" href="$${static_prefix}$${instance.current_game}.css"/> -->
     <link rel="shortcut icon" type="image/png" href="${static_prefix}optf2_icon.png"/>
     $ rss_url = instance.env.get("optf2_rss_url")
     $ rss_title = instance.env.get("optf2_rss_title")
@@ -26,16 +26,10 @@ $def with (content)
   <body>
     <div id="navbar">
       <a href="$virtual_root">$project_name</a>
-      <a href="${virtual_root}schema_dump">Item List</a>
-      <a href="${virtual_root}attrib_dump">Attribute List</a>
-      <a href="${virtual_root}particle_dump">Particle List</a>
+      $for mode, label in game_modes.iteritems():
+          <a href="$virtual_root$mode">$label</a>
       <a href="${virtual_root}about">Credits</a>
       <form method="get" id="search-form" action="${virtual_root}"><input type="text" id="search-field" name="user"/></form>
-      $ user = get_openid()
-      $if not user:
-          <a id="loginlink" href="${virtual_root}openid"><img src="${static_prefix}openid_login.png" alt="Sign in with Steam"/></a>
-      $else:
-          <a id="accountlink" href="${virtual_root}user/${user.get_id64()}">$user.get_persona()</a>
     </div>
     $:content
   </body>
