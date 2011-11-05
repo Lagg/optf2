@@ -174,7 +174,6 @@ def process_attributes(items, gift = False):
     default_item_image = config.static_prefix + "item_icons/Invalid_icon.png";
     newitems = []
     schema = database.load_schema_cached(web.ctx.language)
-    profiles = {}
 
     for item in items:
         if not item: continue
@@ -267,12 +266,18 @@ def process_attributes(items, gift = False):
                 item.optf2["particle-id"] = particleid
 
             if attrname == "gifter account id":
-                newattr["description_string"] = "Gift from {0}"
-                profiles[condensed_to_id64(theattr.get_value())] = None
+                # Yes, I'm using account_info. Deal with it Ath. DEAL. WITH. IT.
+                account_info = theattr.get_account_info()
+                item.optf2["gifter_id"] = account_info["id64"]
+                item.optf2["gifter_persona"] = account_info["persona"]
+                newattr["description_string"] = "Gift from {0}".format(account_info["persona"].encode("utf-8"))
+                newattr["hidden"] = False
 
             if attrname == "makers mark id":
-                profiles[condensed_to_id64(theattr.get_value())] = None
-                newattr["description_string"] = "Crafted by {0}"
+                account_info = theattr.get_account_info()
+                item.optf2["crafter_id"] = account_info["id64"]
+                item.optf2["crafter_persona"] = account_info["persona"]
+                newattr["description_string"] = "Crafted by {0}".format(account_info["persona"].encode("utf-8"))
                 newattr["hidden"] = False
 
             if attrname == "unique craft index":

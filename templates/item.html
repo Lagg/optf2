@@ -48,8 +48,8 @@ $def generate_class_icon_link(classes):
             Gift from <a href="${virtual_root}user/${extra['gifter_id']}">$extra["gifter_persona"]</a>
         $elif contents and attr.get_name() == "referenced item def":
             $:extra["content_string"] <a href="$qurl(contents = 1)">(more)</a>
-        $elif "crafted_by_id64" in extra and attr.get_name() == "makers mark id":
-            Crafted by <a href="${virtual_root}user/${extra['crafted_by_id64']}">$extra['crafted_by_persona']</a>
+        $elif "crafter_id" in extra and attr.get_name() == "makers mark id":
+            Crafted by <a href="${virtual_root}user/${extra['crafter_id']}">$extra['crafter_persona']</a>
         $else:
             $:desc.replace("\n", "<br/>")
       </div>
