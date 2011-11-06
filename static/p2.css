@@ -1,7 +1,7 @@
 body { background: #d8d8d8; color: black; }
 
-.loadout-box { border: 1px solid #a7a7a7; }
-.loadout-box .titlebar { background: #a7a7a7; }
+.box { border: 1px solid #a7a7a7; }
+.box .titlebar { background: #a7a7a7; }
 
 .loadout-header { color: #222222; }
 

@@ -21,7 +21,8 @@ generic_urls = [
     ("api/attributes", app.api.wiki_attributes),
     ("user/(.*)", app.backpack.fetch),
     ("loadout/(.+)", app.backpack.loadout),
-    ("feed/(.+)", app.backpack.feed)
+    ("feed/(.+)", app.backpack.feed),
+    ("*", app.index.game_root)
     ]
 
 for url in generic_urls:

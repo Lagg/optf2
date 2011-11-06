@@ -1,7 +1,7 @@
 body { background: #181818; color: white; font-family: Arial, Helvetica, sans-serif; font-size: 11px; }
 
-.backpack-page, .loadout-box { zoom: 1; }
-.backpack-page:after, .loadout-box:after {
+.backpack-page, .box { zoom: 1; }
+.backpack-page:after, .box:after {
     content: ".";
     display: block;
     height: 0;
@@ -10,14 +10,14 @@ body { background: #181818; color: white; font-family: Arial, Helvetica, sans-se
     margin: 20px 0 20px 0;
 }
 
-.loadout-box {
+.box {
     border-radius: 10px;
     border: 1px solid #555555;
     position: relative;
     margin: 30px;
     padding: 2.8em 1.3em 0em 1.3em;
 }
-.loadout-box .titlebar {
+.box .titlebar {
     position: absolute;
     text-align: left;
     top: 0;
@@ -30,8 +30,25 @@ body { background: #181818; color: white; font-family: Arial, Helvetica, sans-se
     font-weight: bold;
     padding: 0.5em 0 0.5em 0;
 }
-.loadout-box .item_cell { float: none; }
-.loadout-box .slot-item { margin: 0 5px 0 5px; float: left; }
+.box .footerbar {
+    position: absolute;
+    text-align: left;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    border-radius: 10px;
+    border-top-left-radius: 0;
+    border-top-right-radius: 0;
+    background: #555555;
+    font-weight: bold;
+    padding: 0.5em 0 0.5em 0;
+}
+.box .nav-list { list-style-type: none; padding-left: 0;}
+.box .nav-list li { padding: 3px; }
+
+.box .titlebar:first-letter, .box .footerbar:first-letter { margin-left: 0.5em; }
+.box .item_cell { float: none; }
+.box .slot-item { margin: 0 5px 0 5px; float: left; }
 
 #page-switcher { text-align: right; padding-right: 10px; }
 #page-counter { font-weight: bold; font-size: 13px; margin: 0 5px 0 5px; }
@@ -235,7 +252,7 @@ img { border: 0; }
 
 #avatar { top: 2px; position: absolute; width: 32px; height: 32px; left: 10px; }
 
-#logo { width: 389px; height: 126px; margin: 50px auto 50px auto; }
+#logo { width: 389px; height: 126px; margin: 50px auto 50px auto; display: block; }
 
 .button {
     margin: 3px;

@@ -21,7 +21,7 @@ from urlparse import urljoin
 def absolute_url(relative_url):
     return urljoin(web.ctx.homedomain, relative_url)
 
-def generate_mode_url(path):
+def generate_mode_url(path = None):
     """ Generates a URL appropriate for the current mode
     with path appended to it. """
     try:
@@ -30,7 +30,7 @@ def generate_mode_url(path):
         print("Couldn't get current game mode, falling back to tf2")
         cg = "tf2"
 
-    return virtual_root + cg + "/" + path
+    return virtual_root + cg + "/" + (path or "")
 
 def generate_item_url(item):
     return generate_mode_url("item/" + str(item.get_id() or item.get_schema_id()))

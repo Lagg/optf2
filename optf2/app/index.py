@@ -35,3 +35,8 @@ class main:
                 break
 
         raise web.seeother(config.virtual_root + "user/" + nuser)
+
+class game_root:
+    def GET(self, game):
+        web.ctx.current_game = game
+        return template.template.game_root()
