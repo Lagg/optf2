@@ -20,7 +20,7 @@ class loadout:
             items = database.load_pack_cached(userp)
             equippeditems = {}
             schema = database.load_schema_cached(web.ctx.language)
-            valid_classes = schema.class_bits.values()
+            valid_classes = schema.get_classes().values()
             slotlist = ["Head", "Misc", "Primary", "Secondary", "Melee", "Pda", "Pda2", "Building", "Action"]
 
             normalitems = itemtools.filter_by_quality(schema, "0")

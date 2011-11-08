@@ -381,7 +381,7 @@ def get_equippable_classes(items):
         classes = item.get_equipable_classes()
         valid_classes |= set(classes)
 
-    ordered_classes = list(schema.class_bits.values())
+    ordered_classes = list(schema.get_classes().values())
     for c in ordered_classes:
         if c not in valid_classes:
             del c
