@@ -66,7 +66,7 @@ body { background: #181818; color: white; font-family: Arial, Helvetica, sans-se
 .prefix-normal { color: #b2b2b2; }
 .prefix-selfmade { color: #70b04a; }
 .prefix-vintage { color: #476291; }
-.prefix-rarity4 { color: #8650ac; }
+.prefix-rarity4, .prefix-haunted { color: #8650ac; }
 .prefix-rarity1 { color: #4d7455; }
 .prefix-strange { color: #cf6a32; }
 .prefix-giftwrapped { color: #cf2700; }
@@ -97,7 +97,7 @@ body { background: #181818; color: white; font-family: Arial, Helvetica, sans-se
 .cell-normal { border-color: #b2b2b2; }
 .cell-selfmade { border-color: #70b04a; }
 .cell-vintage { border-color: #476291; }
-.cell-rarity4 { border-color: #8650ac; }
+.cell-rarity4, .cell-haunted { border-color: #8650ac; }
 .cell-rarity1 { border-color: #4d7455; }
 .cell-strange { border-color: #cf6a32; }
 
