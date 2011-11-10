@@ -30,6 +30,9 @@ for url in generic_urls:
 
 application = web.application(urls, globals())
 
+def mode_hook():
+    web.ctx.current_game = None
+
 def lang_hook():
     lang = web.input().get("lang")
 
@@ -43,6 +46,7 @@ def internalerror():
 def notfound():
     return web.notfound(app.template.template.error("You've hit a 404. Witty quotes coming soon!"))
 
+application.add_processor(web.loadhook(mode_hook))
 application.add_processor(web.loadhook(lang_hook))
 
 if not web.config.debug: application.internalerror = internalerror

@@ -9,7 +9,8 @@ $def with (content)
     <meta name="keywords" content="p2, portal 2, tf2, team fortress 2, steam, steam api, backpack, backpack viewer"/>
     <link rel="stylesheet" type="text/css" href="${static_prefix}juicss/jquery-ui-1.8.9.custom.css"/>
     <link rel="stylesheet" type="text/css" href="${static_prefix}common.css"/>
-    <!-- Remind Lagg to do fix this <link rel="stylesheet" type="text/css" href="$${static_prefix}$${instance.current_game}.css"/> -->
+    $if instance.current_game:
+        <link rel="stylesheet" type="text/css" href="${static_prefix}${instance.current_game}.css"/>
     <link rel="shortcut icon" type="image/png" href="${static_prefix}optf2_icon.png"/>
     $ rss_url = instance.env.get("optf2_rss_url")
     $ rss_title = instance.env.get("optf2_rss_title")
@@ -18,19 +19,26 @@ $def with (content)
     <script type="text/javascript"><!--
     virtual_root = "${virtual_root}";
     static_prefix = "${static_prefix}";
+    current_game = "${instance.current_game}";
     --></script>
     <script type="text/javascript" src="${static_prefix}jquery-1.4.4.min.js"></script>
     <script type="text/javascript" src="${static_prefix}jquery-ui-1.8.9.custom.min.js"></script>
     <script type="text/javascript" src="${static_prefix}optf2.js"></script>
   </head>
   <body>
-    <div id="navbar">
+    <div class="navbar">
       <a href="$virtual_root">$project_name</a>
       $for mode, label in game_modes.iteritems():
           <a href="$virtual_root$mode">$label</a>
       <a href="${virtual_root}about">Credits</a>
-      <form method="get" id="search-form" action="${virtual_root}"><input type="text" id="search-field" name="user"/></form>
+      <form method="get" id="search-form" action="$markup.generate_mode_url()"><input type="text" id="search-field" name="user"/></form>
     </div>
+    $if instance.current_game:
+        <div class="navbar">
+          <a href="$markup.generate_mode_url("items")">Item list</a>
+          <a href="$markup.generate_mode_url("attributes")">Attribute list</a>
+          <a href="$markup.generate_mode_url("particles")">Particle list</a>
+        </div>
     $:content
   </body>
 </html>

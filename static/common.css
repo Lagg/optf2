@@ -178,7 +178,6 @@ body { background: #181818; color: white; font-family: Arial, Helvetica, sans-se
     border: 1px solid black;
     color: white;
     margin: 0 0 0 20px;
-    padding: 0 0 0 4px;
 }
 
 a { font-weight: bold; color: white; text-decoration: none; }
@@ -189,11 +188,11 @@ a:visited { text-decoration: none; }
 #status_offline { color: #808080; }
 #status_snooze, #status_away, #status_busy { color: #2fb3ff; }
 
-#navbar { background: #606060; text-align: left; max-width: 100%; padding: 6px; margin-bottom: 0; position: relative; border: 1px solid black; }
-#navbar a { padding: 8px 4px 8px 4px; margin-left: 16px; font-weight: normal; }
-#navbar a:hover { background: #535353; text-decoration: none; }
-#navbar #loginlink, #navbar #loginlink:hover { position: absolute; right: 3px; top: 3px; padding: 0; margin: 0; background: #606060; }
-#navbar #accountlink { font-weight: bold; position: absolute; right: 3px; top: 0; }
+.navbar { background: #606060; text-align: left; max-width: 100%; padding: 6px; position: relative; border: 1px solid black; }
+.navbar a { padding: 6px 4px 6px 4px; margin-left: 16px; font-weight: normal; }
+.navbar a:hover { background: #535353; text-decoration: none; }
+.navbar #loginlink, .navbar #loginlink:hover { position: absolute; right: 3px; top: 3px; padding: 0; margin: 0; background: #606060; }
+.navbar #accountlink { font-weight: bold; position: absolute; right: 3px; top: 0; }
 
 img { border: 0; }
 
@@ -240,13 +239,9 @@ img { border: 0; }
 
 .row_odd { background: #353535; }
 .row_even { background: #555555; }
-#search_table { margin: 0 auto 0 auto; }
-#search_table tr td { padding: 6px; }
-#search_table a { font-weight: normal; }
 #attrib_table tr td { padding: 6px; background: black; }
 #attrib_table tr th { background: #555555; padding: 8px; }
 #attrib_table { margin: 0 auto 30px auto; text-align: left; }
-#search_title { background: #454545; text-align: center; }
 
 #header { text-align: center; clear: both; }
 

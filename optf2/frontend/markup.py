@@ -24,11 +24,13 @@ def absolute_url(relative_url):
 def generate_mode_url(path = None):
     """ Generates a URL appropriate for the current mode
     with path appended to it. """
+
+    default = "tf2"
     try:
-        cg = web.ctx.current_game
+        cg = web.ctx.current_game or default
     except AttributeError:
         print("Couldn't get current game mode, falling back to tf2")
-        cg = "tf2"
+        cg = default
 
     return virtual_root + cg + "/" + (path or "")
 

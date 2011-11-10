@@ -2,13 +2,3 @@ $ game_label = game_modes[instance.current_game]
 $var title: $project_name $game_label
 
 <img id="logo" src="${static_prefix}logo_${instance.current_game}.png" alt="Logo"/>
-
-<div class="box" style="width: 389px; margin: 50px auto 0 auto;">
-  <div class="titlebar">Navigation for $game_label</div>
-  <ul class="nav-list">
-    <li><a href="$markup.generate_mode_url("items")">All items in the game</a></li>
-    <li><a href="$markup.generate_mode_url("attributes")">All item attributes</a></li>
-    <li><a href="$markup.generate_mode_url("particles")">All particle systems with preview icons</a></li>
-  </ul>
-  <div class="footerbar"/>
-</div>
