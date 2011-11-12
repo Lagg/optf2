@@ -26,6 +26,10 @@ project_name = "OPTF2"
 # Refresh cache every x seconds.
 cache_pack_refresh_interval = 30
 
+# The absolute minimum time between
+# schema cache refreshes in seconds.
+cache_schema_grace_time = 30
+
 # How many rows to show for the top viewed backpacks table
 top_backpack_rows = 10
 
