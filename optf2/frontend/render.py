@@ -18,6 +18,7 @@ generic_urls = [
     ("attributes", app.schema_list.attributes),
     ("particles", app.schema_list.particles),
     ("item/([0-9]+)", app.backpack.item),
+    ("item/(.+)/([0-9]+)", app.backpack.live_item),
     ("api/attributes", app.api.wiki_attributes),
     ("user/(.*)", app.backpack.fetch),
     ("loadout/(.+)", app.backpack.loadout),

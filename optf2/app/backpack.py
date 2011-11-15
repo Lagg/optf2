@@ -83,6 +83,37 @@ class item:
             return templates.item_error_notfound(iid)
         return templates.item(user, item, item_outdated)
 
+class live_item:
+    """ More or less temporary until database stuff is sorted """
+    def GET(self, app, user, iid):
+        web.ctx.current_game = app
+        web.ctx["current_user"] = user
+        user = database.load_profile_cached(user)
+        item_outdated = False
+        try:
+            items = database.load_pack_cached(user)
+            theitem = None
+            for item in items:
+                if item.get_id() == long(iid):
+                    theitem = item
+                    break
+            if not theitem:
+                return templates.item_error_notfound(iid)
+
+            item = itemtools.process_attributes([theitem])[0]
+            if web.input().get("contents"):
+                itemcontents = item.optf2.get("contents")
+                if itemcontents:
+                    newitem = itemtools.process_attributes([itemcontents], gift = True)[0]
+                    newitem.optf2 = dict(item.optf2, **newitem.optf2)
+                    newitem.optf2["container_id"] = item.get_id()
+                    item = newitem
+        except urllib2.URLError:
+            return templates.error("Couldn't connect to Steam")
+        except:
+            return templates.item_error_notfound(iid)
+        return templates.item(user, item, item_outdated)
+
 class fetch:
     def GET(self, game, sid):
         web.ctx.current_game = game
@@ -151,6 +182,7 @@ class fetch:
         web.ctx.env["optf2_rss_url"] = generate_mode_url("feed/" + str(user.get_id64()))
         web.ctx.env["optf2_rss_title"] = "{0}'s Backpack".format(user.get_persona().encode("utf-8"))
 
+        web.ctx["current_user"] = user.get_id64()
         return templates.inventory(user, isvalve, items, views,
                                    filter_classes, baditems,
                                    stats, filter_qualities,
