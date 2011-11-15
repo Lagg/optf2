@@ -60,7 +60,7 @@ class cached_item_schema(steam.items.schema):
                 cachepath_am = time()
             dumped = open(cachepath, "rb").read()
         except urllib2.URLError as err:
-            logging.error("Schema server connection error: " + err.reason)
+            logging.error("Schema server connection error: " + str(err))
             dumped = open(cachepath, "rb").read()
 
         # So we don't bother wasting Valve's bandwidth with our massive 1KB or so request
