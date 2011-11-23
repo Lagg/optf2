@@ -15,6 +15,7 @@ class loadout:
 
     def GET(self, game, user):
         web.ctx.current_game = game
+        web.ctx.current_user = user
         try:
             userp = database.load_profile_cached(user)
             items = database.load_pack_cached(userp)
