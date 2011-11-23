@@ -90,6 +90,8 @@ def generate_cell(item, invalid = False, show_equipped = True):
         markup += '<span class="paint_splotch" style="background: ' + item.optf2['color'] + ';">&nbsp;</span>'
     if "color_2" in item.optf2:
         markup += '<span class="paint_splotch secondary" style="background: ' + item.optf2['color_2'] + ';">&nbsp;</span>'
+    if "series" in item.optf2:
+        markup += '<span class="crate-series-icon">' + str(item.optf2["series"]) + '</span>'
     if "particle-id" in item.optf2:
         markup += '<img class="icon-particle" alt="Picon" src="' + static_prefix + 'particle_icons/' + str(item.optf2["particle-id"]) + '.png"/>'
     if equippedstr:

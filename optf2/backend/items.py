@@ -302,6 +302,9 @@ def process_attributes(items, gift = False):
             if attrname == "kill eater score type 2":
                 item.optf2["kill_type_2"] = killtypestrings.get(int(theattr.get_value()), defaulttype)
 
+            if attrname == "set supply crate series":
+                item.optf2["series"] = int(theattr.get_value())
+
             if attrname == "unlimited quantity":
                 item._item["quantity"] = 1
 

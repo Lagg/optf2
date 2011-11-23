@@ -123,6 +123,18 @@ body { background: #181818; color: white; font-family: Arial, Helvetica, sans-se
     left: 11px;
 }
 
+.crate-series-icon {
+    background: #000000;
+    color: white;
+    font-weight: bold;
+    position: absolute;
+    bottom: 37px;
+    right: 37px;
+    font-size: 9px;
+    padding: 3px;
+    border-radius: 10px;
+}
+
 .equipped {
     background: #000000;
     color: #ba4935;
