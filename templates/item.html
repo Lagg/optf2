@@ -45,11 +45,11 @@ $def generate_class_icon_link(classes):
       $ desc = attr.get_description_formatted()
       <div class="attr-${attr.get_type()}">
         $if "gifter_persona" in extra and attr.get_name() == "gifter account id":
-            Gift from <a href="${virtual_root}user/${extra['gifter_id']}">$extra["gifter_persona"]</a>
+            Gift from <a href="$markup.generate_mode_url('user/{0}'.format(extra['gifter_id']))">$extra["gifter_persona"]</a>
         $elif contents and attr.get_name() == "referenced item def":
             $:extra["content_string"] <a href="$qurl(contents = 1)">(more)</a>
         $elif "crafter_id" in extra and attr.get_name() == "makers mark id":
-            Crafted by <a href="${virtual_root}user/${extra['crafter_id']}">$extra['crafter_persona']</a>
+            Crafted by <a href="$markup.generate_mode_url('user/{0}'.format(extra['crafter_id']))">$extra['crafter_persona']</a>
         $else:
             $:desc.replace("\n", "<br/>")
       </div>
