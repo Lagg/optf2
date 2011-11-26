@@ -23,7 +23,8 @@ generic_urls = [
     ("user/(.*)", app.backpack.fetch),
     ("loadout/(.+)", app.backpack.loadout),
     ("feed/(.+)", app.backpack.feed),
-    ("*", app.index.game_root)
+    ("*", app.index.game_root),
+    ("(.+)", app.backpack.fetch)
     ]
 
 for url in generic_urls:
