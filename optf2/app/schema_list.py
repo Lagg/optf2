@@ -44,12 +44,14 @@ class items:
             stats = itemtools.get_stats(items)
             filter_classes = itemtools.get_equippable_classes(items)
             items = itemtools.process_attributes(items)
+            price_stats = itemtools.get_price_stats(items)
 
             return templates.schema_dump(items,
                                          filter_classes,
                                          filter_qualities,
                                          filter_capabilities,
-                                         stats)
+                                         stats,
+                                         price_stats)
         except:
             return templates.error("Couldn't load schema")
 

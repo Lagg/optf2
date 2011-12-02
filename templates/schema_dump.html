@@ -1,4 +1,4 @@
-$def with (items, filter_classes, filter_qualities, filter_capabilities, stats)
+$def with (items, filter_classes, filter_qualities, filter_capabilities, stats, price_stats)
 $var title: $project_name - All Items
 
 <div id="header">
@@ -44,10 +44,26 @@ $var title: $project_name - All Items
     </div>
     <div style="float: right; text-align: left;">
       $stats["weapons"] weapons | $stats["hats"] hats | $stats["misc"] misc ($stats["total"] total) <br/>
+      $if price_stats["worth"]:
+        Worth:
+        $# loop.last breaks on iteritems. WORKAROUND
+        $ worth = price_stats["worth"]
+        $for k in worth.keys():
+            $worth[k] <b>$k</b>
+            $if not loop.last: |
     </div>
  </div>
 </div>
 <div id="content">
+  $if price_stats["most-expensive"]:
+      <div class="autosize box" style="margin: 0 auto 15px auto;">
+        <div class="titlebar">Most expensive $instance.current_game.upper() items</div>
+        $for item in price_stats["most-expensive"]:
+            <div class="slot-item">
+              <div><b>$$$item.optf2["price"]["USD"]</b></div>
+              $:markup.generate_cell(item)
+            </div>
+      </div>
   <div id="backpack">
   $for item in items:
       $:markup.generate_cell(item)

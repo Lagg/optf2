@@ -18,6 +18,66 @@ import config, steam, urllib2, web, os, marshal, json, logging
 from email.utils import formatdate, parsedate
 from time import time, mktime
 
+class cached_asset_catalog(steam.items.assets):
+    def _download(self):
+        cachepath = os.path.join(config.cache_file_dir, "assets-" + self._app_id + "-" + web.ctx.language)
+        cachepath_lm = -1
+        cachepath_am = time()
+        headers = {}
+
+        try:
+            cachestat = os.stat(cachepath)
+            cachepath_lm = cachestat.st_mtime
+            cachepath_am = cachestat.st_atime
+            headers["If-Modified-Since"] = formatdate(cachepath_lm, usegmt = True)
+        except OSError:
+            pass
+
+        req = urllib2.Request(self._game_class._get_download_url(self), headers = headers)
+
+        try:
+            self.load_fresh = False
+
+            if cachepath_lm < 0 or (time() - cachepath_am) > config.cache_schema_grace_time:
+                response = urllib2.urlopen(req)
+                dumped = marshal.dumps(json.load(response))
+                open(cachepath, "wb").write(dumped)
+                self.load_fresh = True
+
+                server_lm = parsedate(response.headers.get("last-modified"))
+                if server_lm: cachepath_lm = mktime(server_lm)
+            else:
+                dumped = open(cachepath, "rb").read()
+        except urllib2.HTTPError as err:
+            code = err.getcode()
+            if code != 304:
+                logging.error("Server returned {0} when trying to do asset dance for assets-{1}".format(code, self._app_id))
+            else:
+                logging.debug("assets-{0} hasn't changed".format(self._app_id))
+                cachepath_am = time()
+            dumped = open(cachepath, "rb").read()
+        except urllib2.URLError as err:
+            logging.error("Asset server connection error: " + str(err))
+            dumped = open(cachepath, "rb").read()
+
+        # So we don't bother wasting Valve's bandwidth with our massive 1KB or so request
+        os.utime(cachepath, (cachepath_am, cachepath_lm))
+
+        return dumped
+
+    def _deserialize(self, assets):
+        return marshal.loads(assets)
+
+    def __init__(self, lang = None, currency = None):
+        try:
+            self._game_class = getattr(steam, web.ctx.current_game).assets
+        except AttributeError:
+            return
+        cached_asset_catalog.__bases__ = (self._game_class,)
+
+        self._game_class.__init__(self, lang, currency)
+
+
 class cached_item_schema(steam.items.schema):
     def _download(self):
         cachepath = os.path.join(config.cache_file_dir, "schema-" + self._app_id + "-" + self.get_language())
@@ -72,7 +132,11 @@ class cached_item_schema(steam.items.schema):
         return marshal.loads(schema)
 
     def __init__(self, lang = None, fresh = False):
-        self._game_class = getattr(steam, web.ctx.current_game).item_schema
+        try:
+            self._game_class = getattr(steam, web.ctx.current_game).item_schema
+        except AttributeError:
+            raise steam.items.SchemaError("steamodd hasn't implemented a schema for this game!")
+
         cached_item_schema.__bases__ = (self._game_class,)
 
         self.optf2_paints = {}

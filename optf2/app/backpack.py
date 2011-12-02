@@ -184,10 +184,13 @@ class fetch:
         web.ctx.env["optf2_rss_title"] = "{0}'s Backpack".format(user.get_persona().encode("utf-8"))
 
         web.ctx["current_user"] = user.get_id64()
+
+        price_stats = itemtools.get_price_stats(items)
         return templates.inventory(user, isvalve, items, views,
                                    filter_classes, baditems,
                                    stats, filter_qualities,
-                                   total_pages, schema._app_id)
+                                   total_pages, schema._app_id,
+                                   price_stats)
 
 class feed:
     def GET(self, game, sid):
