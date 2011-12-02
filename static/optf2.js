@@ -123,6 +123,20 @@ $(document).ready(function(){
 
     $(".button").mousedown(function() { return false; });
 
+    $(".box").each(function() {
+        var box = $(this);
+
+        if(!box.hasClass("autosize")) {
+            return;
+        }
+
+        var innerlength = 0;
+        box.children().not(".titlebar").each(function() {
+            innerlength += $(this).outerWidth(true);
+        });
+        box.width(innerlength);
+    });
+
     var search = $("#search-field");
     var default_search = "Search...";
 
