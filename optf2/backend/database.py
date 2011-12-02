@@ -93,17 +93,14 @@ class cached_item_schema(steam.items.schema):
 def load_profile_cached(sid, stale = False):
     return steam.user.profile(sid)
 
-def load_schema_cached(lang, fresh = False):
-    return cached_item_schema(lang, fresh)
-
 def refresh_pack_cache(user):
-    pack = getattr(steam, web.ctx.current_game).backpack(schema = load_schema_cached(web.ctx.language))
+    pack = getattr(steam, web.ctx.current_game).backpack(schema = cached_item_schema(web.ctx.language))
     pack.load(user)
 
     try:
         packitems = list(pack)
     except steam.items.ItemError:
-        pack.set_schema(load_schema_cached(web.ctx.language, fresh = True))
+        pack.set_schema(cached_item_schema(web.ctx.language))
         packitems = list(pack)
 
     return packitems

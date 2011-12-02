@@ -173,7 +173,7 @@ def process_attributes(items, gift = False):
 
     default_item_image = config.static_prefix + "item_icons/Invalid_icon.png";
     newitems = []
-    schema = database.load_schema_cached(web.ctx.language)
+    schema = database.cached_item_schema(web.ctx.language)
 
     for item in items:
         if not item: continue
@@ -375,7 +375,7 @@ def get_equippable_classes(items):
     """ Returns a set of classes that can equip the listed items """
 
     valid_classes = set()
-    schema = database.load_schema_cached(web.ctx.language)
+    schema = database.cached_item_schema(web.ctx.language)
 
     if not items: return []
 

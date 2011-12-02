@@ -28,7 +28,7 @@ class items:
         try:
             web.ctx.current_game = app
             query = web.input()
-            items = database.load_schema_cached(web.ctx.language)
+            items = database.cached_item_schema(web.ctx.language)
             filter_qualities = itemtools.get_present_qualities(items)
             filter_capabilities = itemtools.get_present_capabilities(items)
 
@@ -60,7 +60,7 @@ class attributes:
         try:
             web.ctx.current_game = app
             query = web.input()
-            schema = database.load_schema_cached(web.ctx.language)
+            schema = database.cached_item_schema(web.ctx.language)
             attribs = schema.get_attributes()
 
             attachment_check = query.get("att")
@@ -95,7 +95,7 @@ class particles:
     def GET(self, app):
         try:
             web.ctx.current_game = app
-            schema = database.load_schema_cached(web.ctx.language)
+            schema = database.cached_item_schema(web.ctx.language)
             particles = schema.get_particle_systems()
 
             return templates.particle_dump(particles)

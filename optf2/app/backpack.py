@@ -20,7 +20,7 @@ class loadout:
             userp = database.load_profile_cached(user)
             items = database.load_pack_cached(userp)
             equippeditems = {}
-            schema = database.load_schema_cached(web.ctx.language)
+            schema = database.cached_item_schema(web.ctx.language)
             valid_classes = schema.get_classes().values()
             slotlist = ["Head", "Misc", "Primary", "Secondary", "Melee", "Pda", "Pda2", "Building", "Action"]
 
@@ -64,7 +64,7 @@ class loadout:
 class item:
     def GET(self, app, iid):
         web.ctx.current_game = app
-        schema = database.load_schema_cached(web.ctx.language)
+        schema = database.cached_item_schema(web.ctx.language)
         user = None
         item_outdated = False
         try:
@@ -178,7 +178,7 @@ class fetch:
 
         views = database.get_user_pack_views(user)
         isvalve = (user.get_primary_group() == config.valve_group_id)
-        schema = database.load_schema_cached(web.ctx.language)
+        schema = database.cached_item_schema(web.ctx.language)
 
         web.ctx.env["optf2_rss_url"] = generate_mode_url("feed/" + str(user.get_id64()))
         web.ctx.env["optf2_rss_title"] = "{0}'s Backpack".format(user.get_persona().encode("utf-8"))
