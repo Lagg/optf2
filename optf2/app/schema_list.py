@@ -28,7 +28,7 @@ class items:
         try:
             web.ctx.current_game = app
             query = web.input()
-            items = database.load_schema_cached(web.ctx.language)
+            items = database.cached_item_schema(web.ctx.language)
             filter_qualities = itemtools.get_present_qualities(items)
             filter_capabilities = itemtools.get_present_capabilities(items)
 
@@ -43,12 +43,15 @@ class items:
 
             stats = itemtools.get_stats(items)
             filter_classes = itemtools.get_equippable_classes(items)
+            items = itemtools.process_attributes(items)
+            price_stats = itemtools.get_price_stats(items)
 
-            return templates.schema_dump(itemtools.process_attributes(items),
+            return templates.schema_dump(items,
                                          filter_classes,
-                                         filter_qualities = filter_qualities,
-                                         filter_capabilities = filter_capabilities,
-                                         stats = stats)
+                                         filter_qualities,
+                                         filter_capabilities,
+                                         stats,
+                                         price_stats)
         except:
             return templates.error("Couldn't load schema")
 
@@ -59,23 +62,32 @@ class attributes:
         try:
             web.ctx.current_game = app
             query = web.input()
-            schema = database.load_schema_cached(web.ctx.language)
+            schema = database.cached_item_schema(web.ctx.language)
             attribs = schema.get_attributes()
 
             attachment_check = query.get("att")
+            attribute = None
             if attachment_check:
                 items = schema
                 attached_items = []
+
+                for attr in attribs:
+                    if attr.get_name() == attachment_check:
+                        attribute = attr
+                        break
+                if not attribute:
+                    return templates.error(attachment_check + ": No such attribute")
 
                 for item in items:
                     attrs = item.get_attributes()
                     for attr in attrs:
                         attr_name = attr.get_name()
                         if attachment_check == attr_name:
+                            if not attribute: attribute = attr
                             attached_items.append(item)
                             break
 
-                return templates.schema_dump(itemtools.process_attributes(attached_items), [], attrdump = attachment_check)
+                return templates.attribute_attachments(itemtools.process_attributes(attached_items), attribute)
 
             return templates.attrib_dump(attribs)
         except:
@@ -85,9 +97,9 @@ class particles:
     def GET(self, app):
         try:
             web.ctx.current_game = app
-            schema = database.load_schema_cached(web.ctx.language)
+            schema = database.cached_item_schema(web.ctx.language)
             particles = schema.get_particle_systems()
 
             return templates.particle_dump(particles)
-        except KeyboardInterrupt:
+        except:
             return templates.error("Couldn't load particle systems")

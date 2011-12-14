@@ -1,4 +1,4 @@
-$def with (user, isvalve, items, views, filter_classes, baditems, stats, filter_qualities, total_pages, appid)
+$def with (user, isvalve, items, views, filter_classes, baditems, stats, filter_qualities, total_pages, appid, price_stats)
 $ usern = user.get_persona()
 $ profileurl = user.get_profile_url()
 $ realn = user.get_real_name()
@@ -40,13 +40,14 @@ $ onlinestates = {0: "offline", 1: "online", 2: "busy", 3: "away", 4: "snooze"}
       </div>
     </div>
     <div class="tool">
-      $views
-      $if views == 1:
-          view
-      $else:
-          views
-      <br/>
-      $stats["weapons"] weapons | $stats["hats"] hats | $stats["misc"] misc ($stats["total"] total)
+      $stats["weapons"] weapons | $stats["hats"] hats | $stats["misc"] misc ($stats["total"] total) <br/>
+      $if price_stats["worth"]:
+          Worth:
+          $# loop.last breaks on iteritems. WORKAROUND
+          $ worth = price_stats["worth"]
+          $for k in worth.keys():
+              $worth[k] <b>$k</b>
+              $if not loop.last: |
     </div>
     <div id="option-controls" class="tool" style="border-right: 0;">
       <div class="dropdown-menu">
@@ -102,6 +103,10 @@ $ onlinestates = {0: "offline", 1: "online", 2: "busy", 3: "away", 4: "snooze"}
           $for item in baditems:
               $:markup.generate_cell(item, invalid = True)
         </div>
+    $if price_stats["most-expensive"]:
+        $ most_expensive = price_stats["most-expensive"][0]
+    $else:
+        $ most_expensive = None
     $for p in total_pages:
         <div id="page-${p}" class="backpack-page">
           $ slice = p * 50

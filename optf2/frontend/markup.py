@@ -131,6 +131,9 @@ def generate_cell(item, invalid = False, show_equipped = True):
     if uncraftable:
         markup += '<div class="attr-neutral">Uncraftable</div>'
 
+    if schema_item and "price" in item.optf2:
+        markup += '<div class="attr-neutral">Price: ${0}</div>'.format(item.optf2["price"]["USD"])
+
     markup += '</div></div>\n'
 
     return markup

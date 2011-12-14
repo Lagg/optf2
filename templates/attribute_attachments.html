@@ -1,0 +1,22 @@
+$def with (items, attribute)
+$ attrname = attribute.get_name()
+$var title: $project_name - Items with $attrname attached
+
+$ returnurl = markup.generate_mode_url('attributes#' + encode_url(attrname.replace(' ', '_')))
+<div id="header">
+  $if not items:
+      <h1><a href="$returnurl">No schema items have <b class="attr-$attribute.get_type()">$attrname</b> attached.</a></h1>
+</div>
+<div id="content" style="margin: 20px;">
+  $if items:
+      <div class="box" id="attribute-attachments" style="width: 590px; margin: 0 auto 15px auto;">
+        <div class="titlebar">Items with <b class="attr-$attribute.get_type()">$attrname</b> attached</div>
+        $for item in items:
+            <div class="slot-item">
+            $:markup.generate_cell(item)
+            </div>
+      </div>
+  <div id="footer">
+    <a style="font-size: 1.5em;" class="button" href="$returnurl">Back to table</a>
+  </div>
+</div>

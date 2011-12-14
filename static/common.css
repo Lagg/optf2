@@ -324,13 +324,13 @@ a.button { text-decoration: none; }
 .dropdown-menu ul li:hover { background: #404040; }
 .dropdown-menu:hover ul { display: block; }
 
-.toolbar { background: #505050; position: relative; border: 1px solid black; padding: 5px; height: 36px; min-width: 1080px; }
+.toolbar { background: #505050; position: relative; border: 1px solid black; padding: 1em; height: 3em; min-width: 1080px; }
 .tool {
     text-align: left;
     padding: 2px 20px 0 20px;
     float: left;
     border-right: 1px solid white;
-    height: 34px;
+    height: 100%;
 }
 
 .capability-list {

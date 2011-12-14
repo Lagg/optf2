@@ -8,7 +8,7 @@ $var title: $project_name - $user.get_persona()'s Loadout List
   $if items:
       <div style="margin: 0 auto 0 auto; width: 90%;">
         $for lclass in classlist:
-            <div class="box" id="$lclass">
+            <div class="autosize box" id="$lclass" style="margin: 30px auto 30px auto;">
               <div class="titlebar">
                 <img style="position: absolute; left: 2px; top: 2px;" src="${static_prefix}${lclass}_icon.png" alt="class icon"/>
                 <a id="$lclass" href="#$lclass" style="margin-left: 30px;">$lclass</a>
