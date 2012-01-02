@@ -173,8 +173,8 @@ def process_attributes(items, gift = False):
 
     default_item_image = config.static_prefix + "item_icons/Invalid_icon.png";
     newitems = []
-    schema = database.cached_item_schema(web.ctx.language)
-    assets = database.cached_asset_catalog(web.ctx.language)
+    schema = database.load_schema_cached(web.ctx.language)
+    assets = database.load_assets_cached(web.ctx.language)
 
     for item in items:
         if not item: continue
@@ -186,8 +186,9 @@ def process_attributes(items, gift = False):
         item.optf2["image_url"] = item.get_image(item.ITEM_IMAGE_SMALL) or default_item_image
         item.optf2["image_url_large"] = item.get_image(item.ITEM_IMAGE_LARGE) or default_item_image
         try:
-            itemasset = assets[item]
-            item.optf2["price"] = itemasset
+            if assets:
+                itemasset = assets[item]
+                item.optf2["price"] = itemasset
         except KeyError: pass
         min_level = item.get_min_level()
         max_level = item.get_max_level()
@@ -380,7 +381,7 @@ def get_equippable_classes(items):
     """ Returns a set of classes that can equip the listed items """
 
     valid_classes = set()
-    schema = database.cached_item_schema(web.ctx.language)
+    schema = database.load_schema_cached(web.ctx.language)
 
     if not items: return []
 
@@ -440,12 +441,12 @@ def filter_by_capability(items, capability):
     return filtered
 
 def get_price_stats(items):
-    try:
-        assets = database.cached_asset_catalog(web.ctx.language)
-    except steam.items.AssetError:
-        return {}
-
+    assets = database.load_assets_cached(web.ctx.language)
     stats = {"worth": {}, "most-expensive": []}
+
+    if not assets:
+        return stats
+
     worth = stats["worth"]
     costs = {}
 

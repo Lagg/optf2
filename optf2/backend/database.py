@@ -14,76 +14,81 @@ ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
 OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 """
 
-import config, steam, urllib2, web, os, marshal, json, logging
+import config, steam, urllib2, web, os, json, logging
+import cPickle as pickle
 from email.utils import formatdate, parsedate
 from time import time, mktime
 
+class CacheStale(steam.items.Error):
+    def __init__(self, msg):
+        steam.items.Error.__init__(self, msg)
+        self.msg = msg
+
 class cached_asset_catalog(steam.items.assets):
     def _download(self):
-        cachepath = os.path.join(config.cache_file_dir, "assets-" + self._app_id + "-" + web.ctx.language)
-        cachepath_lm = -1
-        cachepath_am = time()
-        headers = {}
+        return self._http.download()
 
+    def __new__(cls, *args, **kwargs):
         try:
-            cachestat = os.stat(cachepath)
-            cachepath_lm = cachestat.st_mtime
-            cachepath_am = cachestat.st_atime
-            headers["If-Modified-Since"] = formatdate(cachepath_lm, usegmt = True)
-        except OSError:
-            pass
+            game_class = getattr(steam, web.ctx.current_game).assets
+        except AttributeError:
+            raise steam.items.AssetError("steamodd hasn't implemented an asset catalog for " + web.ctx.current_game)
+        cls.__bases__ = (game_class, )
+        instance = super(cached_asset_catalog, cls).__new__(cls, *args, **kwargs)
 
-        req = urllib2.Request(self._game_class._get_download_url(self), headers = headers)
-
-        try:
-            self.load_fresh = False
-
-            if cachepath_lm < 0 or (time() - cachepath_am) > config.cache_schema_grace_time:
-                response = urllib2.urlopen(req)
-                dumped = marshal.dumps(json.load(response))
-                open(cachepath, "wb").write(dumped)
-                self.load_fresh = True
-
-                server_lm = parsedate(response.headers.get("last-modified"))
-                if server_lm: cachepath_lm = mktime(server_lm)
-            else:
-                dumped = open(cachepath, "rb").read()
-        except urllib2.HTTPError as err:
-            code = err.getcode()
-            if code != 304:
-                logging.error("Server returned {0} when trying to do asset dance for assets-{1}".format(code, self._app_id))
-            else:
-                logging.debug("assets-{0} hasn't changed".format(self._app_id))
-                cachepath_am = time()
-            dumped = open(cachepath, "rb").read()
-        except urllib2.URLError as err:
-            logging.error("Asset server connection error: " + str(err))
-            dumped = open(cachepath, "rb").read()
-
-        # So we don't bother wasting Valve's bandwidth with our massive 1KB or so request
-        os.utime(cachepath, (cachepath_am, cachepath_lm))
-
-        return dumped
-
-    def _deserialize(self, assets):
-        return marshal.loads(assets)
+        return instance
 
     def __init__(self, lang = None, currency = None):
-        try:
-            self._game_class = getattr(steam, web.ctx.current_game).assets
-        except AttributeError:
-            return
-        cached_asset_catalog.__bases__ = (self._game_class,)
+        self._http = http_helpers(self)
 
-        self._game_class.__init__(self, lang, currency)
-
+        super(cached_asset_catalog, self).__init__(lang, currency)
 
 class cached_item_schema(steam.items.schema):
     def _download(self):
-        cachepath = os.path.join(config.cache_file_dir, "schema-" + self._app_id + "-" + self.get_language())
-        cachepath_lm = -1
+        return self._http.download()
+
+    def __new__(cls, *args, **kwargs):
+        try:
+            game_class = getattr(steam, web.ctx.current_game).item_schema
+        except AttributeError:
+            raise steam.items.SchemaError("steamodd hasn't implemented a schema for " + web.ctx.current_game)
+        cls.__bases__ = (game_class, )
+        instance = super(cached_item_schema, cls).__new__(cls, *args, **kwargs)
+
+        return instance
+
+    def __init__(self, lang = None, fresh = False):
+        self.optf2_paints = {}
+        self._http = http_helpers(self)
+
+        super(cached_item_schema, self).__init__(lang)
+
+        for item in self:
+            if item._schema_item.get("name", "").startswith("Paint Can"):
+                for attr in item:
+                    if attr.get_name().startswith("set item tint RGB"):
+                        self.optf2_paints[int(attr.get_value())] = item.get_schema_id()
+
+def generate_cache_path(obj):
+    try:
+        name = obj.__name__
+    except AttributeError:
+        name = obj.__class__.__name__
+
+    return os.path.join(config.cache_file_dir, name +
+                        "-" + web.ctx.current_game + "-" + web.ctx.language)
+
+class http_helpers:
+    """ Probably going to be made into proper request objects
+    later """
+
+    def download(self):
+        cachepath = self.get_cache_path()
+        basename = os.path.basename(cachepath)
         cachepath_am = time()
+        cachepath_lm = None
         headers = {}
+        dumped = None
 
         try:
             cachestat = os.stat(cachepath)
@@ -96,75 +101,81 @@ class cached_item_schema(steam.items.schema):
         except OSError:
             pass
 
-        req = urllib2.Request(self._game_class._get_download_url(self), headers = headers)
+        req = urllib2.Request(self._obj._get_download_url(), headers = headers)
 
         try:
-            self.load_fresh = False
-
-            if cachepath_lm < 0 or (time() - cachepath_am) > config.cache_schema_grace_time:
+            if not os.path.exists(cachepath) or (time() - cachepath_am) > config.cache_schema_grace_time:
                 response = urllib2.urlopen(req)
-                dumped = marshal.dumps(json.load(response))
-                open(cachepath, "wb").write(dumped)
-                self.load_fresh = True
-
+                dumped = response.read()
                 server_lm = parsedate(response.headers.get("last-modified"))
                 if server_lm: cachepath_lm = mktime(server_lm)
-            else:
-                dumped = open(cachepath, "rb").read()
         except urllib2.HTTPError as err:
             code = err.getcode()
             if code != 304:
-                logging.error("Server returned {0} when trying to do cache dance for schema-{1}".format(code, self._app_id))
+                logging.error(basename + ": Server returned " + str(code))
             else:
-                logging.debug("schema-{0} hasn't changed".format(self._app_id))
-                cachepath_am = time()
-            dumped = open(cachepath, "rb").read()
+                logging.debug(basename + ": No change")
         except urllib2.URLError as err:
             logging.error("Schema server connection error: " + str(err))
-            dumped = open(cachepath, "rb").read()
 
-        # So we don't bother wasting Valve's bandwidth with our massive 1KB or so request
-        os.utime(cachepath, (cachepath_am, cachepath_lm))
+        self._obj.cache_am = cachepath_am
+        self._obj.cache_lm = cachepath_lm
+
+        if not dumped: raise CacheStale("No change")
 
         return dumped
 
-    def _deserialize(self, schema):
-        return marshal.loads(schema)
+    def get_cache_path(self):
+        return self.__cachepath
 
-    def __init__(self, lang = None, fresh = False):
+    def __init__(self, obj):
+        """ Accepts an object implementing the base
+        steamodd downloadable API """
+
+        self._obj = obj
+        self.__cachepath = generate_cache_path(obj)
+
+# This will be a placehold for memcached for now
+cached = {}
+
+def load_schema_cached(lang = None):
+    return steamodd_api_request(cached_item_schema, lang)
+
+def load_assets_cached(lang = None):
+    return steamodd_api_request(cached_asset_catalog, lang)
+
+def steamodd_api_request(apiobj, *args, **kwargs):
+    def touch_pickle_cache(obj):
         try:
-            self._game_class = getattr(steam, web.ctx.current_game).item_schema
-        except AttributeError:
-            raise steam.items.SchemaError("steamodd hasn't implemented a schema for this game!")
+            os.utime(generate_cache_path(obj), (int(time()), obj.cache_lm))
+        except Exception as E:
+            logging.error("Failed to touch cache: " + str(E))
 
-        cached_item_schema.__bases__ = (self._game_class,)
-
-        self.optf2_paints = {}
-        paintcache = os.path.join(config.cache_file_dir, "paints-" + self._app_id)
-
-        self._game_class.__init__(self, lang)
-
-        if os.path.exists(paintcache) and not self.load_fresh:
-            self.optf2_paints = marshal.load(open(paintcache, "rb"))
-        else:
-            for item in self:
-                if item._schema_item.get("name", "").startswith("Paint Can"):
-                    for attr in item:
-                        if attr.get_name().startswith("set item tint RGB"):
-                            self.optf2_paints[int(attr.get_value())] = item.get_schema_id()
-            marshal.dump(self.optf2_paints, open(paintcache, "wb"))
+    cachepath = generate_cache_path(apiobj)
+    try:
+        obj = apiobj(*args, **kwargs)
+        pickle.dump(obj, open(cachepath, "wb"), pickle.HIGHEST_PROTOCOL)
+        touch_pickle_cache(obj)
+        return obj
+    except steam.items.AssetError as E:
+        print "No " + cachepath + ": " + str(E)
+        return None
+    except:
+        staleobj = cached.get(cachepath, pickle.load(open(cachepath, "rb")))
+        if cachepath in cached: cached[cachepath] = staleobj
+        return staleobj
 
 def load_profile_cached(sid, stale = False):
     return steam.user.profile(sid)
 
 def refresh_pack_cache(user):
-    pack = getattr(steam, web.ctx.current_game).backpack(schema = cached_item_schema(web.ctx.language))
+    pack = getattr(steam, web.ctx.current_game).backpack(schema = load_schema_cached(web.ctx.language))
     pack.load(user)
 
     try:
         packitems = list(pack)
     except steam.items.ItemError:
-        pack.set_schema(cached_item_schema(web.ctx.language))
+        pack.set_schema(load_schema_cached(web.ctx.language))
         packitems = list(pack)
 
     return packitems

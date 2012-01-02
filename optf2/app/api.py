@@ -62,7 +62,7 @@ class wiki_attributes:
         web.ctx.current_game = app
 
         for lang in config.valid_languages:
-            schema = database.cached_item_schema(lang = lang)
+            schema = database.load_schema_cached(lang = lang)
             sattrs = schema.get_attributes()
             for attr in sattrs:
                 aid = attr.get_id()

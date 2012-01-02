@@ -18,13 +18,13 @@ class loadout:
         web.ctx.current_user = user
         try:
             userp = database.load_profile_cached(user)
-            items = database.load_pack_cached(userp)
+            items = itemtools.process_attributes(database.load_pack_cached(userp))
             equippeditems = {}
-            schema = database.cached_item_schema(web.ctx.language)
+            schema = database.load_schema_cached(web.ctx.language)
             valid_classes = schema.get_classes().values()
             slotlist = ["Head", "Misc", "Primary", "Secondary", "Melee", "Pda", "Pda2", "Building", "Action"]
 
-            normalitems = itemtools.filter_by_quality(schema, "0")
+            normalitems = itemtools.process_attributes(itemtools.filter_by_quality(schema, "0"))
             for item in normalitems:
                 classes = item.get_equipable_classes()
                 for c in classes:
@@ -36,7 +36,7 @@ class loadout:
                     if slot not in equippeditems[c]:
                         equippeditems[c][slot] = []
 
-                    equippeditems[c][slot].append(itemtools.process_attributes([item])[0])
+                    equippeditems[c][slot].append(item)
 
             for item in items:
                 classes = item.get_equipped_classes()
@@ -51,7 +51,7 @@ class loadout:
                     if slot not in slotlist: slotlist.append(slot)
                     if slot not in equippeditems[c] or equippeditems[c][slot][0].get_quality()["id"] == 0:
                         equippeditems[c][slot] = []
-                    equippeditems[c][slot].append(itemtools.process_attributes([item])[0])
+                    equippeditems[c][slot].append(item)
 
             return templates.loadout(userp, equippeditems, valid_classes, slotlist)
         except steam.items.Error as E:
@@ -64,7 +64,7 @@ class loadout:
 class item:
     def GET(self, app, iid):
         web.ctx.current_game = app
-        schema = database.cached_item_schema(web.ctx.language)
+        schema = database.load_schema_cached(web.ctx.language)
         user = None
         item_outdated = False
         try:
@@ -178,7 +178,7 @@ class fetch:
 
         views = database.get_user_pack_views(user)
         isvalve = (user.get_primary_group() == config.valve_group_id)
-        schema = database.cached_item_schema(web.ctx.language)
+        schema = database.load_schema_cached(web.ctx.language)
 
         web.ctx.env["optf2_rss_url"] = generate_mode_url("feed/" + str(user.get_id64()))
         web.ctx.env["optf2_rss_title"] = "{0}'s Backpack".format(user.get_persona().encode("utf-8"))
