@@ -35,9 +35,12 @@ def generate_mode_url(path = None):
     return virtual_root + cg + "/" + (path or "")
 
 def generate_item_url(item):
-    user = web.ctx.get("current_user", "")
-    if user: user = user + "/"
-    return generate_mode_url("item/" + user + str(item.get_id() or item.get_schema_id()))
+    user = ""
+    itemid = item.get_id()
+
+    if itemid: user = web.ctx.get("current_user", "") + "/"
+
+    return generate_mode_url("item/" + user + str(itemid or item.get_schema_id()))
 
 def generate_cell(item, invalid = False, show_equipped = True):
     if not item: return '<div class="item_cell"></div>'
