@@ -262,7 +262,7 @@ def process_attributes(items, gift = False):
                     item.optf2["color"] = item_color
                 continue
 
-            if attrname == "attach particle effect":
+            if attrname.startswith("attach particle effect"):
                 particles = schema.get_particle_systems()
                 particleid = int(theattr.get_value())
                 particlename = particles.get(particleid)
