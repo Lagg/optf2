@@ -1,4 +1,21 @@
-$ game_label = game_modes[instance.current_game]
-$var title: $project_name $game_label
+$if instance.current_game:
+    $ game_label = game_modes[instance.current_game]
+    $ game_logo_suffix = instance.current_game
+    $var title: $project_name $game_label
+$else:
+    $var title: $project_name
+    $ game_logo_suffix = "tf2"
 
-<img id="logo" src="${static_prefix}logo_${instance.current_game}.png" alt="Logo"/>
+<img id="logo" src="${static_prefix}logo_${game_logo_suffix}.png" alt="Logo"/>
+
+<div class="box" style="width: 35%; margin: 0 auto 0 auto;">
+  <div class="titlebar">Welcome to the newly rewritten OPTF2</div>
+  <p style="font-size: 1.5em;">
+    I am currently working on making the index pages (Where you're at right now) more populated.<br/><br/>
+    In the meantime check out the links found above which include an attribute list, particle list (Complete with optf2's icons), and item list for
+    various games.<br/><br/>
+    You may also enter a Steam community URL, name, or ID in the search box above which also features autocomplete, and view
+    a user's backpack with various tools and filters.
+    <h1>Please visit the IRC channel if you encounter any issues. Top reporters might get a little somethin' somethin'.</h1>
+  </p>
+</div>

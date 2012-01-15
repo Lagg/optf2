@@ -138,7 +138,7 @@ $(document).ready(function(){
     });
 
     var search = $("#search-field");
-    var default_search = "Search...";
+    var default_search = "Enter name, URL, or ID";
 
     search.autocomplete({
         minLength: 2,

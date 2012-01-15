@@ -10,7 +10,7 @@ urls = (
     config.virtual_root + "persona/(.+)", app.api.persona,
     config.virtual_root + "comp/(.+)", app.api.search_profile,
     config.virtual_root + "about", app.static.about,
-    config.virtual_root, app.index.main
+    config.virtual_root, app.index.game_root
     )
 
 generic_urls = [
