@@ -47,9 +47,6 @@ enable_fastcgi = False
 os.environ["SCRIPT_NAME"] = ''
 os.environ["REAL_SCRIPT_NAME"] = ''
 
-# The starting size of the backpack
-backpack_padded_size = 300
-
 # The cache directory, this will
 # have sensitive data in it that
 # shouldn't be publicly accessible

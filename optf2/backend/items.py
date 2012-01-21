@@ -50,17 +50,21 @@ def get_invalid_pos(items):
 def condensed_to_id64(value):
     return "7656" + str(int(value) + 1197960265728)
 
-def sort(items, sortby):
+def sort(items, sortby, defaultsize = 0):
     if not items:
-        return [None] * config.backpack_padded_size
+        return [None] * defaultsize
 
     items = list(items)
     itemcmp = None
 
+    items.sort(key = operator.methodcaller("get_position"))
+    highestpos = items[-1].get_position()
+
     if sortby == "serial" or sortby == "time":
         itemcmp = operator.methodcaller("get_id")
     elif sortby == "cell":
-        itemcmp = operator.methodcaller("get_position")
+        # done by pos sort
+        pass
     elif sortby == "level":
         def levelcmp(obj):
             level = obj.get_level()
@@ -92,24 +96,13 @@ def sort(items, sortby):
     if itemcmp:
         items.sort(key = itemcmp)
 
-    itemcount = len(items)
-    highestpos = items[-1].get_position()
-
-    if itemcount < config.backpack_padded_size:
-        itemcount = config.backpack_padded_size
-
-    if sortby == "cell" and highestpos > itemcount:
-        itemcount = highestpos
-
     if sortby == "time":
         items.reverse()
 
-    rem = itemcount % 50
-    if rem != 0: itemcount += (50 - rem)
-    pagecount = itemcount / 50
+    highestpos += (50 - (highestpos % 50 or 50))
 
     if sortby == "cell":
-        newitems = [None] * (itemcount + 1)
+        newitems = [None] * (highestpos + 1)
         for item in items:
             pos = item.get_position()
             try:
@@ -119,7 +112,7 @@ def sort(items, sortby):
         del newitems[0]
         return newitems
 
-    return items + ([None] * (itemcount - len(items)))
+    return items + ([None] * (highestpos - len(items)))
 
 def filter_by_class(items, theclass):
     filtered_items = []
