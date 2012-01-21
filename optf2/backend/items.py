@@ -69,7 +69,7 @@ def sort(items, sortby, defaultsize = 0):
         def levelcmp(obj):
             level = obj.get_level()
 
-            if not level:
+            if level == None:
                 level = obj.get_min_level()
                 levelmax = obj.get_max_level()
                 if level != levelmax: level = levelmax - level
