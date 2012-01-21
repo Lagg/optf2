@@ -138,6 +138,7 @@ class fetch:
 
         try:
             items = database.load_pack_cached(user, pid = packid)
+            cell_count = items.get_total_cells()
             if not items and user.get_visibility() != 3:
                 raise steam.user.ProfileError("Backpack is private")
 
@@ -190,7 +191,7 @@ class fetch:
                                    filter_classes, baditems,
                                    stats, filter_qualities,
                                    total_pages, schema._app_id,
-                                   price_stats)
+                                   price_stats, cell_count)
 
 class feed:
     def GET(self, game, sid):

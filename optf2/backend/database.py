@@ -178,7 +178,7 @@ def refresh_pack_cache(user):
         pack.set_schema(load_schema_cached(web.ctx.language))
         packitems = list(pack)
 
-    return packitems
+    return pack
 
 def get_pack_timeline_for_user(user, tl_size = None):
     """ Returns None if a backpack couldn't be found, returns
