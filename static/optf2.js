@@ -12,15 +12,10 @@ $(document).ready(function(){
     var thepage = hashpart.substring(6) - 1;
     var attrib_dict = {};
 
-    var domattribs = $(".tooltip");
-
     $(".item-link").each(function() {
         var idpart = String($(this).parent().attr("id").slice(1));
         itemurls[idpart] = $(this).attr("href");
     });
-
-    domattribs.each(function() { this.id = "a" + $(this).parent().attr("id"); attrib_dict[String(this.id)] = this; });
-    domattribs.remove();
 
     if (pages.length > 0) {
         page_switcher.id = "page-switcher";
@@ -72,9 +67,8 @@ $(document).ready(function(){
     });
 
     cells.hover(function() {
-        var attribs = $(attrib_dict["a" + this.id])
+        var attribs = $(this).find(".tooltip");
         var currentoffset = $(this).offset();
-        attribs.appendTo(document.body);
         attribs.show();
         currentoffset["top"] += $(this).height() + 5;
         currentoffset["left"] -= (attribs.width() / 3.4);
@@ -101,11 +95,12 @@ $(document).ready(function(){
             }
         }
     }, function() {
-        $("#a" + this.id).remove();
+        $(this).find(".tooltip").hide();
     });
+    $(".tooltip").hover(function() { $(this).hide(); });
 
     $(document).scroll(function() {
-        $(".tooltip").remove();
+        $(".tooltip").hide();
     });
 
     $(".item-link").click(function(event) {
