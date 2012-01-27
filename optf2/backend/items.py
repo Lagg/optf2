@@ -180,7 +180,7 @@ def process_attributes(items, gift = False):
         item.optf2["image_url_large"] = item.get_image(item.ITEM_IMAGE_LARGE) or default_item_image
         try:
             if assets:
-                itemasset = assets[item]
+                itemasset = assets[item].get_price()
                 item.optf2["price"] = itemasset
         except KeyError: pass
         min_level = item.get_min_level()
@@ -444,7 +444,7 @@ def get_price_stats(items):
     costs = {}
 
     for item in items:
-        try: asset = assets[item]
+        try: asset = assets[item].get_price()
         except KeyError: continue
         costs[item] = asset
         for k, v in asset.iteritems():
