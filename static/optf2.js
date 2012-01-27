@@ -66,6 +66,56 @@ $(document).ready(function(){
         fade_untradable();
     });
 
+    /* Still somewhat experimental, aim to replace most
+       of toolbar */
+    var filterbar = document.createElement("input");
+    var default_filter = "Search (beta)..."
+    filterbar.setAttribute("type", "text");
+    filterbar.setAttribute("id", "filterbar");
+    filterbar.setAttribute("title", "Search for quality, name, or attribute. More coming soon");
+    filterbar.value = default_filter;
+    $(filterbar).appendTo("#option-controls");
+    $(filterbar).focus(function() { this.value = ""; });
+    $(filterbar).focusout(function() { this.value = default_filter; });
+
+    function filtermagic(e) {
+	var filter = $("#filterbar").val().toLowerCase();
+	var cells = $(".item_cell");
+
+	if (filter.length == 0) {
+	    cells.show();
+	    return;
+	}
+
+	cells.each(function() {
+	    var cell = $(this);
+	    var attribs = cell.find(".tooltip");
+
+	    if (attribs.length == 0) {
+		cell.hide();
+		return;
+	    }
+
+	    if (cell.hasClass("cell-" + filter)) {
+		cell.show();
+		return;
+	    }
+
+	    attribs.each(function() {
+		var name = $(this).text().toLowerCase();
+		var pos = name.search(filter);
+
+		if(pos == -1) {
+		    cell.hide();
+		} else {
+		    cell.show();
+		    return false;
+		}
+	    });
+	});
+    }
+    $(filterbar).autocomplete({delay: 100, minLength: 0, search: filtermagic, source: []});
+
     cells.hover(function() {
         var attribs = $(this).find(".tooltip");
         var currentoffset = $(this).offset();

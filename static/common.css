@@ -204,6 +204,13 @@ body { background: #181818; color: white; font-family: Arial, Helvetica, sans-se
     cursor: pointer;
 }
 
+#filterbar {
+    border-radius: 8px;
+    background-color: #404040;
+    border: 1px solid red;
+    color: white;
+}
+
 a { font-weight: bold; color: white; text-decoration: none; }
 a:hover { text-decoration: underline; }
 a:visited { text-decoration: none; }
