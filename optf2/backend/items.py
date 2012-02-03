@@ -331,6 +331,11 @@ def process_attributes(items, gift = False):
         color_2 = item.optf2.get("color_2")
         paint_job = ""
         prefix = ""
+        origin_name = ""
+
+        itemorigin = item.get_origin_name()
+        if itemorigin:
+            origin_name = ", " + itemorigin
 
         if color and color_2:
             paint_job = '<span><b style="color: {0};">Pain</b><b style="color: {1};">ted</b></span>'.format(color,
@@ -362,9 +367,10 @@ def process_attributes(items, gift = False):
         levelprefix = "Level " + str(item.optf2["level"]) + " "
         if item.optf2["rank_name"]:
             levelprefix = ""
-        item.optf2["level_string"] = '<div class="item-level">{0}{1} {2}</div>'.format(levelprefix,
-                                                                                       item.optf2["rank_name"],
-                                                                                       item.optf2["type"].encode("utf-8"))
+        item.optf2["level_string"] = '<div class="item-level">{0}{1} {2}{3}</div>'.format(levelprefix,
+                                                                                          item.optf2["rank_name"],
+                                                                                          item.optf2["type"].encode("utf-8"),
+                                                                                          origin_name.encode("utf-8"))
 
         newitems.append(item)
 
