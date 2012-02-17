@@ -14,7 +14,7 @@ ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
 OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 """
 
-import web, config, steam, database, re, operator, time
+import web, config, steam, database, re, operator, time, cgi
 from optf2.frontend.markup import absolute_url
 
 qualitydict = {"unique": "The",
@@ -175,7 +175,9 @@ def process_attributes(items, gift = False):
             item.optf2 = {}
         attrs = item.get_attributes()
         item.optf2["attrs"] = []
-        item.optf2["description"] = item.get_description()
+        desc = item.get_custom_description() or item.get_description()
+        if desc: item.optf2["description"] = cgi.escape(desc)
+        else: item.optf2["description"] = None
         item.optf2["image_url"] = item.get_image(item.ITEM_IMAGE_SMALL) or default_item_image
         item.optf2["image_url_large"] = item.get_image(item.ITEM_IMAGE_LARGE) or default_item_image
         try:
@@ -186,7 +188,6 @@ def process_attributes(items, gift = False):
         min_level = item.get_min_level()
         max_level = item.get_max_level()
         pb_level = item.get_level()
-        custom_desc = item.get_custom_description()
         giftcontents = item.get_contents()
         killtypestrings = schema.get_kill_types()
         defaulttype = killtypestrings.get(0, "Broken")
@@ -202,8 +203,6 @@ def process_attributes(items, gift = False):
         if itype.startswith("TF_"): itype = ""
         item.optf2["type"] = itype
 
-        if custom_desc: item.optf2["description"] = custom_desc
-
         if min_level == max_level:
             item.optf2["level"] = str(min_level)
         else:
@@ -218,7 +217,7 @@ def process_attributes(items, gift = False):
             if attrname == "referenced item def":
                 if not giftcontents:
                     giftcontents = schema[int(theattr.get_value())]
-                newattr["description_string"] = 'Contains ' + giftcontents.get_full_item_name(prefixes = qualitydict)
+                newattr["description_string"] = 'Contains ' + cgi.escape(giftcontents.get_full_item_name(prefixes = qualitydict))
                 newattr["hidden"] = False
 
             if (attrname == "set item tint RGB" or
@@ -322,11 +321,11 @@ def process_attributes(items, gift = False):
         if giftcontents:
             item.optf2["contents"] = giftcontents
             item.optf2["content_string"] = ('Contains <span class="prefix-{0}">{1}</span>').format(giftcontents.get_quality()["str"],
-                                                                                                   giftcontents.get_full_item_name(prefixes = qualitydict))
+                                                                                                   cgi.escape(giftcontents.get_full_item_name(prefixes = qualitydict)))
 
         quality_str = item.get_quality()["str"]
-        full_qdict_name = item.get_full_item_name(prefixes = qualitydict)
-        full_default_name = item.get_full_item_name({"normal": None, "unique": None})
+        full_qdict_name = cgi.escape(item.get_full_item_name(prefixes = qualitydict))
+        full_default_name = cgi.escape(item.get_full_item_name({"normal": None, "unique": None}))
         color = item.optf2.get("color")
         color_2 = item.optf2.get("color_2")
         paint_job = ""
