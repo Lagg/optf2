@@ -14,7 +14,7 @@ ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
 OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 """
 
-import web, config, steam, database, re, operator, time, cgi
+import web, config, steam, database, re, operator, time
 from optf2.frontend.markup import absolute_url
 
 qualitydict = {"unique": "The",
@@ -32,7 +32,7 @@ capabilitydict = {"can_gift_wrap": "Gift wrappable",
                   "paintable": "Paintable"}
 
 def _(thestring):
-    return thestring.encode("utf-8")
+    return web.utils.safestr(thestring)
 
 def get_invalid_pos(items):
     poslist = []
@@ -176,7 +176,7 @@ def process_attributes(items, gift = False):
         attrs = item.get_attributes()
         item.optf2["attrs"] = []
         desc = item.get_custom_description() or item.get_description()
-        if desc: item.optf2["description"] = cgi.escape(desc)
+        if desc: item.optf2["description"] = web.websafe(desc)
         else: item.optf2["description"] = None
         item.optf2["image_url"] = item.get_image(item.ITEM_IMAGE_SMALL) or default_item_image
         item.optf2["image_url_large"] = item.get_image(item.ITEM_IMAGE_LARGE) or default_item_image
@@ -213,11 +213,14 @@ def process_attributes(items, gift = False):
         for theattr in attrs:
             newattr = {}
             attrname = theattr.get_name()
+            attrvaluetype = theattr.get_value_type()
+            account_info = theattr.get_account_info()
+            item.optf2[str(theattr.get_id()) + "_account"] = account_info
 
             if attrname == "referenced item def":
                 if not giftcontents:
                     giftcontents = schema[int(theattr.get_value())]
-                newattr["description_string"] = 'Contains ' + cgi.escape(giftcontents.get_full_item_name(prefixes = qualitydict))
+                newattr["description_string"] = 'Contains ' + web.websafe(giftcontents.get_full_item_name(prefixes = qualitydict))
                 newattr["hidden"] = False
 
             if (attrname == "set item tint RGB" or
@@ -263,20 +266,12 @@ def process_attributes(items, gift = False):
                 newattr["description_string"] = ("Effect: " + particlename)
                 item.optf2["particle-id"] = particleid
 
-            if attrname == "gifter account id":
-                # Yes, I'm using account_info. Deal with it Ath. DEAL. WITH. IT.
-                account_info = theattr.get_account_info()
-                item.optf2["gifter_id"] = account_info["id64"]
-                item.optf2["gifter_persona"] = account_info["persona"]
-                newattr["description_string"] = "Gift from {0}".format(account_info["persona"].encode("utf-8"))
+            if attrvaluetype == "account_id" and account_info:
                 newattr["hidden"] = False
+                newattr["description_string"] = _(theattr.get_description().replace("%s1", account_info["persona"]))
 
-            if attrname == "makers mark id":
-                account_info = theattr.get_account_info()
-                item.optf2["crafter_id"] = account_info["id64"]
-                item.optf2["crafter_persona"] = account_info["persona"]
-                newattr["description_string"] = "Crafted by {0}".format(account_info["persona"].encode("utf-8"))
-                newattr["hidden"] = False
+            if attrname == "gifter account id":
+                item.optf2["gift"] = True
 
             if attrname == "unique craft index":
                 newattr["description_string"] = "Craft number: " + str(int(theattr.get_value()))
@@ -321,11 +316,11 @@ def process_attributes(items, gift = False):
         if giftcontents:
             item.optf2["contents"] = giftcontents
             item.optf2["content_string"] = ('Contains <span class="prefix-{0}">{1}</span>').format(giftcontents.get_quality()["str"],
-                                                                                                   cgi.escape(giftcontents.get_full_item_name(prefixes = qualitydict)))
+                                                                                                   web.websafe(giftcontents.get_full_item_name(prefixes = qualitydict)))
 
         quality_str = item.get_quality()["str"]
-        full_qdict_name = cgi.escape(item.get_full_item_name(prefixes = qualitydict))
-        full_default_name = cgi.escape(item.get_full_item_name({"normal": None, "unique": None}))
+        full_qdict_name = web.websafe(item.get_full_item_name(prefixes = qualitydict))
+        full_default_name = web.websafe(item.get_full_item_name({"normal": None, "unique": None}))
         color = item.optf2.get("color")
         color_2 = item.optf2.get("color_2")
         paint_job = ""
@@ -368,8 +363,8 @@ def process_attributes(items, gift = False):
             levelprefix = ""
         item.optf2["level_string"] = '<div class="item-level">{0}{1} {2}{3}</div>'.format(levelprefix,
                                                                                           item.optf2["rank_name"],
-                                                                                          item.optf2["type"].encode("utf-8"),
-                                                                                          origin_name.encode("utf-8"))
+                                                                                          _(item.optf2["type"]),
+                                                                                          _(origin_name))
 
         newitems.append(item)
 

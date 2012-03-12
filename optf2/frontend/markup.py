@@ -87,7 +87,7 @@ def generate_cell(item, invalid = False, show_equipped = True):
         markup += '<img src="' + static_prefix + 'name_tag.png" class="icon-name" alt="Named"/>'
     if item.get_custom_description():
         markup += '<img src="' + static_prefix + 'desc_tag.png" class="icon-desc"  alt="Described"/>'
-    if "gifter_id" in item.optf2:
+    if item.optf2.get("gift"):
         markup += '<img src="' + static_prefix + 'gift_icon.png" class="icon-gift"  alt="Gift"/>'
     if "color" in item.optf2:
         markup += '<span class="paint_splotch" style="background: ' + item.optf2['color'] + ';">&nbsp;</span>'
