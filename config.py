@@ -3,7 +3,8 @@ import socket, web, os
 # See steamodd for supported modes
 game_modes = {"p2": "Portal 2",
               "tf2b": "Team Fortress 2 Beta",
-              "tf2": "Team Fortress 2"}
+              "tf2": "Team Fortress 2",
+              "d2": "DOTA 2"}
 
 # You probably want this to be
 # an absolute path if you're not running the built-in server
@@ -67,7 +68,8 @@ valid_languages = ["da", "nl", "en", "fi", "fr", "de", "it", "ja",
                    "ko", "no", "pl", "pt", "ru", "zh", "es", "sv"]
 
 wiki_mapping = {"p2": ("Portal Wiki", "http://theportalwiki.com/wiki/"),
-                "tf2": ("Official TF Wiki", "http://wiki.teamfortress.com/wiki/")}
+                "tf2": ("Official TF Wiki", "http://wiki.teamfortress.com/wiki/"),
+                "d2": ("DOTA Wiki", "http://dota2wiki.com/wiki/")}
 wiki_mapping["tf2b"] = wiki_mapping["tf2"]
 
 # The 64 bit ID of the Valve group (this is how I check
