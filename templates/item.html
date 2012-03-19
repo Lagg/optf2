@@ -80,7 +80,9 @@ $def generate_class_icon_link(classes):
       $if "container_id" in extra and not serial:
           <div class="attr-positive">
             Unopened <a href="$markup.generate_mode_url('item/{0}/{1}'.format(user.get_id64(), extra['container_id']))">Gift</a> from
-            <a href="$markup.generate_mode_url('user/{0}'.format(extra['gifter_id']))">$extra["gifter_persona"]</a>
+	    $ giftgiver = extra.get("gift")
+	    $if giftgiver:
+                <a href="$markup.generate_mode_url('user/{0}'.format(giftgiver["id64"]))">$giftgiver["persona"]</a>
           </div>
       $elif serial:
 	  $ oserial = item.get_original_id()

@@ -271,7 +271,7 @@ def process_attributes(items, gift = False):
                 newattr["description_string"] = _(theattr.get_description().replace("%s1", account_info["persona"]))
 
             if attrname == "gifter account id":
-                item.optf2["gift"] = True
+                item.optf2["gift"] = account_info
 
             if attrname == "unique craft index":
                 newattr["description_string"] = "Craft number: " + str(int(theattr.get_value()))
