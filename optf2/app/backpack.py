@@ -89,9 +89,9 @@ class live_item:
     def GET(self, app, user, iid):
         web.ctx.current_game = app
         web.ctx["current_user"] = user
-        user = database.load_profile_cached(user)
         item_outdated = False
         try:
+            user = database.load_profile_cached(user)
             items = database.load_pack_cached(user)
             theitem = None
             for item in items:
