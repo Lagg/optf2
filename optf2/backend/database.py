@@ -14,7 +14,7 @@ ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
 OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 """
 
-import config, steam, urllib2, web, os, json, logging
+import config, steam, urllib2, web, os, json, logging, threading
 import cPickle as pickle
 from email.utils import formatdate, parsedate
 from time import time, mktime
@@ -152,18 +152,25 @@ def steamodd_api_request(apiobj, *args, **kwargs):
             logging.error("Failed to touch cache: " + str(E))
 
     cachepath = generate_cache_path(apiobj)
+    lock = threading.Lock()
+    obj = None
+
     try:
         obj = apiobj(*args, **kwargs)
-        pickle.dump(obj, open(cachepath, "wb"), pickle.HIGHEST_PROTOCOL)
-        touch_pickle_cache(obj)
-        return obj
     except steam.items.AssetError as E:
-        print "No " + cachepath + ": " + str(E)
-        return None
+        print("No " + cachepath + ": " + str(E))
     except:
-        staleobj = cached.get(cachepath, pickle.load(open(cachepath, "rb")))
-        if cachepath in cached: cached[cachepath] = staleobj
-        return staleobj
+        pass
+
+    with lock:
+        if not obj and os.path.exists(cachepath):
+            obj = cached.get(cachepath, pickle.load(open(cachepath, "rb")))
+            if cachepath in cached: cached[cachepath] = obj
+        else:
+            pickle.dump(obj, open(cachepath, "wb"), pickle.HIGHEST_PROTOCOL)
+            touch_pickle_cache(obj)
+
+    return obj
 
 def load_profile_cached(sid, stale = False):
     return steam.user.profile(sid)
