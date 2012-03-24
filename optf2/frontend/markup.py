@@ -123,11 +123,8 @@ def generate_cell(item, invalid = False, show_equipped = True):
         paintcan = item.optf2["paint_name"]
         markup += '<div class="attr-positive">{1} with {2}</div>'.format(item.optf2["painted_text"], item.get_name())
 
-    if "kill_count" in item.optf2:
-        markup += '<div class="attr-positive">{0}: {1}</div>'.format(item.optf2["kill_type"], item.optf2["kill_count"])
-
-    if "kill_count_2" in item.optf2:
-        markup += '<div class="attr-positive">{0}: {1}</div>'.format(item.optf2["kill_type_2"], item.optf2["kill_count_2"])
+    for line in item.optf2["eaters"]:
+        markup += '<div class="attr-positive">' + line + '</div>'
 
     if untradable:
         markup += '<div class="attr-neutral">Untradable</div>'

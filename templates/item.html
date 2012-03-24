@@ -53,10 +53,8 @@ $def generate_class_icon_link(classes):
 	$if acct:
             <a href="$markup.generate_mode_url('user/{0}'.format(acct['id64']))">(more)</a>
       </div>
-  $if "kill_count" in extra:
-      <div class="attr-positive">$extra["kill_type"]: $extra["kill_count"]</div>
-  $if "kill_count_2" in extra:
-      <div class="attr-positive">$extra["kill_type_2"]: $extra["kill_count_2"]</div>
+  $for line in extra["eaters"]:
+    <div class="attr-positive">$line</div>
   $ style = item.get_current_style_name()
   $if style: <div class="attr-neutral">Style: $style</div>
   $ quantity = item.get_quantity()

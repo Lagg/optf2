@@ -189,15 +189,15 @@ def process_attributes(items, gift = False):
         max_level = item.get_max_level()
         pb_level = item.get_level()
         giftcontents = item.get_contents()
-        killtypestrings = schema.get_kill_types()
-        defaulttype = killtypestrings.get(0, "Broken")
-
-        item.optf2["kill_type"] = defaulttype
-        item.optf2["kill_type_2"] = defaulttype
 
         rank = item.get_rank()
         if rank: item.optf2["rank_name"] = rank["name"]
         else: item.optf2["rank_name"] = ""
+
+        item.optf2["eaters"] = []
+        if rank:
+            for line in item.get_kill_eaters():
+                item.optf2["eaters"].append("{0}: {1}".format(line[1], line[2]))
 
         itype = item.get_type()
         if itype.startswith("TF_"): itype = ""
@@ -283,17 +283,6 @@ def process_attributes(items, gift = False):
                 d = time.gmtime(theattr.get_value())
                 newattr["description_string"] = "Tradable after: " + time.strftime("%F %H:%M:%S", d)
                 newattr["hidden"] = False
-
-            if attrname == "kill eater":
-                item.optf2["kill_count"] = int(theattr.get_value())
-
-            if attrname == "kill eater 2":
-                item.optf2["kill_count_2"] = int(theattr.get_value())
-
-            if attrname == "kill eater score type":
-                item.optf2["kill_type"] = killtypestrings.get(int(theattr.get_value()), defaulttype)
-            if attrname == "kill eater score type 2":
-                item.optf2["kill_type_2"] = killtypestrings.get(int(theattr.get_value()), defaulttype)
 
             if attrname == "set supply crate series":
                 item.optf2["series"] = int(theattr.get_value())
