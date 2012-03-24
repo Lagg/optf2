@@ -164,10 +164,14 @@ def steamodd_api_request(apiobj, *args, **kwargs):
 
     with lock:
         if not obj and os.path.exists(cachepath):
-            obj = cached.get(cachepath, pickle.load(open(cachepath, "rb")))
+            cf = open(cachepath, "rb")
+            obj = cached.get(cachepath, pickle.load(cf))
+            cf.close()
             if cachepath in cached: cached[cachepath] = obj
         else:
-            pickle.dump(obj, open(cachepath, "wb"), pickle.HIGHEST_PROTOCOL)
+            cf = open(cachepath, "wb")
+            pickle.dump(obj, cf, pickle.HIGHEST_PROTOCOL)
+            cf.close()
             touch_pickle_cache(obj)
 
     return obj
