@@ -433,6 +433,9 @@ def get_price_stats(items):
     costs = {}
 
     for item in items:
+        if not item: continue
+        if item.get_origin_id() != 2:
+            continue # Not explicit purchase
         try: asset = assets[item].get_price()
         except KeyError: continue
         costs[item] = asset
