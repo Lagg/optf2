@@ -207,8 +207,10 @@ body { background: #181818; color: white; font-family: Arial, Helvetica, sans-se
 #filterbar {
     border-radius: 8px;
     background-color: #404040;
-    border: 1px solid red;
+    border: 1px solid black;
     color: white;
+    margin: 3px;
+    padding: 2px;
 }
 
 a { font-weight: bold; color: white; text-decoration: none; }

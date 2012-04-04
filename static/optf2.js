@@ -69,14 +69,12 @@ $(document).ready(function(){
     /* Still somewhat experimental, aim to replace most
        of toolbar */
     var filterbar = document.createElement("input");
-    var default_filter = "Search (beta)..."
+    var default_filter = "Search..."
     filterbar.setAttribute("type", "text");
     filterbar.setAttribute("id", "filterbar");
-    filterbar.setAttribute("title", "Search for quality, name, or attribute. More coming soon");
     filterbar.value = default_filter;
     $(filterbar).appendTo("#option-controls");
     $(filterbar).focus(function() { this.value = ""; });
-    $(filterbar).focusout(function() { this.value = default_filter; });
 
     function filtermagic(e) {
 	var filter = $("#filterbar").val().toLowerCase();
