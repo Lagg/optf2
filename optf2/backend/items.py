@@ -424,19 +424,22 @@ def filter_by_capability(items, capability):
 
 def get_price_stats(items):
     assets = database.load_assets_cached(web.ctx.language)
-    stats = {"worth": {}, "most-expensive": []}
+    stats = {"worth": {}, "most-expensive": [], "avg": {}}
 
     if not assets:
         return stats
 
     worth = stats["worth"]
     costs = {}
+    count = 0
 
     for item in items:
         if not item: continue
-        if item.get_origin_id() != 2:
+        if item.get_id() and item.get_origin_id() != 2:
             continue # Not explicit purchase
-        try: asset = assets[item].get_price()
+        try:
+            asset = assets[item].get_price()
+            count += 1
         except KeyError: continue
         costs[item] = asset
         for k, v in asset.iteritems():
@@ -445,5 +448,9 @@ def get_price_stats(items):
             else:
                 worth[k] += v
     stats["most-expensive"] = [item[0] for item in sorted(costs.iteritems(), reverse = True, key = operator.itemgetter(1))[:10]]
+
+    if count != 0:
+        for k, v in worth.iteritems():
+            stats["avg"][k] = round((v / count), 2)
 
     return stats

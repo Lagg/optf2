@@ -45,11 +45,11 @@ $var title: $project_name - All Items
     <div style="float: right; text-align: left;">
       $stats["weapons"] weapons | $stats["hats"] hats | $stats["misc"] misc ($stats["total"] total) <br/>
       $if price_stats["worth"]:
-        Worth:
+        Total store price:
         $# loop.last breaks on iteritems. WORKAROUND
         $ worth = price_stats["worth"]
         $for k in worth.keys():
-            $worth[k] <b>$k</b>
+            ${worth[k]} (${price_stats["avg"][k]} avg) <b>$k</b>
             $if not loop.last: |
     </div>
  </div>

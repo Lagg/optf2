@@ -47,11 +47,11 @@ $ onlinestates = {0: "offline", 1: "online", 2: "busy", 3: "away", 4: "snooze"}
           | <b style="color: red">Pack is over capacity</b>
       <br/>
       $if price_stats["worth"]:
-          Worth:
+          Store worth:
           $# loop.last breaks on iteritems. WORKAROUND
           $ worth = price_stats["worth"]
           $for k in worth.keys():
-              $worth[k] <b>$k</b>
+              ${worth[k]} (${price_stats["avg"][k]} avg) <b>$k</b>
               $if not loop.last: |
     </div>
     <div id="option-controls" class="tool" style="border-right: 0;">
