@@ -14,7 +14,7 @@ ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
 OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 """
 
-import config, steam, urllib2, web, os, json, logging, threading
+import config, steam, urllib2, web, os, json, logging
 import cPickle as pickle
 from email.utils import formatdate, parsedate
 from time import time, mktime
@@ -152,7 +152,6 @@ def steamodd_api_request(apiobj, *args, **kwargs):
             logging.error("Failed to touch cache: " + str(E))
 
     cachepath = generate_cache_path(apiobj)
-    lock = threading.Lock()
     obj = None
 
     try:
@@ -162,17 +161,22 @@ def steamodd_api_request(apiobj, *args, **kwargs):
     except:
         pass
 
-    with lock:
-        if not obj and os.path.exists(cachepath):
-            cf = open(cachepath, "rb")
-            obj = cached.get(cachepath, pickle.load(cf))
-            cf.close()
-            if cachepath in cached: cached[cachepath] = obj
-        else:
-            cf = open(cachepath, "wb")
-            pickle.dump(obj, cf, pickle.HIGHEST_PROTOCOL)
-            cf.close()
-            touch_pickle_cache(obj)
+    if obj:
+        try:
+            with open(cachepath, "wb") as cf:
+                pickle.dump(obj, cf, pickle.HIGHEST_PROTOCOL)
+                touch_pickle_cache(obj)
+        except Exception as E:
+            logging.error("Failed to write cache: {0}".format(E))
+            pass # Still return fresh object
+    elif os.path.exists(cachepath):
+        try:
+            with open(cachepath, "rb") as cf:
+                obj = cached.get(cachepath, pickle.load(cf))
+        except Exception as E:
+            logging.error("Error loading from {0}: {1}".format(cachepath, E))
+            return None
+        if cachepath in cached: cached[cachepath] = obj
 
     return obj
 
