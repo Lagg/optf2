@@ -41,6 +41,12 @@ def lang_hook():
     if lang not in config.valid_languages: lang = "en"
     web.ctx.language = lang
 
+def motd_hook():
+    if not config.motd_path or not os.path.exists(config.motd_path): return
+
+    with open(config.motd_path, "r") as motd:
+        web.ctx["motd"] = motd.read()
+
 def internalerror():
     logging.error(web.ctx.fullpath + ": " + traceback.format_exc())
     return web.internalerror(app.template.template.error(config.project_name + " has hit an unhandled error. Moving that traceback up!"))
@@ -50,6 +56,7 @@ def notfound():
 
 application.add_processor(web.loadhook(mode_hook))
 application.add_processor(web.loadhook(lang_hook))
+application.add_processor(web.loadhook(motd_hook))
 
 if not web.config.debug: application.internalerror = internalerror
 application.notfound = notfound

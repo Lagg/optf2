@@ -364,3 +364,5 @@ a.button { text-decoration: none; }
 .capability-list li {
     margin-left: 8px;
 }
+
+.motd { padding-left: 4px; }

@@ -32,6 +32,9 @@ $def with (content)
           <a href="$virtual_root$mode">$label</a>
       <a href="${virtual_root}about">Credits</a>
       <form method="get" id="search-form" action="$markup.generate_mode_url()"><input type="text" id="search-field" name="user"/><input type="submit" id="search-button" value="Go"/></form>
+      $ motd = instance.get("motd")
+      $if motd:
+          <span class="motd">$:motd</span>
     </div>
     $if instance.current_game:
         <div class="navbar">

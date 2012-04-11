@@ -75,3 +75,6 @@ wiki_mapping["tf2b"] = wiki_mapping["tf2"]
 # The 64 bit ID of the Valve group (this is how I check
 # if the user is a Valve employee)
 valve_group_id = 103582791429521412
+
+# The path to the MOTD file, if file exists and isn't empty the contents will be shown filtered in the navbar
+motd_path = "motd"
