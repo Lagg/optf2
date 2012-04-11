@@ -85,10 +85,10 @@ $def generate_class_icon_link(classes):
       $elif serial:
 	  $ oserial = item.get_original_id()
           <div class="attr-neutral">
-            Serial: <span id="item_id">$serial</span>
+            ID: <span id="item_id">$serial</span>
           </div>
 	  $if oserial and oserial != serial:
-	      <div class="attr-neutral">Previous serial: $oserial</div>
+	      <div class="attr-neutral">Last ID: $oserial</div>
       <div class="attr-neutral">
         $ pos = item.get_position()
         Position: \
