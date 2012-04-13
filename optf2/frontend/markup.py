@@ -15,8 +15,11 @@ OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 """
 
 import web
-from config import static_prefix, virtual_root
 from urlparse import urljoin
+from optf2.backend import config
+
+virtual_root = config.ini.get("resources", "virtual-root")
+static_prefix = config.ini.get("resources", "static-prefix")
 
 def absolute_url(relative_url):
     return urljoin(web.ctx.homedomain, relative_url)
