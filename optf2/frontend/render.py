@@ -2,6 +2,7 @@ import logging
 import traceback
 import web
 import os
+import random
 
 from optf2.backend import config
 from optf2 import app
@@ -51,7 +52,8 @@ def motd_hook():
     if not motdfile or not os.path.exists(motdfile): return
 
     with open(motdfile, "r") as motd:
-        web.ctx["motd"] = motd.read()
+        motdlines = motd.readlines()
+        web.ctx["motd"] = motdlines[random.randint(0, len(motdlines) -1 )]
 
 def internalerror():
     logging.error(web.ctx.fullpath + ": " + traceback.format_exc())
