@@ -14,10 +14,17 @@ ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
 OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 """
 
-import config, steam, urllib2, web, os, json, logging
+import web
+import os
+import json
+import logging
+import urllib2
 import cPickle as pickle
 from email.utils import formatdate, parsedate
 from time import time, mktime
+
+import steam
+from optf2.backend import config
 
 class CacheStale(steam.items.Error):
     def __init__(self, msg):
@@ -75,7 +82,7 @@ def generate_cache_path(obj):
     except AttributeError:
         name = obj.__class__.__name__
 
-    return os.path.join(config.cache_file_dir, name +
+    return os.path.join(config.ini.get("resources", "cache-dir"), name +
                         "-" + web.ctx.current_game + "-" + web.ctx.language)
 
 class http_helpers:
@@ -104,8 +111,8 @@ class http_helpers:
         req = urllib2.Request(self._obj._get_download_url(), headers = headers)
 
         try:
-            if not os.path.exists(cachepath) or (time() - cachepath_am) > config.cache_schema_grace_time:
-                response = urllib2.urlopen(req)
+            if not os.path.exists(cachepath) or (time() - cachepath_am) > config.ini.get("database", "max-schema-staleness"):
+                response = urllib2.urlopen(req, timeout = config.ini.getint("steam", "fetch-timeout"))
                 dumped = response.read()
                 server_lm = parsedate(response.headers.get("last-modified"))
                 if server_lm: cachepath_lm = mktime(server_lm)

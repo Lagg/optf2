@@ -1,16 +1,21 @@
-import config, web, os
-import optf2.backend.items as itemtools
-from optf2.frontend import markup as markuptools
-import optf2.app as app
-import logging, traceback
+import logging
+import traceback
+import web
+import os
 
-logging.basicConfig(filename = os.path.join(config.cache_file_dir, "op.log"), level = logging.ERROR)
+from optf2.backend import config
+from optf2 import app
+
+virtual_root = config.ini.get("resources", "virtual-root")
+valid_languages = [str(code).strip() for code in config.ini.get("misc", "languages").split(',')]
+
+logging.basicConfig(filename = os.path.join(config.ini.get("resources", "cache-dir"), "op.log"), level = logging.ERROR)
 
 urls = (
-    config.virtual_root + "persona/(.+)", app.api.persona,
-    config.virtual_root + "comp/(.+)", app.api.search_profile,
-    config.virtual_root + "about", app.static.about,
-    config.virtual_root, app.index.game_root
+    virtual_root + "persona/(.+)", app.api.persona,
+    virtual_root + "comp/(.+)", app.api.search_profile,
+    virtual_root + "about", app.static.about,
+    virtual_root, app.index.game_root
     )
 
 generic_urls = [
@@ -28,7 +33,7 @@ generic_urls = [
     ]
 
 for url in generic_urls:
-    urls += (config.virtual_root + "(" + ("|".join(config.game_modes.keys())) + ")/" + url[0], url[1])
+    urls += (virtual_root + "(" + "|".join([op[0] for op in config.ini.items("modes")]) + ")/" + url[0], url[1])
 
 application = web.application(urls, globals())
 
@@ -38,18 +43,19 @@ def mode_hook():
 def lang_hook():
     lang = web.input().get("lang")
 
-    if lang not in config.valid_languages: lang = "en"
+    if lang not in valid_languages: lang = "en"
     web.ctx.language = lang
 
 def motd_hook():
-    if not config.motd_path or not os.path.exists(config.motd_path): return
+    motdfile = config.ini.get("motd", "filename")
+    if not motdfile or not os.path.exists(motdfile): return
 
-    with open(config.motd_path, "r") as motd:
+    with open(motdfile, "r") as motd:
         web.ctx["motd"] = motd.read()
 
 def internalerror():
     logging.error(web.ctx.fullpath + ": " + traceback.format_exc())
-    return web.internalerror(app.template.template.error(config.project_name + " has hit an unhandled error. Moving that traceback up!"))
+    return web.internalerror(app.template.template.error(config.ini.get("misc", "project-name") + " has hit an unhandled error. Moving that traceback up!"))
 
 def notfound():
     return web.notfound(app.template.template.error("You've hit a 404. Witty quotes coming soon!"))
@@ -58,5 +64,5 @@ application.add_processor(web.loadhook(mode_hook))
 application.add_processor(web.loadhook(lang_hook))
 application.add_processor(web.loadhook(motd_hook))
 
-if not web.config.debug: application.internalerror = internalerror
+if not config.ini.getboolean("cgi", "web-debug-mode"): application.internalerror = internalerror
 application.notfound = notfound

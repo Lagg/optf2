@@ -1,12 +1,14 @@
-import steam, urllib2
+import urllib2
 import cPickle as pickle
-from optf2.backend import database
-from optf2.backend import items as itemtools
-from optf2.frontend.markup import generate_mode_url
 import web
 import time
-import config
+
 import template
+import steam
+from optf2.backend import database
+from optf2.backend import items as itemtools
+from optf2.backend import config
+from optf2.frontend.markup import generate_mode_url
 
 templates = template.template
 
@@ -178,7 +180,7 @@ class fetch:
             return templates.error("Failed to load backpack")
 
         views = database.get_user_pack_views(user)
-        isvalve = (user.get_primary_group() == config.valve_group_id)
+        isvalve = (int(user.get_primary_group()) == config.ini.getint("steam", "valve-group-id"))
         schema = database.load_schema_cached(web.ctx.language)
 
         web.ctx.env["optf2_rss_url"] = generate_mode_url("feed/" + str(user.get_id64()))
@@ -204,6 +206,6 @@ class feed:
         except Exception as E:
             return templates.error(str(E))
         web.header("Content-Type", "application/rss+xml")
-        return web.template.render(config.template_dir,
+        return web.template.render(config.ini.get("resources", "template-dir"),
                                    globals = template.globals).inventory_feed(user, items)
 

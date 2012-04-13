@@ -28,8 +28,8 @@ $def with (content)
   <body>
     <div class="navbar">
       <a href="$virtual_root">$project_name</a>
-      $for mode, label in game_modes.iteritems():
-          <a href="$virtual_root$mode">$label</a>
+      $for mode in game_modes:
+          <a href="$virtual_root${mode[0]}">${mode[1]}</a>
       <a href="${virtual_root}about">Credits</a>
       <form method="get" id="search-form" action="$markup.generate_mode_url()"><input type="text" id="search-field" name="user"/><input type="submit" id="search-button" value="Go"/></form>
       $ motd = instance.get("motd")

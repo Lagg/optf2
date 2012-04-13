@@ -90,8 +90,8 @@ $ onlinestates = {0: "offline", 1: "online", 2: "busy", 3: "away", 4: "snooze"}
       <div class="dropdown-menu">
         <b>OPNet</b>
         <ul>
-          $for k, v in game_modes.iteritems():
-              <li><a href="${virtual_root}${k}/user/${user.get_id64()}">$v</a></li>
+          $for mode in game_modes:
+              <li><a href="${virtual_root}${mode[0]}/user/${user.get_id64()}">$mode[1]</a></li>
         </ul>
       </div>
       <a class="button" href="$markup.generate_mode_url('loadout/{0}'.format(user.get_id64()))">Loadouts</a>

@@ -1,7 +1,9 @@
-import template, web, config, json
+import web
+import json
 from optf2.backend import database
 from optf2.frontend.markup import generate_mode_url
 import api
+import template
 
 def handle_searchbar_input():
     user = web.input().get("user")

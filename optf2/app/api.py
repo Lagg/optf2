@@ -1,5 +1,10 @@
-import web, urllib2, json, steam, os, config
+import web
+import urllib2
+import json
+import os
+import steam
 from optf2.backend import database
+from optf2.backend import config
 
 class search_profile:
     """ Searches for an account matching the username given in the query
@@ -15,7 +20,7 @@ class search_profile:
         search_url = self._community_url + "actions/Search?T=Account&K={0}".format(web.urlquote(user))
 
         try:
-            res = urllib2.urlopen(search_url).read().split('<a class="linkTitle" href="')
+            res = urllib2.urlopen(search_url, timeout = config.ini.getint("steam", "fetch-timeout")).read().split('<a class="linkTitle" href="')
             userlist = []
 
             for user in res:
@@ -61,7 +66,7 @@ class wiki_attributes:
         sattrs = None
         web.ctx.current_game = app
 
-        for lang in config.valid_languages:
+        for lang in [str(l).strip() for l in config.ini.get("misc", "languages").split(',')]:
             schema = database.load_schema_cached(lang = lang)
             sattrs = schema.get_attributes()
             for attr in sattrs:

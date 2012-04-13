@@ -14,8 +14,14 @@ ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
 OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 """
 
-import web, config, steam, database, re, operator, time
+import web
+import re
+import time
+import operator
+import steam
+import database
 from optf2.frontend.markup import absolute_url
+from optf2.backend import config
 
 qualitydict = {"unique": "The",
                "normal": ""}
@@ -164,7 +170,7 @@ def process_attributes(items, gift = False):
     """ Filters attributes for the item list,
     optf2-specific data is stored in item.optf2 """
 
-    default_item_image = config.static_prefix + "item_icons/Invalid_icon.png";
+    default_item_image = config.ini.get("resources", "static-prefix") + "item_icons/Invalid_icon.png";
     newitems = []
     schema = database.load_schema_cached(web.ctx.language)
     assets = database.load_assets_cached(web.ctx.language)
@@ -246,7 +252,7 @@ def process_attributes(items, gift = False):
                 if (not secondary_color and
                     item._schema_item.get("name", "").startswith("Paint Can") and
                     raw_rgb != 0):
-                    paintcan_url = "{0}item_icons/Paint_Can_{1}.png".format(config.static_prefix,
+                    paintcan_url = "{0}item_icons/Paint_Can_{1}.png".format(config.ini.get("resources", "static-prefix"),
                                                                             item_color[1:])
                     item.optf2["image_url"] = absolute_url(paintcan_url)
                     item.optf2["image_url_large"] = absolute_url(paintcan_url)

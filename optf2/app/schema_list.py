@@ -15,10 +15,10 @@ OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 """
 
 import web
+import template
 from optf2.backend import items as itemtools
 from optf2.backend import database
-import config
-import template
+
 templates = template.template
 
 class items:
