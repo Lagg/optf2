@@ -80,6 +80,8 @@ $(document).ready(function(){
 	var filter = $("#filterbar").val().toLowerCase();
 	var cells = $(".item_cell");
 
+	cells.hide();
+
 	if (filter.length == 0) {
 	    cells.show();
 	    return;
@@ -89,30 +91,21 @@ $(document).ready(function(){
 	    var cell = $(this);
 	    var attribs = cell.find(".tooltip");
 
-	    if (attribs.length == 0) {
-		cell.hide();
-		return;
-	    }
-
 	    if (cell.hasClass("cell-" + filter)) {
 		cell.show();
 		return;
 	    }
 
 	    attribs.each(function() {
-		var name = $(this).text().toLowerCase();
-		var pos = name.search(filter);
-
-		if(pos == -1) {
-		    cell.hide();
-		} else {
+		if (this.textContent.toLowerCase().search(filter) != -1) {
 		    cell.show();
-		    return false;
+		    return;
 		}
 	    });
 	});
     }
-    $(filterbar).autocomplete({delay: 100, minLength: 0, search: filtermagic, source: []});
+    $(filterbar).keyup(filtermagic);
+    $(filterbar).keydown(filtermagic);
 
     cells.hover(function() {
         var attribs = $(this).find(".tooltip");
