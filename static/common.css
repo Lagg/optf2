@@ -1,4 +1,4 @@
-body { background: #181818; color: white; font-family: Arial, Helvetica, sans-serif; font-size: 11px; }
+body { background: #222223; color: white; font-family: Arial, Helvetica, sans-serif; font-size: 11px; }
 
 .backpack-page, .box { zoom: 1; }
 .backpack-page:after, .box:after {
@@ -72,9 +72,9 @@ body { background: #181818; color: white; font-family: Arial, Helvetica, sans-se
 .prefix-giftwrapped { color: #cf2700; }
 
 .item_cell {
-    border: 1px solid #000000;
+    border: 1px solid black;
     margin: 3px;
-    background: #3c352e;
+    background: #191a1a;
     width: 95px;
     height: 95px;
     text-align: center;
@@ -150,7 +150,7 @@ body { background: #181818; color: white; font-family: Arial, Helvetica, sans-se
 .tooltip { display: none; cursor: default; overflow: hidden; }
 .tooltip div { padding: 4px; text-align: center; }
 .item_cell:hover {
-    background: #5a4e42;
+    background: #0b0c17;
     z-index: 25;
 }
 .item_cell:hover .tooltip {
