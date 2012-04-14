@@ -54,7 +54,7 @@ $ onlinestates = {0: "offline", 1: "online", 2: "busy", 3: "away", 4: "snooze"}
               ${worth[k]} (${price_stats["avg"][k]} avg) <b>$k</b>
               $if not loop.last: |
     </div>
-    <div id="option-controls" class="tool" style="border-right: 0;">
+    <div id="option-controls" class="tool terminator">
       <div class="dropdown-menu">
         <b>Sort</b>
         <ul>
@@ -104,9 +104,10 @@ $ onlinestates = {0: "offline", 1: "online", 2: "busy", 3: "away", 4: "snooze"}
       <h2>Empty!</h2>
   <div id="backpack" style="width: 1040px;" class="bp-${appid}-${user.get_id64()}">
     $if len(baditems) > 0:
-        <div id="page-0" class="backpack-page">
-          $for item in baditems:
-              $:markup.generate_cell(item, invalid = True)
+        <div class="autosize box" style="max-width: 1040px; margin: 15px auto 15px auto;">
+	  <div class="titlebar">Displaced items</div>
+            $for item in baditems:
+                <div class="slot-item">$:markup.generate_cell(item, invalid = True)</div>
         </div>
     $if price_stats["most-expensive"]:
         $ most_expensive = price_stats["most-expensive"][0]

@@ -9,7 +9,7 @@ $ returnurl = markup.generate_mode_url('attributes#' + encode_url(attrname.repla
 </div>
 <div id="content" style="margin: 20px;">
   $if items:
-      <div class="box" id="attribute-attachments" style="width: 590px; margin: 0 auto 15px auto;">
+      <div class="autosize box" id="attribute-attachments" style="max-width: 590px; margin: 0 auto 15px auto;">
         <div class="titlebar">Items with <b class="attr-$attribute.get_type()">$attrname</b> attached</div>
         $for item in items:
             <div class="slot-item">

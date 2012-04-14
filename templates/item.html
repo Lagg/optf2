@@ -138,8 +138,8 @@ $def generate_class_icon_link(classes):
           <div class="attr-neutral">Store price: $$$item.optf2["price"]["USD"]</div>
   <ul class="button-list">
     <li><a class="button" href="$item_wiki_url">$current_wiki[0] article</a></li>
-  $if user:
-      <li><a class="button" href="$markup.generate_mode_url('item/{0}'.format(item.get_schema_id()))">Schema version</a></li>
+    $if user:
+        <li><a class="button" href="$markup.generate_mode_url('item/{0}'.format(item.get_schema_id()))">Schema version</a></li>
   </ul>
   </div>
   </div>

@@ -3,7 +3,8 @@ $var title: $project_name - All Items
 
 <div id="header">
  <div class="toolbar" style="margin-bottom: 15px;">
-    <div style="float: left;" class="dropdown-menu">
+   <div class="tool">
+    <div class="dropdown-menu">
       <b>Sort</b>
       <ul>
         <li><a href="$qurl(sort = None)">Default</a></li>
@@ -14,7 +15,7 @@ $var title: $project_name - All Items
         <li><a href="$qurl(sort = 'class')">Class</a></li>
       </ul>
     </div>
-    <div style="float: left;" class="dropdown-menu">
+    <div class="dropdown-menu">
       <b>Class</b>
       <ul>
         <li><a href="$qurl(sortclass = None)"><img src="${static_prefix}tf_icon.png" alt="All" title="All"/> All</a></li>
@@ -26,7 +27,7 @@ $var title: $project_name - All Items
             </li>
       </ul>
     </div>
-    <div style="float: left;" class="dropdown-menu">
+    <div class="dropdown-menu">
       <b>Quality</b>
       <ul>
         <li><a href="$qurl(quality = None)">All</a></li>
@@ -34,7 +35,7 @@ $var title: $project_name - All Items
             <li><a href="$qurl(quality = q['id'])"><span class="prefix-${q['str']}">$q["prettystr"]</span></a></li>
       </ul>
     </div>
-    <div style="float: left;" class="dropdown-menu">
+    <div class="dropdown-menu">
       <b>Capability</b>
       <ul>
         <li><a href="$qurl(capability = None)">Any</a></li>
@@ -42,7 +43,8 @@ $var title: $project_name - All Items
             <li><a href="$qurl(capability = c['flag'])">$c["name"]</a></li>
       </ul>
     </div>
-    <div style="float: right; text-align: left;">
+   </div>
+   <div class="tool terminator">
       $stats["weapons"] weapons | $stats["hats"] hats | $stats["misc"] misc ($stats["total"] total) <br/>
       $if price_stats["worth"]:
         Total store price:
@@ -51,7 +53,7 @@ $var title: $project_name - All Items
         $for k in worth.keys():
             ${worth[k]} (${price_stats["avg"][k]} avg) <b>$k</b>
             $if not loop.last: |
-    </div>
+   </div>
  </div>
 </div>
 <div id="content">

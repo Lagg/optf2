@@ -7,7 +7,7 @@ var itemurls = {}
 
 $(document).ready(function(){
     var cells = $(".item_cell");
-    var pages = $(".backpack-page").not("#page-0");
+    var pages = $(".backpack-page");
     var hashpart = document.location.hash;
     var thepage = hashpart.substring(6) - 1;
     var attrib_dict = {};
@@ -174,7 +174,7 @@ $(document).ready(function(){
     });
 
     var search = $("#search-field");
-    var default_search = "Enter name, URL, or ID";
+    var default_search = "User, URL, or ID search...";
 
     search.autocomplete({
         minLength: 2,
@@ -309,7 +309,7 @@ function autocomplete_magic(req, resp) {
 
 function backpack_page_switch() {
     var bp = $("#backpack");
-    var packs = $(".backpack-page").not("#page-0");
+    var packs = $(".backpack-page");
     var newpage;
 
     if (this.id == "prev-button") {
