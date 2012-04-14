@@ -324,7 +324,7 @@ def process_attributes(items, gift = False):
 
         itemorigin = item.get_origin_name()
         if itemorigin:
-            origin_name = ", " + itemorigin
+            origin_name = " - " + itemorigin
 
         if color and color_2:
             paint_job = '<span><b style="color: {0};">Pain</b><b style="color: {1};">ted</b></span>'.format(color,
