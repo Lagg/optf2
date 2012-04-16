@@ -15,14 +15,10 @@ OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 """
 
 import web
-import os
-import json
 import logging
-import urllib2
 import cPickle as pickle
 import memcache
-from email.utils import formatdate, parsedate
-from time import time, mktime
+from time import time
 
 import steam
 from optf2.backend import config
@@ -96,15 +92,6 @@ def load_profile_cached(sid, stale = False):
 
     return profile
 
-def get_pack_timeline_for_user(user, tl_size = None):
-    """ Returns None if a backpack couldn't be found, returns
-    tl_size rows from the timeline
-    """
-    return []
-
-def fetch_item_for_id(id64):
-    return None
-
 def load_pack_cached(user, pid = None):
     memkey = "backpack-{0}-{1}".format(web.ctx.current_game, user.get_id64())
 
@@ -114,14 +101,3 @@ def load_pack_cached(user, pid = None):
         pack.load(user)
         memcached.set(memkey, pack, time = config.ini.getint("cache", "backpack-expiry"))
     return pack
-
-def get_user_pack_views(user):
-    """ Returns the viewcount of a user's backpack """
-
-    return 0
-
-def get_top_pack_views(limit = 10):
-    """ Will return the top viewed backpacks sorted in descending order
-    no more than limit rows will be returned """
-
-    return []

@@ -179,7 +179,7 @@ class fetch:
         except:
             return templates.error("Failed to load backpack")
 
-        views = database.get_user_pack_views(user)
+        views = 0
         isvalve = (int(user.get_primary_group()) == config.ini.getint("steam", "valve-group-id"))
         schema = database.load_schema_cached(web.ctx.language)
 
