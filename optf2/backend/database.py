@@ -20,187 +20,81 @@ import json
 import logging
 import urllib2
 import cPickle as pickle
+import memcache
 from email.utils import formatdate, parsedate
 from time import time, mktime
 
 import steam
 from optf2.backend import config
 
-class CacheStale(steam.items.Error):
-    def __init__(self, msg):
-        steam.items.Error.__init__(self, msg)
-        self.msg = msg
+memcached = memcache.Client([config.ini.get("cache", "memcached-address")],
+                            pickleProtocol = pickle.HIGHEST_PROTOCOL)
 
-class cached_asset_catalog(steam.items.assets):
-    def _download(self):
-        return self._http.download()
+# Keeps track of connection times, until I think of a better way
+last_server_checks = {}
 
-    def __new__(cls, *args, **kwargs):
-        try:
-            game_class = getattr(steam, web.ctx.current_game).assets
-        except AttributeError:
-            raise steam.items.AssetError("steamodd hasn't implemented an asset catalog for " + web.ctx.current_game)
-        cls.__bases__ = (game_class, )
-        instance = super(cached_asset_catalog, cls).__new__(cls, *args, **kwargs)
+def _load_generic_cached(sclass, label, freshfunc = None, lang = None):
+    """ For asset, schema, and whatever other compatible implementation """
 
-        return instance
+    lm = None
+    ctime = int(time())
+    memkey = "{0}-{1}-{2}".format(label, web.ctx.current_game, lang)
 
-    def __init__(self, lang = None, currency = None):
-        self._http = http_helpers(self)
+    oldobj = memcached.get(memkey)
+    if oldobj:
+        if (ctime - last_server_checks.get(memkey, 0)) < config.ini.getint("cache", label + "-check-interval"):
+            return oldobj
+        lm = oldobj.get_last_modified()
 
-        super(cached_asset_catalog, self).__init__(lang, currency)
+    result = None
+    try:
+        result = sclass(lang = lang, lm = lm)
+        if freshfunc: freshfunc(result)
+        memcached.set(memkey, result, min_compress_len = 1048576)
+    except steam.items.HttpStale:
+        result = oldobj
+    except Exception as E:
+        logging.error("Cached loading error: {0}".format(E))
+        result = oldobj
 
-class cached_item_schema(steam.items.schema):
-    def _download(self):
-        return self._http.download()
+    last_server_checks[memkey] = ctime
 
-    def __new__(cls, *args, **kwargs):
-        try:
-            game_class = getattr(steam, web.ctx.current_game).item_schema
-        except AttributeError:
-            raise steam.items.SchemaError("steamodd hasn't implemented a schema for " + web.ctx.current_game)
-        cls.__bases__ = (game_class, )
-        instance = super(cached_item_schema, cls).__new__(cls, *args, **kwargs)
+    return result
 
-        return instance
-
-    def __init__(self, lang = None, fresh = False):
-        self.optf2_paints = {}
-        self._http = http_helpers(self)
-
-        super(cached_item_schema, self).__init__(lang)
-
-        for item in self:
+def load_schema_cached(lang = None):
+    def freshfunc(result):
+        result.optf2_paints = {}
+        for item in result:
             if item._schema_item.get("name", "").startswith("Paint Can"):
                 for attr in item:
                     if attr.get_name().startswith("set item tint RGB"):
-                        self.optf2_paints[int(attr.get_value())] = item.get_schema_id()
+                        result.optf2_paints[int(attr.get_value())] = item.get_schema_id()
 
-def generate_cache_path(obj):
     try:
-        name = obj.__name__
+        modclass = getattr(steam, web.ctx.current_game).item_schema
     except AttributeError:
-        name = obj.__class__.__name__
+        raise steam.items.SchemaError("steamodd hasn't implemented a schema for {0}".format(web.ctx.current_game))
 
-    return os.path.join(config.ini.get("resources", "cache-dir"), name +
-                        "-" + web.ctx.current_game + "-" + web.ctx.language)
-
-class http_helpers:
-    """ Probably going to be made into proper request objects
-    later """
-
-    def download(self):
-        cachepath = self.get_cache_path()
-        basename = os.path.basename(cachepath)
-        cachepath_am = time()
-        cachepath_lm = None
-        headers = {}
-        dumped = None
-
-        try:
-            cachestat = os.stat(cachepath)
-            cachepath_lm = cachestat.st_mtime
-            # Used for grace time checking. There is some kind of 
-            # desync on Valve's servers if they're sent a if-modified-since
-            # value that is less than two minutes or so older than the current time
-            cachepath_am = cachestat.st_atime
-            headers["If-Modified-Since"] = formatdate(cachepath_lm, usegmt = True)
-        except OSError:
-            pass
-
-        req = urllib2.Request(self._obj._get_download_url(), headers = headers)
-
-        try:
-            if not os.path.exists(cachepath) or (time() - cachepath_am) > config.ini.get("database", "max-schema-staleness"):
-                response = urllib2.urlopen(req, timeout = config.ini.getint("steam", "fetch-timeout"))
-                dumped = response.read()
-                server_lm = parsedate(response.headers.get("last-modified"))
-                if server_lm: cachepath_lm = mktime(server_lm)
-        except urllib2.HTTPError as err:
-            code = err.getcode()
-            if code != 304:
-                logging.error(basename + ": Server returned " + str(code))
-            else:
-                logging.debug(basename + ": No change")
-        except urllib2.URLError as err:
-            logging.error("Schema server connection error: " + str(err))
-
-        self._obj.cache_am = cachepath_am
-        self._obj.cache_lm = cachepath_lm
-
-        if not dumped: raise CacheStale("No change")
-
-        return dumped
-
-    def get_cache_path(self):
-        return self.__cachepath
-
-    def __init__(self, obj):
-        """ Accepts an object implementing the base
-        steamodd downloadable API """
-
-        self._obj = obj
-        self.__cachepath = generate_cache_path(obj)
-
-# This will be a placehold for memcached for now
-cached = {}
-
-def load_schema_cached(lang = None):
-    return steamodd_api_request(cached_item_schema, lang)
+    return _load_generic_cached(modclass, "schema", freshfunc = freshfunc, lang = lang)
 
 def load_assets_cached(lang = None):
-    return steamodd_api_request(cached_asset_catalog, lang)
-
-def steamodd_api_request(apiobj, *args, **kwargs):
-    def touch_pickle_cache(obj):
-        try:
-            os.utime(generate_cache_path(obj), (int(time()), obj.cache_lm))
-        except Exception as E:
-            logging.error("Failed to touch cache: " + str(E))
-
-    cachepath = generate_cache_path(apiobj)
-    obj = None
-
     try:
-        obj = apiobj(*args, **kwargs)
-    except steam.items.AssetError as E:
-        print("No " + cachepath + ": " + str(E))
-    except:
-        pass
+        modclass = getattr(steam, web.ctx.current_game).assets
+    except AttributeError:
+        print("Failing asset load for " + web.ctx.current_game + " softly")
+        return None
 
-    if obj:
-        try:
-            with open(cachepath, "wb") as cf:
-                pickle.dump(obj, cf, pickle.HIGHEST_PROTOCOL)
-                touch_pickle_cache(obj)
-        except Exception as E:
-            logging.error("Failed to write cache: {0}".format(E))
-            pass # Still return fresh object
-    elif os.path.exists(cachepath):
-        try:
-            with open(cachepath, "rb") as cf:
-                obj = cached.get(cachepath, pickle.load(cf))
-        except Exception as E:
-            logging.error("Error loading from {0}: {1}".format(cachepath, E))
-            return None
-        if cachepath in cached: cached[cachepath] = obj
-
-    return obj
+    return _load_generic_cached(modclass, "assets", lang = lang)
 
 def load_profile_cached(sid, stale = False):
-    return steam.user.profile(sid)
+    memkey = "profile-" + str(sid)
 
-def refresh_pack_cache(user):
-    pack = getattr(steam, web.ctx.current_game).backpack(schema = load_schema_cached(web.ctx.language))
-    pack.load(user)
+    profile = memcached.get(memkey)
+    if not profile:
+        profile = steam.user.profile(sid)
+        memcached.set(memkey, profile, time = config.ini.getint("cache", "profile-expiry"))
 
-    try:
-        packitems = list(pack)
-    except steam.items.ItemError:
-        pack.set_schema(load_schema_cached(web.ctx.language))
-        packitems = list(pack)
-
-    return pack
+    return profile
 
 def get_pack_timeline_for_user(user, tl_size = None):
     """ Returns None if a backpack couldn't be found, returns
@@ -211,8 +105,15 @@ def get_pack_timeline_for_user(user, tl_size = None):
 def fetch_item_for_id(id64):
     return None
 
-def load_pack_cached(user, stale = False, pid = None):
-    return refresh_pack_cache(user)
+def load_pack_cached(user, pid = None):
+    memkey = "backpack-{0}-{1}".format(web.ctx.current_game, user.get_id64())
+
+    pack = memcached.get(memkey)
+    if not pack:
+        pack = getattr(steam, web.ctx.current_game).backpack(schema = load_schema_cached(web.ctx.language))
+        pack.load(user)
+        memcached.set(memkey, pack, time = config.ini.getint("cache", "backpack-expiry"))
+    return pack
 
 def get_user_pack_views(user):
     """ Returns the viewcount of a user's backpack """
