@@ -83,7 +83,8 @@ def load_assets_cached(lang = None):
     return _load_generic_cached(modclass, "assets", lang = lang)
 
 def load_profile_cached(sid, stale = False):
-    memkey = "profile-" + str(sid)
+    # Use hashing function to avoid weird character problems
+    memkey = "profile-" + str(memcache.cmemcache_hash(str(sid)))
 
     profile = memcached.get(memkey)
     if not profile:
