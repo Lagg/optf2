@@ -98,7 +98,7 @@ def load_pack_cached(user, pid = None):
 
     pack = memcached.get(memkey)
     if not pack:
-        pack = getattr(steam, web.ctx.current_game).backpack(schema = load_schema_cached(web.ctx.language))
-        pack.load(user)
+        pack = getattr(steam, web.ctx.current_game).backpack(sid = user,
+                                                             schema = load_schema_cached(web.ctx.language))
         memcached.set(memkey, pack, time = config.ini.getint("cache", "backpack-expiry"))
     return pack
