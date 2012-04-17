@@ -315,7 +315,8 @@ def process_attributes(items, gift = False):
 
         quality_str = item.get_quality()["str"]
         full_qdict_name = web.websafe(item.get_full_item_name(prefixes = qualitydict))
-        full_default_name = web.websafe(item.get_full_item_name({"normal": None, "unique": None}))
+        full_unquoted_default_name = item.get_full_item_name({"normal": None, "unique": None})
+        full_default_name = web.websafe(full_unquoted_default_name)
         color = item.optf2.get("color")
         color_2 = item.optf2.get("color_2")
         paint_job = ""
@@ -345,7 +346,7 @@ def process_attributes(items, gift = False):
             paint_job = "Painted"
         if gift:
             prefix = "Giftwrapped"
-        item.optf2["title_name"] = "{0} {1} {2}".format(_(prefix), _(paint_job), _(full_default_name))
+        item.optf2["title_name"] = "{0} {1} {2}".format(_(prefix), _(paint_job), _(full_unquoted_default_name))
 
         if color:
             paint_job = "(Painted)"
