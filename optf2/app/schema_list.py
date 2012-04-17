@@ -25,81 +25,73 @@ class items:
     """ Dumps every item in the schema in a pretty way """
 
     def GET(self, app):
-        try:
-            web.ctx.current_game = app
-            query = web.input()
-            items = database.load_schema_cached(web.ctx.language)
-            filter_qualities = itemtools.get_present_qualities(items)
-            filter_capabilities = itemtools.get_present_capabilities(items)
+        web.ctx.current_game = app
+        query = web.input()
+        items = database.load_schema_cached(web.ctx.language)
+        filter_qualities = itemtools.get_present_qualities(items)
+        filter_capabilities = itemtools.get_present_capabilities(items)
 
-            try: items = itemtools.filter_by_class(items, query["sortclass"])
-            except KeyError: pass
-            try: items = itemtools.filter_by_quality(items, query["quality"])
-            except KeyError: pass
-            try: items = itemtools.sort(items, query["sort"])
-            except KeyError: pass
-            try: items = itemtools.filter_by_capability(items, query["capability"])
-            except KeyError: pass
+        try: items = itemtools.filter_by_class(items, query["sortclass"])
+        except KeyError: pass
+        try: items = itemtools.filter_by_quality(items, query["quality"])
+        except KeyError: pass
+        try: items = itemtools.sort(items, query["sort"])
+        except KeyError: pass
+        try: items = itemtools.filter_by_capability(items, query["capability"])
+        except KeyError: pass
 
-            stats = itemtools.get_stats(items)
-            filter_classes = itemtools.get_equippable_classes(items)
-            items = itemtools.process_attributes(items)
-            price_stats = itemtools.get_price_stats(items)
+        stats = itemtools.get_stats(items)
+        filter_classes = itemtools.get_equippable_classes(items)
+        items = itemtools.process_attributes(items)
+        price_stats = itemtools.get_price_stats(items)
 
-            return templates.schema_dump(items,
-                                         filter_classes,
-                                         filter_qualities,
-                                         filter_capabilities,
-                                         stats,
-                                         price_stats)
-        except:
-            return templates.error("Couldn't load schema")
+        return templates.schema_dump(items,
+                                     filter_classes,
+                                     filter_qualities,
+                                     filter_capabilities,
+                                     stats,
+                                     price_stats)
 
 class attributes:
     """ Dumps all schema attributes in a pretty way """
 
     def GET(self, app):
-        try:
-            web.ctx.current_game = app
-            query = web.input()
-            schema = database.load_schema_cached(web.ctx.language)
-            attribs = schema.get_attributes()
+        web.ctx.current_game = app
+        query = web.input()
+        schema = database.load_schema_cached(web.ctx.language)
+        attribs = schema.get_attributes()
 
-            attachment_check = query.get("att")
-            attribute = None
-            if attachment_check:
-                items = schema
-                attached_items = []
+        attachment_check = query.get("att")
+        attribute = None
 
-                for attr in attribs:
-                    if attr.get_name() == attachment_check:
-                        attribute = attr
+        if attachment_check:
+            items = schema
+            attached_items = []
+
+            for attr in attribs:
+                if attr.get_name() == attachment_check:
+                    attribute = attr
+                    break
+            if not attribute:
+                return templates.error(attachment_check + ": No such attribute")
+
+            for item in items:
+                attrs = item.get_attributes()
+                for attr in attrs:
+                    attr_name = attr.get_name()
+                    if attachment_check == attr_name:
+                        if not attribute: attribute = attr
+                        attached_items.append(item)
                         break
-                if not attribute:
-                    return templates.error(attachment_check + ": No such attribute")
 
-                for item in items:
-                    attrs = item.get_attributes()
-                    for attr in attrs:
-                        attr_name = attr.get_name()
-                        if attachment_check == attr_name:
-                            if not attribute: attribute = attr
-                            attached_items.append(item)
-                            break
-
-                return templates.attribute_attachments(itemtools.process_attributes(attached_items), attribute)
-
+            return templates.attribute_attachments(itemtools.process_attributes(attached_items), attribute)
+        else:
             return templates.attrib_dump(attribs)
-        except:
-            return templates.error("Couldn't load attributes")
 
 class particles:
     def GET(self, app):
-        try:
-            web.ctx.current_game = app
-            schema = database.load_schema_cached(web.ctx.language)
-            particles = schema.get_particle_systems()
+        web.ctx.current_game = app
+        schema = database.load_schema_cached(web.ctx.language)
+        particles = schema.get_particle_systems()
 
-            return templates.particle_dump(particles)
-        except:
-            return templates.error("Couldn't load particle systems")
+        return templates.particle_dump(particles)

@@ -8,6 +8,7 @@ import steam
 from optf2.backend import database
 from optf2.backend import items as itemtools
 from optf2.backend import config
+from optf2.backend import log
 from optf2.frontend.markup import generate_mode_url
 
 templates = template.template
@@ -60,8 +61,6 @@ class loadout:
             return templates.error("Backpack error: {0}".format(E))
         except steam.user.ProfileError as E:
             return templates.error("Profile error: {0}".format(E))
-        except:
-            return templates.error("Couldn't load loadout page")
 
 class item:
     def GET(self, app, iid):
@@ -176,8 +175,6 @@ class fetch:
             return templates.error("Failed to load backpack ({0})".format(E))
         except steam.user.ProfileError as E:
             return templates.error("Failed to load profile ({0})".format(E))
-        except:
-            return templates.error("Failed to load backpack")
 
         views = 0
         isvalve = (int(user.get_primary_group()) == config.ini.getint("steam", "valve-group-id"))
@@ -198,14 +195,18 @@ class fetch:
 class feed:
     def GET(self, game, sid):
         web.ctx.current_game = game
+
+        web.header("Content-Type", "application/rss+xml")
+
         try:
             user = database.load_profile_cached(sid, stale = True)
             items = database.load_pack_cached(user)
             items = itemtools.process_attributes(items)
             items = itemtools.sort(items, web.input().get("sort", "time"))
-        except Exception as E:
-            return templates.error(str(E))
-        web.header("Content-Type", "application/rss+xml")
-        return web.template.render(config.ini.get("resources", "template-dir"),
-                                   globals = template.globals).inventory_feed(user, items)
 
+            return web.template.render(config.ini.get("resources", "template-dir"),
+                                       globals = template.globals).inventory_feed(user, items)
+
+        except Exception as E:
+            log.main.error(str(E))
+            return "<error>" + str(E) + "</error>"
