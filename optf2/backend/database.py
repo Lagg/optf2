@@ -15,13 +15,13 @@ OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 """
 
 import web
-import logging
 import cPickle as pickle
 import memcache
 from time import time
 
 import steam
 from optf2.backend import config
+from optf2.backend import log
 
 memcached = memcache.Client([config.ini.get("cache", "memcached-address")],
                             pickleProtocol = pickle.HIGHEST_PROTOCOL)
@@ -50,7 +50,7 @@ def _load_generic_cached(sclass, label, freshfunc = None, lang = None):
     except steam.items.HttpStale:
         result = oldobj
     except Exception as E:
-        logging.error("Cached loading error: {0}".format(E))
+        log.main.error("Cached loading error: {0}".format(E))
         result = oldobj
 
     last_server_checks[memkey] = ctime

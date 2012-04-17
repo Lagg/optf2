@@ -1,16 +1,14 @@
-import logging
 import traceback
 import web
 import os
 import random
 
+from optf2.backend import log
 from optf2.backend import config
 from optf2 import app
 
 virtual_root = config.ini.get("resources", "virtual-root")
 valid_languages = [str(code).strip() for code in config.ini.get("misc", "languages").split(',')]
-
-logging.basicConfig(filename = os.path.join(config.ini.get("resources", "cache-dir"), "op.log"), level = logging.ERROR)
 
 urls = (
     virtual_root + "persona/(.+)", app.api.persona,
@@ -56,7 +54,7 @@ def motd_hook():
         web.ctx["motd"] = motdlines[random.randint(0, len(motdlines) -1 )]
 
 def internalerror():
-    logging.error(web.ctx.fullpath + ": " + traceback.format_exc())
+    log.main.error(traceback.format_exc())
     return web.internalerror(app.template.template.error(config.ini.get("misc", "project-name") + " has hit an unhandled error. Moving that traceback up!"))
 
 def notfound():
