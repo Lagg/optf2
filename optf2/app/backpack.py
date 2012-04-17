@@ -124,12 +124,6 @@ class fetch:
 
         if not sid:
             return templates.error("Need an ID")
-        try:
-            user = database.load_profile_cached(sid)
-        except urllib2.URLError:
-            return templates.error("Couldn't connect to Steam")
-        except steam.user.ProfileError as E:
-            return templates.error(E)
 
         query = web.input()
         sortby = query.get("sort", "cell")
@@ -138,6 +132,7 @@ class fetch:
         filter_quality = query.get("quality")
 
         try:
+            user = database.load_profile_cached(sid)
             items = database.load_pack_cached(user, pid = packid)
             cell_count = items.get_total_cells()
             if not items and user.get_visibility() != 3:
@@ -175,6 +170,8 @@ class fetch:
             return templates.error("Failed to load backpack ({0})".format(E))
         except steam.user.ProfileError as E:
             return templates.error("Failed to load profile ({0})".format(E))
+        except urllib2.URLError:
+            return templates.error("Couldn't connect to Steam")
 
         views = 0
         isvalve = (int(user.get_primary_group()) == config.ini.getint("steam", "valve-group-id"))
