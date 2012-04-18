@@ -8,8 +8,6 @@ var itemurls = {}
 $(document).ready(function(){
     var cells = $(".item_cell");
     var pages = $(".backpack-page");
-    var hashpart = document.location.hash;
-    var thepage = hashpart.substring(6) - 1;
     var attrib_dict = {};
 
     $(".item-link").each(function() {
@@ -26,6 +24,7 @@ $(document).ready(function(){
         $(page_switcher).hide();
     }
 
+    var thepage = get_hash_value("page") - 1;
     if (thepage >= 0 || (get_cookie("pagination") == 1 && pages.length > 0)) {
         var backpack = $("#backpack");
 
@@ -76,11 +75,19 @@ $(document).ready(function(){
     $(filterbar).appendTo("#option-controls");
     $(filterbar).focus(function() { this.value = ""; });
 
-    function filtermagic(e) {
+    var hashfilter = get_hash_value("filter");
+    if (hashfilter) {
+	$("#filterbar").val(hashfilter);
+	filtermagic();
+    }
+
+    function filtermagic() {
 	var filter = $("#filterbar").val().toLowerCase();
 	var cells = $(".item_cell");
 
 	cells.hide();
+
+	set_hash_value("filter", filter);
 
 	if (filter.length == 0) {
 	    cells.show();
@@ -105,7 +112,6 @@ $(document).ready(function(){
 	});
     }
     $(filterbar).keyup(filtermagic);
-    $(filterbar).keydown(filtermagic);
 
     cells.hover(function() {
         var attribs = $(this).find(".tooltip");
@@ -338,7 +344,7 @@ function backpack_page_switch() {
     current_page = newpage;
     $(packs[current_page]).show();
 
-    document.location.hash = '#page-' + (current_page + 1);
+    set_hash_value("page", (current_page + 1));
     $("#page-counter")[0].innerHTML = (current_page + 1) + '/' + packs.length;
 }
 
@@ -384,4 +390,53 @@ function set_cookie(cookie, val) {
 
 function fade_untradable() {
     $(".item_cell[class~=untradable]").toggleClass("faded");
+}
+
+function split_hash_values() {
+    var values = {};
+    var hashopts = location.hash.substr(1).split(';');
+
+    for (var i = 0; i < hashopts.length; i++) {
+	var opt = hashopts[i].split('-');
+
+	if (!opt[1]) {
+	    opt[1] = '';
+	}
+
+	if (!opt[0]) {
+	    continue;
+	}
+
+	values[decodeURI(opt[0].trim())] = decodeURI(opt[1].trim());
+    }
+
+    return values;
+}
+
+function join_hash_values(values) {
+    hashstr = "";
+    for (var key in values) {
+	var val = values[key];
+
+	hashstr += encodeURI(key);
+
+	if (val) {
+	    hashstr += '-' + encodeURI(values[key])
+	}
+
+	hashstr += ';';
+    }
+
+    return hashstr;
+}
+
+function get_hash_value(key) {
+    return split_hash_values()[key];
+}
+
+function set_hash_value(key, val) {
+    hashes = split_hash_values();
+    hashes[key] = val;
+
+    location.hash = join_hash_values(hashes);
 }
