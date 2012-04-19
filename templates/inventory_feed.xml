@@ -15,7 +15,7 @@ $def with (user, items)
       $if not item:
           $continue
       <item>
-        $ permalink = markup.absolute_url(markup.generate_item_url(item))
+        $ permalink = markup.absolute_url(markup.generate_item_url(item, user))
         $ level = item.optf2["level"]
         $ type = item.optf2["type"]
         $ name = item.get_custom_name()

@@ -37,15 +37,19 @@ def generate_mode_url(path = None):
 
     return virtual_root + cg + "/" + (path or "")
 
-def generate_item_url(item):
-    user = ""
+def generate_item_url(item, user = None):
     itemid = item.get_id()
+    pathuser = ""
 
-    if itemid: user = web.ctx.get("current_user", "") + "/"
+    if user:
+        try: pathuser = str(user.get_id64())
+        except AttributeError: pathuser = str(user)
 
-    return generate_mode_url("item/" + user + str(itemid or item.get_schema_id()))
+    if pathuser: pathuser += "/"
 
-def generate_cell(item, invalid = False, show_equipped = True):
+    return generate_mode_url("item/" + pathuser + str(itemid or item.get_schema_id()))
+
+def generate_cell(item, invalid = False, show_equipped = True, user = None):
     if not item: return '<div class="item_cell"></div>'
 
     item_id = item.get_id()
@@ -59,7 +63,7 @@ def generate_cell(item, invalid = False, show_equipped = True):
         schema_item = True
         item_id = item.get_schema_id()
 
-    item_link = generate_item_url(item)
+    item_link = generate_item_url(item, user)
     quality = item.get_quality()["str"]
     equippedstr = ""
     quantity = item.get_quantity()

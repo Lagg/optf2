@@ -17,7 +17,6 @@ class loadout:
     """ User loadout lists """
 
     def GET(self, user):
-        web.ctx["current_user"] = user
         try:
             userp = database.load_profile_cached(user)
             items = itemtools.process_attributes(database.load_pack_cached(userp))
@@ -86,7 +85,6 @@ class item:
 class live_item:
     """ More or less temporary until database stuff is sorted """
     def GET(self, user, iid):
-        web.ctx["current_user"] = user
         item_outdated = False
         try:
             user = database.load_profile_cached(user)
@@ -175,8 +173,6 @@ class fetch:
 
         web.ctx.env["optf2_rss_url"] = generate_mode_url("feed/" + str(user.get_id64()))
         web.ctx.env["optf2_rss_title"] = "{0}'s Backpack".format(user.get_persona().encode("utf-8"))
-
-        web.ctx["current_user"] = user.get_id64()
 
         price_stats = itemtools.get_price_stats(items)
         return templates.inventory(user, isvalve, items, views,

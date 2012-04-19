@@ -19,7 +19,7 @@ $var title: $project_name - $user.get_persona()'s Loadout List
                   <div class="slot-item">
                     <div><b>$slot</b></div>
                   $for item in items[lclass][slot]:
-                      $:markup.generate_cell(item, show_equipped = False)
+                      $:markup.generate_cell(item, show_equipped = False, user = user)
                   </div>
             </div>
       </div>
