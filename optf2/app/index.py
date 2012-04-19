@@ -35,7 +35,6 @@ def handle_searchbar_input():
     raise web.seeother(generate_mode_url("user/" + nuser))
 
 class game_root:
-    def GET(self, game = None):
-        web.ctx.current_game = game
+    def GET(self):
         handle_searchbar_input()
         return template.template.game_root()

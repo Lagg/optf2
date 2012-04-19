@@ -9,6 +9,7 @@ from optf2 import app
 
 virtual_root = config.ini.get("resources", "virtual-root")
 valid_languages = [str(code).strip() for code in config.ini.get("misc", "languages").split(',')]
+valid_modes = [op[0] for op in config.ini.items("modes")]
 
 urls = (
     virtual_root + "persona/(.+)", app.api.persona,
@@ -27,16 +28,26 @@ generic_urls = [
     ("user/(.*)", app.backpack.fetch),
     ("loadout/(.+)", app.backpack.loadout),
     ("feed/(.+)", app.backpack.feed),
-    ("*", app.index.game_root),
-    ("(.+)", app.backpack.fetch)
+    ("(.+)", app.backpack.fetch),
+    ("*", app.index.game_root)
     ]
 
 for url in generic_urls:
-    urls += (virtual_root + "(" + "|".join([op[0] for op in config.ini.items("modes")]) + ")/" + url[0], url[1])
+    urls += (virtual_root + "(?:" + "|".join(valid_modes) + ")/" + url[0], url[1])
 
 application = web.application(urls, globals())
 
 def mode_hook():
+    """ If there's a better way to do this I'm all ears """
+    path = [part for part in web.ctx.path.split('/') if part]
+
+    try:
+        gamecandidate = path[0]
+        if gamecandidate in valid_modes:
+            web.ctx.current_game = gamecandidate
+            return
+    except IndexError: pass
+
     web.ctx.current_game = None
 
 def lang_hook():

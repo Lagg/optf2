@@ -16,9 +16,8 @@ templates = template.template
 class loadout:
     """ User loadout lists """
 
-    def GET(self, game, user):
-        web.ctx.current_game = game
-        web.ctx.current_user = user
+    def GET(self, user):
+        web.ctx["current_user"] = user
         try:
             userp = database.load_profile_cached(user)
             items = itemtools.process_attributes(database.load_pack_cached(userp))
@@ -63,8 +62,7 @@ class loadout:
             return templates.error("Profile error: {0}".format(E))
 
 class item:
-    def GET(self, app, iid):
-        web.ctx.current_game = app
+    def GET(self, iid):
         schema = database.load_schema_cached(web.ctx.language)
         user = None
         item_outdated = False
@@ -87,8 +85,7 @@ class item:
 
 class live_item:
     """ More or less temporary until database stuff is sorted """
-    def GET(self, app, user, iid):
-        web.ctx.current_game = app
+    def GET(self, user, iid):
         web.ctx["current_user"] = user
         item_outdated = False
         try:
@@ -117,8 +114,7 @@ class live_item:
         return templates.item(user, item, item_outdated)
 
 class fetch:
-    def GET(self, game, sid):
-        web.ctx.current_game = game
+    def GET(self, sid):
         sid = sid.strip('/').split('/')
         if len(sid) > 0: sid = sid[-1]
 
@@ -190,9 +186,7 @@ class fetch:
                                    price_stats, cell_count)
 
 class feed:
-    def GET(self, game, sid):
-        web.ctx.current_game = game
-
+    def GET(self, sid):
         web.header("Content-Type", "application/rss+xml")
 
         try:
