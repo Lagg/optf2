@@ -71,9 +71,9 @@ $(document).ready(function(){
     var default_filter = "Search..."
     filterbar.setAttribute("type", "text");
     filterbar.setAttribute("id", "filterbar");
-    filterbar.value = default_filter;
     $(filterbar).appendTo("#option-controls");
-    $(filterbar).focus(function() { this.value = ""; });
+
+    set_text_field_toggle(filterbar, default_filter);
 
     var hashfilter = get_hash_value("filter");
     if (hashfilter) {
@@ -188,11 +188,31 @@ $(document).ready(function(){
         open: function() { $(".ui-autocomplete").css("z-index", "100"); },
         select: function(e, ui) { this.value = ui.item.value; $("#search-form").submit(); }
     });
-
-    search.val(default_search);
-    search.focus(function() { this.value = ""; });
-    search.focusout(function() { if(this.value.length == 0) { this.value = default_search; } });
+    set_text_field_toggle(search, default_search);
 });
+
+function set_text_field_toggle(elem, defaulttext) {
+    var field = $(elem);
+
+    var focusin = function() {
+	var value = field.val();
+
+	if (value == defaulttext) {
+	    field.val("");
+	}
+    }
+    var focusout = function() {
+	var value = field.val();
+
+	if (value.length == 0) {
+	    field.val(defaulttext);
+	}
+    }
+
+    focusout();
+    field.focusin(focusin);
+    field.focusout(focusout);
+}
 
 function preserved_ar_resize(elem, ew, eh, w, h) {
     var ratio = Math.min(w / ew, h / eh);
@@ -414,7 +434,7 @@ function split_hash_values() {
 }
 
 function join_hash_values(values) {
-    hashstr = "";
+    var hashstr = "";
     for (var key in values) {
 	var val = values[key];
 
@@ -435,7 +455,7 @@ function get_hash_value(key) {
 }
 
 function set_hash_value(key, val) {
-    hashes = split_hash_values();
+    var hashes = split_hash_values();
     hashes[key] = val;
 
     location.hash = join_hash_values(hashes);
