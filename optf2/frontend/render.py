@@ -66,10 +66,12 @@ def motd_hook():
 
 def internalerror():
     log.main.error(traceback.format_exc())
-    return web.internalerror(app.template.template.error(config.ini.get("misc", "project-name") + " has hit an unhandled error. Moving that traceback up!"))
+    return web.internalerror(app.template.template.error("Go on then, doc. (unhandled error logged)"))
 
 def notfound():
-    return web.notfound(app.template.template.error("You've hit a 404. Witty quotes coming soon!"))
+    return web.notfound(app.template.template.error("I couldn't find the page you're after, but we do " +
+                                                    "have a fine selection of automatically generated " +
+                                                    "content found in the links above. Why don't you give those a shot?"))
 
 application.add_processor(web.loadhook(mode_hook))
 application.add_processor(web.loadhook(lang_hook))
