@@ -59,6 +59,8 @@ class loadout:
             return templates.error("Backpack error: {0}".format(E))
         except steam.user.ProfileError as E:
             return templates.error("Profile error: {0}".format(E))
+        except urllib2.URLError:
+            return templates.error("Couldn't connect to Steam")
 
 class item:
     def GET(self, iid):
@@ -168,7 +170,12 @@ class fetch:
             return templates.error("Couldn't connect to Steam")
 
         views = 0
-        isvalve = (int(user.get_primary_group()) == config.ini.getint("steam", "valve-group-id"))
+        primary_group = user.get_primary_group()
+        isvalve = False
+
+        if primary_group:
+            isvalve = int(primary_group) == config.ini.getint("steam", "valve-group-id")
+
         schema = database.load_schema_cached(web.ctx.language)
 
         web.ctx.env["optf2_rss_url"] = generate_mode_url("feed/" + str(user.get_id64()))
@@ -194,6 +201,12 @@ class feed:
             return web.template.render(config.ini.get("resources", "template-dir"),
                                        globals = template.globals).inventory_feed(user, items)
 
+        except urllib2.URLError:
+            return "<error>Couldn't connect to steam</error>"
+        except steam.items.Error as E:
+            return "<error>Backpack error: {0}</error>".format(E)
+        except steam.user.ProfileError as E:
+            return "<error>Profile error: {0}</error>".format(E)
         except Exception as E:
             log.main.error(str(E))
-            return "<error>" + str(E) + "</error>"
+            return "<error>Unknown error: {0}</error>".format(E)
