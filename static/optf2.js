@@ -3,12 +3,20 @@ var page_switcher = document.createElement("div");
 var ispaginated = false;
 var last_dialog_size = null;
 var invalid_icon_url = static_prefix + "item_icons/Invalid_icon.png";
-var itemurls = {}
+var itemurls = {};
+var pack_cell_row_size = 10;
 
 $(document).ready(function(){
     var cells = $(".item_cell");
     var pages = $(".backpack-page");
     var attrib_dict = {};
+
+    if (cells.length != 0) {
+	var pack = $("#backpack");
+	if(pack.length != 0) {
+	    pack.width(cells.outerWidth(true) * pack_cell_row_size);
+	}
+    }
 
     $(".item-link").each(function() {
         var idpart = String($(this).parent().attr("id").slice(1));
@@ -173,8 +181,15 @@ $(document).ready(function(){
         }
 
         var innerlength = 0;
+	 var maxwidth = parseInt(box.css("max-width"));
+
         box.children().not(".titlebar").each(function() {
-            innerlength += $(this).outerWidth(true);
+	    var nextwidth = $(this).outerWidth(true);
+	    if ((innerlength + nextwidth) > maxwidth){
+		return false;
+	    } else {
+		innerlength += nextwidth;
+	    }
         });
         box.width(innerlength);
     });
