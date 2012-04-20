@@ -1,9 +1,11 @@
-$def with (user, items)
+$def with (user, items, erritem = None)
 <?xml version="1.0" encoding="UTF-8"?>
 
 <rss version="2.0">
   <channel>
-    <title>$user.get_persona()'s TF2 Backpack</title>
+    $ persona = ""
+    $if user: $ persona = user.get_persona() + "'s "
+    <title>${persona}Backpack</title>
     <generator>$project_name</generator>
     <link>$markup.absolute_url(virtual_root)</link>
     <image>
@@ -11,6 +13,11 @@ $def with (user, items)
       <url>$markup.absolute_url(static_prefix + "optf2_icon.png")</url>
       <title>$project_name</title>
     </image>
+  $if erritem:
+      <item>
+	<title>Error</title>
+	<description>$erritem</description>
+      </item>
   $for item in items:
       $if not item:
           $continue
@@ -22,11 +29,10 @@ $def with (user, items)
         $ image = item.optf2["image_url"]
         $if not name:
             $ name = item.get_name()
-        <description>Level $level $type</description>
+        <description>Level $level $type<br/><img alt="item-image" src="$image"/></description>
         <title>$:item.optf2["feed_name"]</title>
         <link>$permalink</link>
         <guid isPermaLink="true">$permalink</guid>
-        <enclosure type="image/png" length="0" url="$image"/>
       </item>
   </channel>
 </rss>

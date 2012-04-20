@@ -190,6 +190,9 @@ class fetch:
 
 class feed:
     def GET(self, sid):
+        renderer = web.template.render(config.ini.get("resources", "template-dir"),
+                                       globals = template.globals)
+
         web.header("Content-Type", "application/rss+xml")
 
         try:
@@ -198,15 +201,11 @@ class feed:
             items = itemtools.process_attributes(items)
             items = itemtools.sort(items, web.input().get("sort", "time"))
 
-            return web.template.render(config.ini.get("resources", "template-dir"),
-                                       globals = template.globals).inventory_feed(user, items)
+            return renderer.inventory_feed(user, items)
 
-        except urllib2.URLError:
-            return "<error>Couldn't connect to steam</error>"
-        except steam.items.Error as E:
-            return "<error>Backpack error: {0}</error>".format(E)
-        except steam.user.ProfileError as E:
-            return "<error>Profile error: {0}</error>".format(E)
+        except (steam.user.ProfileError, urllib2.URLError, steam.items.Error) as E:
+            return renderer.inventory_feed(None, [], erritem = E)
+
         except Exception as E:
             log.main.error(str(E))
-            return "<error>Unknown error: {0}</error>".format(E)
+            return renderer.inventory_feed(None, [], erritem = E)
