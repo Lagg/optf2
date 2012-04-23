@@ -294,6 +294,7 @@ img { border: 0; }
     color: gray;
     cursor: default;
 }
+.button[class~=clicked] { background-color: #212121; }
 .button:hover { background-color: #282828; }
 .button:active { background-color: #383838; }
 a.button { text-decoration: none; }

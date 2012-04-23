@@ -1,106 +1,388 @@
-var current_page = 0;
-var page_switcher = document.createElement("div");
-var ispaginated = false;
-var last_dialog_size = null;
-var invalid_icon_url = static_prefix + "item_icons/Invalid_icon.png";
-var itemurls = {};
-var pack_cell_row_size = 10;
+var invalidIconURL = static_prefix + "item_icons/Invalid_icon.png";
 
 $(document).ready(function(){
-    var cells = $(".item_cell");
-    var pages = $(".backpack-page");
-    var attrib_dict = {};
+    var cells = new Cell("#backpack");
 
-    if (cells.length != 0) {
-	var pack = $("#backpack");
-	if(pack.length != 0) {
-	    pack.width(cells.outerWidth(true) * pack_cell_row_size);
+    cells.fitToContainer();
+    cells.bindHoverAction();
+
+    var hashpage = parseInt(URL.getHashStore("page"));
+
+    if (!hashpage || hashpage <= 0) {
+	hashpage = null;
+    }
+
+    var pager = new BackpackPager("#backpack", hashpage);
+    var pagination_toggler = $(document.createElement("div"));
+    var paginationButton = new Button("Show pages");
+
+    paginationButton.attachTo("#option-controls");
+    paginationButton.bindClickStateHandler(function(clicked) {
+	if (clicked) {
+	    if (!hashpage) {
+		Cookie.set("pagination", true);
+	    }
+	    pager.modePaged();
+	} else {
+	    if (!hashpage) {
+		Cookie.remove("pagination");
+	    }
+	    pager.modeFull();
 	}
-    }
-
-    $(".item-link").each(function() {
-        var idpart = String($(this).parent().attr("id").slice(1));
-        itemurls[idpart] = $(this).attr("href");
     });
 
-    if (pages.length > 0) {
-        page_switcher.id = "page-switcher";
-        page_switcher.innerHTML = '<div class="button" id="prev-button">&lt; Previous</div><span id="page-counter">' +
-            '</span><div class="button" id="next-button">Next &gt;</div>';
-        $(page_switcher).appendTo("#backpack");
-        $("#next-button, #prev-button").click(backpack_page_switch);
-        $(page_switcher).hide();
+    if (Cookie.get("pagination") || hashpage) {
+	paginationButton.setClickState(true);
     }
 
-    var thepage = get_hash_value("page") - 1;
-    if (thepage >= 0 || (get_cookie("pagination") == 1 && pages.length > 0)) {
-        var backpack = $("#backpack");
-
-        if (thepage < 0) {
-            thepage = 0;
-        }
-
-        if (pages[thepage] != undefined) {
-            current_page = thepage;
-            backpack_mode_paginated(pages);
-        }
-    }
-    var pagination_toggler = document.createElement("div");
-    if (ispaginated) {
-        pagination_toggler.innerHTML = "Show All";
-    } else {
-        pagination_toggler.innerHTML = "Show Pages";
-    }
-    $(pagination_toggler).addClass("button");
-    $(pagination_toggler).appendTo("#option-controls");
-    $(pagination_toggler).click(function(){
-        if (ispaginated) {
-            set_cookie("pagination", 0);
-            backpack_mode_full(pages);
-            pagination_toggler.innerHTML = "Show Pages";
-        } else {
-            set_cookie("pagination", 1);
-            backpack_mode_paginated(pages);
-            pagination_toggler.innerHTML = "Show All";
-        }
-    });
-
-    var untradable_toggler = document.createElement("div");
-    untradable_toggler.innerHTML = "Toggle Untradable";
-    $(untradable_toggler).addClass("button");
-    $(untradable_toggler).appendTo("#option-controls");
-    $(untradable_toggler).click(function() {
-        fade_untradable();
-    });
+    var dialogs = new ItemDialog(".item-link");
+    dialogs.bindOpenOnClick();
 
     /* Still somewhat experimental, aim to replace most
        of toolbar */
-    var filterbar = document.createElement("input");
-    var default_filter = "Search..."
-    filterbar.setAttribute("type", "text");
-    filterbar.setAttribute("id", "filterbar");
-    $(filterbar).appendTo("#option-controls");
+    var filterField = new Field("filterbar");
+    var cellFilter = new CellFilter($(".item_cell"));
 
-    set_text_field_toggle(filterbar, default_filter);
+    filterField.attachTo("#option-controls");
+    filterField.bindDefaultText("Search...");
+    cellFilter.bindFilterToField(cellFilter.byRawAttribute, filterField);
 
-    var hashfilter = get_hash_value("filter");
-    if (hashfilter) {
-	$("#filterbar").val(hashfilter);
-	filtermagic();
+    var untradableButton = new Button("Hide untradable");
+    untradableButton.attachTo("#option-controls");
+    untradableButton.bindClickStateHandler(function() {
+	cellFilter.byUntradable();
+    });
+
+    $(".box").each(function() {
+        var box = $(this);
+
+        if(!box.hasClass("autosize")) {
+            return;
+        }
+
+        var innerlength = 0;
+	var maxwidth = parseInt(box.css("max-width"));
+
+        box.children().not(".titlebar").each(function() {
+	    var nextwidth = $(this).outerWidth(true);
+	    if ((innerlength + nextwidth) > maxwidth){
+		return false;
+	    } else {
+		innerlength += nextwidth;
+	    }
+        });
+        box.width(innerlength);
+    });
+
+    var searchField = new Field("search-field");
+    searchField.bindDefaultText("User, URL, or ID search...");
+
+    function autocomplete_magic(req, resp) {
+	var finalcomp = new Array ();
+	$.getJSON (virtual_root + "comp/" + req.term, function (data, status) {
+	    for (var i = 0; i < data.length; i++) {
+		itemdata = data[i]
+		itemlabel = itemdata["persona"];
+		if (itemdata["id_type"] == "id") {
+		    itemlabel += " (" + itemdata["id"] + ')';
+		}
+		finalcomp.push({label: itemlabel, value: itemdata["id"]});
+	    }
+
+	    resp (finalcomp.slice (0, 20));
+	});
     }
 
-    function filtermagic() {
-	var filter = $("#filterbar").val().toLowerCase();
-	var cells = $(".item_cell");
+    searchField.baseField.autocomplete({
+        minLength: 2,
+        source: autocomplete_magic,
+        open: function() { $(".ui-autocomplete").css("z-index", "100"); },
+        select: function(e, ui) { this.value = ui.item.value; $("#search-form").submit(); }
+    });
+});
+
+function inbetween(x, y, z) {
+    return (y >= x && y <= z);
+}
+
+function BackpackPager (container, initialpage) {
+    var pageSelector = ".backpack-page";
+    var jSwitcher = null;
+    var self = this;
+
+    if (!container) {
+	container = document;
+    }
+
+    this.activePages = $(container).find(pageSelector);
+
+    if (inbetween(1, initialpage, this.activePages.length)) {
+	this.currentPage = initialpage;
+    } else {
+	var hashstore = parseInt(URL.getHashStore("page"));
+	if (inbetween(1, hashstore, this.activePages.length)) {
+	    this.currentPage = hashstore;
+	} else {
+	    this.currentPage = 1;
+	}
+    }
+
+    this.pageSwitcher = document.createElement("div");
+    this.pageSwitcher.id = "page-switcher";
+
+    jSwitcher = $(this.pageSwitcher);
+
+    this.pageBackButton = new Button("< Previous");
+    this.pageBackButton.attachTo(this.pageSwitcher);
+
+    this.pageCounter = document.createElement("span");
+    this.pageCounter.id = "page-counter";
+    jSwitcher.append(this.pageCounter);
+
+    this.pageForwardButton = new Button("Next >");
+    this.pageForwardButton.attachTo(this.pageSwitcher);
+
+    this.modeFull = function() {
+	this.activePages.show();
+	jSwitcher.detach();
+	URL.removeHashStore("page");
+    };
+
+    this.modePaged = function() {
+	var pages = this.activePages;
+	var current = this.currentPage;
+
+	jSwitcher.appendTo(container);
+
+	URL.setHashStore("page", current);
+	this.pageCounter.textContent = current + '/' + pages.length;
+	pages.hide();
+	$(pages[current - 1]).show();
+
+	this.setSwitcherButtonActivity();
+    };
+
+    this.pageCount = function() {
+	return this.activePages.length;
+    }
+
+    this.setSwitcherButtonActivity = function() {
+	var bButton = $(this.pageBackButton.buttonElement);
+	var fButton = $(this.pageForwardButton.buttonElement);
+
+	if (this.currentPage <= 1) {
+            bButton.addClass("inactive");
+	} else {
+            bButton.removeClass("inactive");
+	}
+
+	if (this.currentPage >= this.activePages.length) {
+            fButton.addClass("inactive");
+	} else {
+            fButton.removeClass("inactive");
+	}
+    };
+
+    this.switchPage = function(direction) {
+	var newpage = 1;
+	var pages = this.activePages;
+	var current = this.currentPage;
+
+	if (current <= 0) {
+	    return;
+	}
+
+	if (direction == "forward") {
+            newpage = current + 1;
+	} else if (direction == "back") {
+            newpage = current - 1;
+	}
+
+	if (!inbetween(1, newpage, pages.length)) {
+	    return;
+	}
+
+	this.currentPage = newpage;
+	$(pages).hide();
+	$(pages[newpage - 1]).show();
+
+	URL.setHashStore("page", newpage);
+	this.pageCounter.innerHTML = newpage + '/' + pages.length;
+
+	this.setSwitcherButtonActivity();
+    };
+
+    this.switchPageForward = function() {
+	return self.switchPage("forward");
+    };
+
+    this.switchPageBack = function() {
+	return self.switchPage("back");
+    };
+
+    this.pageForwardButton.bindOneOffHandler(this.switchPageForward);
+    this.pageBackButton.bindOneOffHandler(this.switchPageBack);
+}
+
+function Button(defaultText) {
+    this.buttonElement = document.createElement("div");
+    this.buttonElement.className = "button";
+    this.isClicked = false;
+    var self = this;
+    var stateHandler = null;
+    var stateChangeFire = function() {
+	if (self.isClicked) {
+	    $(self.buttonElement).addClass("clicked");
+	} else {
+	    $(self.buttonElement).removeClass("clicked");
+	}
+	stateHandler.call(self.buttonElement, self.isClicked);
+    };
+
+    this.attachTo = function(element) {
+	$(element).append(this.buttonElement);
+    };
+
+    this.bindClickStateHandler = function(handler) {
+	stateHandler = handler;
+
+	$(self.buttonElement).click(function() {
+	    self.isClicked = !self.isClicked;
+	    stateChangeFire();
+	});
+    };
+
+    this.bindOneOffHandler = function(handler) {
+	$(self.buttonElement).click(function() {
+	    handler.call(this);
+	});
+    };
+
+    this.setClickState = function(boolState) {
+	this.isClicked = boolState;
+
+	stateChangeFire();
+    };
+
+    this.setID = function(id) {
+	this.buttonElement.id = id;
+    };
+
+    this.setText = function(text) {
+	this.buttonElement.textContent = text;
+    };
+
+    if (defaultText) {
+	this.setText(defaultText);
+    }
+
+    $(document).on("mousedown", ".button", function() { return false; });
+}
+
+function Cell(container) {
+    var cellSelector = ".item_cell";
+    var cells = [];
+    var self = this;
+
+    if ($(container).length == 0) {
+	container = document;
+    }
+
+    cells = $(container).find(cellSelector);
+
+    this.cellsPerRow = 10;
+
+    this.bindHoverAction = function() {
+	cells.hover(function() {
+            var attribs = $(this).find(".tooltip");
+            var currentOffset = $(this).offset();
+	    var windowHeight = $(window).height();
+	    var windowWidth = $(window).width();
+
+            attribs.show();
+            currentOffset["top"] += $(this).height() + 5;
+            currentOffset["left"] -= (attribs.width() / 3.4);
+
+            /* Check if attribs go off the document */
+            if (currentOffset["left"] < 0) { currentOffset["left"] = 0; }
+            if((currentOffset["left"] + attribs.width()) > windowWidth) {
+		currentOffset["left"] = windowWidth - attribs.width();
+            }
+
+            attribs.offset(currentOffset);
+            if (attribs.length > 0) {
+		var scrollh = $(document).scrollTop();
+		var offsety = attribs.offset().top;
+		var threshold = (scrollh + windowHeight);
+		var posbottom = (offsety + attribs.height());
+
+		if (posbottom > threshold) {
+                    attribs.offset({top: ($(this).offset()["top"] - attribs.height() - 5)});
+		}
+            }
+	}, function() {
+            $(this).find(".tooltip").hide();
+	});
+	cells.find(".tooltip").hover(function() { $(this).hide(); });
+
+	$(document).scroll(function() {
+            cells.find(".tooltip").hide();
+	});
+
+	cells.find(".item-image").one("error", function() {
+            this.src = invalidIconURL;
+            $(this).addClass("invalid");
+	});
+
+	cells.find(".icon-particle").one("error", function() {
+            $(this).remove();
+	});
+    };
+
+    this.fitToContainer = function() {
+	var jContainer = $(container);
+	if (container && cells.length != 0) {
+	    if(jContainer.length != 0) {
+		jContainer.width(cells.outerWidth(true) * this.cellsPerRow);
+	    }
+	}
+    };
+}
+
+function CellFilter(data) {
+    this.bindFilterToField = function(filter, field) {
+	var f = field.baseField;
+	var linkedFilter = URL.getHashStore("filter");
+
+	if (f == undefined) {
+	    f = field;
+	}
+
+	if (linkedFilter) {
+	    f.value = linkedFilter;
+	    filter(linkedFilter);
+	}
+
+	$(f).keyup(function() {
+	    var input = this.value;
+
+	    URL.setHashStore("filter", input);
+	    filter(input);
+	});
+    };
+
+    this.byRawAttribute = function(input) {
+	var filter = input;
+	var cells = $(data);
 
 	cells.hide();
 
-	set_hash_value("filter", filter);
-
-	if (filter.length == 0) {
+	if (!filter || filter.length == 0) {
 	    cells.show();
 	    return;
 	}
+
+	filter = filter.toLowerCase();
 
 	cells.each(function() {
 	    var cell = $(this);
@@ -118,360 +400,313 @@ $(document).ready(function(){
 		}
 	    });
 	});
+    };
+
+    this.byUntradable = function(input) {
+	$(data).filter("[class~=untradable]").toggleClass("faded");
     }
-    $(filterbar).keyup(filtermagic);
+}
 
-    cells.hover(function() {
-        var attribs = $(this).find(".tooltip");
-        var currentoffset = $(this).offset();
-        attribs.show();
-        currentoffset["top"] += $(this).height() + 5;
-        currentoffset["left"] -= (attribs.width() / 3.4);
+function Field(id) {
+    var existingField = $("#" + id);
 
-        /* Check if attribs go off the document */
-        if (currentoffset["left"] < 0) { currentoffset["left"] = 0; }
-        if((currentoffset["left"] + attribs.width()) > document.documentElement.clientWidth) {
-            currentoffset["left"] = document.documentElement.clientWidth - attribs.width();
-        }
+    if (existingField.length == 0) {
+	this.baseField = document.createElement("input");
+	this.baseField.type = "text";
+	this.baseField.id = id;
+    } else {
+	this.baseField = existingField;
+    }
 
-        attribs.offset(currentoffset);
-        if (attribs.length > 0) {
-            var scrollh = $(document).scrollTop();
-            /* When a browser supports something simple yet non-standard like
-               window.innerHeight, IE has to be ULTRA non-standard.
-            */
-            var windowh = document.documentElement.clientHeight;
-            var offsety = attribs.offset().top;
-            var threshold = (scrollh + windowh);
-            var posbottom = (offsety + attribs.height());
+    this.attachTo = function(element) {
+	$(this.baseField).appendTo(element);
+    };
 
-            if (posbottom > threshold) {
-                attribs.offset({top: ($(this).offset()["top"] - attribs.height() - 5)});
-            }
-        }
-    }, function() {
-        $(this).find(".tooltip").hide();
-    });
-    $(".tooltip").hover(function() { $(this).hide(); });
+    this.bindDefaultText = function(text) {
+	var field = $(this.baseField);
 
-    $(document).scroll(function() {
-        $(".tooltip").hide();
-    });
+	var focusIn = function() {
+	    var value = field.val();
 
-    $(".item-link").click(function(event) {
-        event.preventDefault();
-        item_open($(this).parent().attr("id").slice(1));
-    });
-
-    $(".item-image").one("error", function() {
-        this.src = invalid_icon_url;
-        $(this).addClass("invalid");
-    });
-    $(".icon-particle").one("error", function() {
-        $(this).remove();
-    });
-
-    $(".button").mousedown(function() { return false; });
-
-    $(".box").each(function() {
-        var box = $(this);
-
-        if(!box.hasClass("autosize")) {
-            return;
-        }
-
-        var innerlength = 0;
-	 var maxwidth = parseInt(box.css("max-width"));
-
-        box.children().not(".titlebar").each(function() {
-	    var nextwidth = $(this).outerWidth(true);
-	    if ((innerlength + nextwidth) > maxwidth){
-		return false;
-	    } else {
-		innerlength += nextwidth;
+	    if (value == text) {
+		field.val("");
 	    }
-        });
-        box.width(innerlength);
+	}
+	var focusOut = function() {
+	    var value = field.val();
+
+	    if (value.length == 0) {
+		field.val(text);
+	    }
+	}
+
+	focusOut();
+	field.focusin(focusIn);
+	field.focusout(focusOut);
+    };
+
+    this.setText = function(text) {
+	this.baseField.value = text;
+    };
+
+}
+
+function ItemDialog(baseLink) {
+    var self = this;
+    this.itemURLMap = new Object();
+    this.lastDialogSize = null;
+
+    if (!baseLink) {
+	throw new Error("Need a valid item link anchor selector");
+    }
+
+    $(baseLink).each(function() {
+        var id = String($(this).parent().attr("id").slice(1));
+        self.itemURLMap[id] = $(this).attr("href");
     });
 
-    var search = $("#search-field");
-    var default_search = "User, URL, or ID search...";
+    this.bindOpenOnClick = function() {
+	$(baseLink).click(function(event) {
+            event.preventDefault();
+            self.open($(this).parent().attr("id").slice(1));
+	});
+    };
 
-    search.autocomplete({
-        minLength: 2,
-        source: autocomplete_magic,
-        open: function() { $(".ui-autocomplete").css("z-index", "100"); },
-        select: function(e, ui) { this.value = ui.item.value; $("#search-form").submit(); }
-    });
-    set_text_field_toggle(search, default_search);
-});
+    this.open = function(id) {
+	var url = this.itemURLMap[id];
+	var existingDialog = null;
 
-function set_text_field_toggle(elem, defaulttext) {
-    var field = $(elem);
-
-    var focusin = function() {
-	var value = field.val();
-
-	if (value == defaulttext) {
-	    field.val("");
+	if (this.isLoadTickerRunning(id)) {
+	    return;
 	}
-    }
-    var focusout = function() {
-	var value = field.val();
 
-	if (value.length == 0) {
-	    field.val(defaulttext);
+	this.toggleLoadTicker(id);
+
+	$(".dedicated_item").find("#item_id").each(function() {
+	    if (parseInt(this.textContent) == parseInt(id)) {
+		existingDialog = $(this).parentsUntil(".dedicated_item").parent().first();
+		return false;
+	    }
+	});
+
+	if (existingDialog) {
+	    this.toggleLoadTicker(id);
+            $(existingDialog).dialog({open: this.resizeEvent});
+	} else {
+            $.get(url, this.openSuccessEvent, {}, "html");
 	}
+    };
+
+    this.openSuccessEvent = function (data, status, xhr) {
+	var page = $(data);
+	var title = page.filter("#header").find("h1");
+	var content = page.filter("#content").find("#item_stats");
+	var width = 850;
+	var height = 670;
+	var itemID = content.find("#item_id").text();
+
+	self.toggleLoadTicker(itemID);
+
+	if (self.lastDialogSize != null) {
+            width = self.lastDialogSize["width"];
+            height = self.lastDialogSize["height"];
+	}
+
+	title.css({"font-size": "1.6em", "margin": "0", "padding": "0"});
+
+	var buttons = content.find(".item-attrs .button-list");
+	buttons.append("<li><a class=\"button\" href=\"" + self.itemURLMap[itemID] + "\">Link to this item</a></li>");
+
+	if ($(window).height() < height) {
+            height = $(window).height();
+	}
+	if ($(window).width() < width) {
+            width = $(window).width();
+	}
+
+	$(content).dialog({
+            resize: self.resizeEvent,
+            open: function(event, ui) {
+		var cellImage = $("#s" + itemID + " .item-image");
+		if (cellImage.hasClass("invalid")) {
+		    $(event.target).find(".item-image").attr("src", invalidIconURL);
+		}
+		self.resizeEvent(event, ui);
+            },
+            title: title,
+            width: width,
+            height: height,
+            minWidth: 250,
+            minHeight: 200
+	});
+    };
+
+    this.resizeScaled = function (elem, ew, eh, w, h) {
+	var ratio = Math.min(w / ew, h / eh);
+
+	elem.width(ratio * ew);
+	elem.height(ratio * eh);
+    };
+
+    this.resizeEvent = function (event, ui) {
+	var item = $(event.target);
+	var image = item.find(".item-image");
+	var container = item.find(".item-zoom");
+
+
+	if (ui.size == undefined) {
+            ui.size = {"height":  item.height(),
+                       "width": item.width()};
+	} else {
+            self.lastDialogSize = ui.size;
+	}
+
+	self.resizeScaled(image, image.width(), image.height(),
+                          Math.min(ui.size.width - 200, 512),
+                          Math.min(ui.size.height - 100, 512));
+
+	var particle = item.find(".icon-particle");
+	self.resizeScaled(particle, particle.width(), particle.height(),
+                          Math.min(container.width()/2.5, 200),
+                          Math.min(container.height()/2.5, 200));
+
+	item.height(ui.size.height);
+	item.width(image.width() + item.find(".item-attrs").width() + 50);
+    };
+
+    this.isLoadTickerRunning = function (id) {
+	var ticker = $("#loading-" + id);
+
+	return (ticker.length > 0);
     }
 
-    focusout();
-    field.focusin(focusin);
-    field.focusout(focusout);
+    this.toggleLoadTicker = function (id) {
+	var tickerID = "loading-" + id;
+	var tickerSelector = "#" + tickerID;
+	var cellID = "s" + id;
+	var cellSelector = "#" + cellID;
+	var ticker = $(document.createElement("img"));
+
+	ticker.attr({
+	    "src": static_prefix + "loading.gif",
+	    "id": tickerID,
+	    "alt": "Loading..."
+	});
+
+	ticker.css({
+	    "z-index": 5,
+	    "position": "absolute",
+	    "top": "37.5px",
+	    "left": "37.5px"
+	});
+
+	if (this.isLoadTickerRunning(id)) {
+	    $(tickerSelector).remove();
+	} else {
+	    $(cellSelector).prepend(ticker);
+	}
+
+	return ticker;
+    };
 }
 
-function preserved_ar_resize(elem, ew, eh, w, h) {
-    var ratio = Math.min(w / ew, h / eh);
+var Cookie = {
+    remove: function(name) {
+	document.cookie = name + "=0; expires=Thu Feb 17 2011 08:33:55 GMT-0700 (MST); path=/";
 
-    elem.width(ratio * ew);
-    elem.height(ratio * eh);
-}
+	return true;
+    },
 
-function item_resize_event(event, ui) {
-    var item = $(event.target);
-    var image = item.find(".item-image");
-    var container = item.find(".item-zoom");
+    get: function(name) {
+	var cookies = document.cookie.split(';');
 
+	for (var i = 0; i < cookies.length; i++) {
+            var cookie = cookies[i];
+	    var separator = cookie.indexOf('=');
+            var cookieName = $.trim(cookie.substr(0, separator));
+            var cookieValue = $.trim(cookie.substr(separator + 1));
 
-    if (ui.size == undefined) {
-        ui.size = {"height":  item.height(),
-                   "width": item.width()};
-    } else {
-        last_dialog_size = ui.size;
-    }
-
-    preserved_ar_resize(image, image.width(), image.height(),
-                        Math.min(ui.size.width - 200, 512),
-                        Math.min(ui.size.height - 100, 512));
-
-    var particle = item.find(".icon-particle");
-    preserved_ar_resize(particle, particle.width(), particle.height(),
-                        Math.min(container.width()/2.5, 200),
-                        Math.min(container.height()/2.5, 200));
-
-    item.height(ui.size.height);
-    item.width(image.width() + item.find(".item-attrs").width() + 50);
-}
-
-function item_open_success(data, status, xhr) {
-    var page = $(data);
-    var dialog_title = page.filter("#header").find("h1");
-    var dialog_content = page.filter("#content").find("#item_stats");
-    var dialog_width = 850;
-    var dialog_height = 670;
-    var item_id = dialog_content.find("#item_id").html();
-
-    if (last_dialog_size != null) {
-        dialog_width = last_dialog_size["width"];
-        dialog_height = last_dialog_size["height"];
-    }
-
-    var dialog_buttons = dialog_content.find(".item-attrs .button-list");
-    dialog_buttons.append("<li><a class=\"button\" href=\"" + itemurls[item_id] + "\">Link to this item</a></li>");
-    dialog_title.css({"font-size": "1.6em", "margin": "0", "padding": "0"});
-
-    if ($(window).height() < dialog_height) {
-        dialog_height = $(window).height();
-    }
-    if ($(window).width() < dialog_width) {
-        dialog_width = $(window).width();
-    }
-
-    $("#loading_" + item_id).remove();
-
-    $(dialog_content).dialog({
-        resize: item_resize_event,
-        open: function(event, ui) {
-            var cellimg = $("#s" + item_id + " .item-image");
-            if (cellimg.hasClass("invalid")) {
-                $(event.target).find(".item-image").attr("src", invalid_icon_url);
+            if (cookieName == name) {
+		return cookieValue;
             }
-            item_resize_event(event, ui);
-        },
-        title: dialog_title,
-        width: dialog_width,
-        height: dialog_height,
-        minWidth: 250,
-        minHeight: 200
-    });
-}
-
-function item_open(item_id) {
-    var item_url = itemurls[item_id];
-    var loading_id = "loading_" + item_id;
-    var cell_id = $("#s" + item_id);
-    if ($("#" + loading_id).length > 0) {
-        return;
-    }
-    cell_id.prepend("<img id=\"" + loading_id + "\" style=\"z-index: 5; position: absolute; top: 37.5px; left: 37.5px;\" src=\"" +
-                    static_prefix + "loading.gif\" alt=\"Loading...\"/>");
-    var oldcontent = $("body").find(".dedicated_item");
-    var reallyoldcontent = null;
-    for (var i = 0; i < oldcontent.length; i++) {
-        var id = $(oldcontent[i]).find("#item_id").html();
-        if (id == item_id) {
-            reallyoldcontent = oldcontent[i];
-            break;
-        }
-    }
-
-    if (reallyoldcontent) {
-        $("#" + loading_id).remove();
-        $(reallyoldcontent).dialog({open: function(e, u) { item_resize_event(e, u); }});
-    } else {
-        $.get(item_url, item_open_success, {}, "html");
-    }
-}
-
-function autocomplete_magic(req, resp) {
-  var finalcomp = new Array ();
-  $.getJSON (virtual_root + "comp/" + req.term, function (data, status) {
-      for (var i = 0; i < data.length; i++) {
-          itemdata = data[i]
-          itemlabel = itemdata["persona"];
-          if (itemdata["id_type"] == "id") {
-              itemlabel += " (" + itemdata["id"] + ')';
-          }
-          finalcomp.push({label: itemlabel, value: itemdata["id"]});
-      }
-
-      resp (finalcomp.slice (0, 20));
-  });
-}
-
-function backpack_page_switch() {
-    var bp = $("#backpack");
-    var packs = $(".backpack-page");
-    var newpage;
-
-    if (this.id == "prev-button") {
-        newpage = current_page - 1;
-    } else {
-        newpage = current_page + 1;
-    }
-
-    if (newpage < 0 || (newpage + 1) > packs.length) {
-        return;
-    }
-
-    if (newpage <= 0) {
-        $("#prev-button").addClass("inactive");
-    } else {
-        $("#prev-button").removeClass("inactive");
-    }
-
-    if ((newpage + 2) > packs.length) {
-        $("#next-button").addClass("inactive");
-    } else {
-        $("#next-button").removeClass("inactive");
-    }
-
-    $(packs).hide();
-    current_page = newpage;
-    $(packs[current_page]).show();
-
-    set_hash_value("page", (current_page + 1));
-    $("#page-counter")[0].innerHTML = (current_page + 1) + '/' + packs.length;
-}
-
-function backpack_mode_paginated(pages) {
-    $("#page-counter")[0].innerHTML = (current_page + 1) + '/' + pages.length;
-    pages.hide();
-    $(pages[current_page]).show();
-    $(page_switcher).show();
-    ispaginated = true;
-    if(current_page <= 0) {
-        $("#prev-button").addClass("inactive");
-    } else if ((current_page + 2) > pages.length) {
-        $("#next-button").addClass("inactive");
-    }
-}
-
-function backpack_mode_full(pages) {
-    pages.show();
-    $(page_switcher).hide();
-    ispaginated = false;
-}
-
-function delete_cookie(cookie) {
-    document.cookie = cookie + "=0; expires=Thu Feb 17 2011 08:33:55 GMT-0700 (MST); path=/";
-}
-
-function get_cookie(cookie) {
-    cookies = document.cookie.split(';');
-    for (i = 0; i < cookies.length; i++) {
-        thecookie = cookies[i];
-        cookiename = $.trim(thecookie.substr(0, thecookie.indexOf('=')));
-        cookievalue = $.trim(thecookie.substr(thecookie.indexOf('=') + 1));
-
-        if (cookiename == cookie) {
-            return cookievalue;
-        }
-    }
-}
-
-function set_cookie(cookie, val) {
-    document.cookie = cookie + "=" + val+"; path=/";
-}
-
-function fade_untradable() {
-    $(".item_cell[class~=untradable]").toggleClass("faded");
-}
-
-function split_hash_values() {
-    var values = {};
-    var hashopts = location.hash.substr(1).split(';');
-
-    for (var i = 0; i < hashopts.length; i++) {
-	var opt = hashopts[i].split('-');
-
-	if (!opt[1]) {
-	    opt[1] = '';
 	}
 
-	if (!opt[0]) {
-	    continue;
+	return null;
+    },
+
+    set: function(name, val) {
+	document.cookie = name + "=" + val + "; path=/";
+
+	return true;
+    }
+}
+
+var URL = {
+    deserializeHashStore: function() {
+	var values = {};
+	var hashStores = location.hash.substr(1).split(';');
+
+	for (var i = 0; i < hashStores.length; i++) {
+	    var store = hashStores[i].split('-');
+
+	    if (!store[0]) {
+		continue;
+	    }
+
+	    if (!store[1]) {
+		store[1] = '';
+	    }
+
+	    values[decodeURI(store[0].trim())] = decodeURI(store[1].trim());
 	}
 
-	values[decodeURI(opt[0].trim())] = decodeURI(opt[1].trim());
-    }
+	return values;
+    },
 
-    return values;
-}
+    serializeHashStore: function(values) {
+	var hashString = "";
 
-function join_hash_values(values) {
-    var hashstr = "";
-    for (var key in values) {
-	var val = values[key];
+	for (var key in values) {
+	    var val = values[key];
 
-	hashstr += encodeURI(key);
+	    hashString += encodeURI(key);
 
-	if (val) {
-	    hashstr += '-' + encodeURI(values[key])
+	    if (val) {
+		hashString += '-' + encodeURI(values[key])
+	    }
+
+	    hashString += ';';
 	}
 
-	hashstr += ';';
+	return hashString;
+    },
+
+    getHashStore: function(key) {
+	var store = this.deserializeHashStore()[key];
+
+	if (store == undefined) {
+	    store = null;
+	}
+
+	return store;
+    },
+
+    setHashStore: function(key, val) {
+	var hashes = this.deserializeHashStore();
+	hashes[key] = val;
+
+	location.hash = this.serializeHashStore(hashes);
+
+	return true;
+    },
+
+    removeHashStore: function(key) {
+	var hashes = this.deserializeHashStore();
+
+	delete hashes[key];
+
+	location.hash = this.serializeHashStore(hashes);
+
+	return true;
     }
-
-    return hashstr;
-}
-
-function get_hash_value(key) {
-    return split_hash_values()[key];
-}
-
-function set_hash_value(key, val) {
-    var hashes = split_hash_values();
-    hashes[key] = val;
-
-    location.hash = join_hash_values(hashes);
 }
