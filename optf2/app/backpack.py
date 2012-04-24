@@ -190,7 +190,7 @@ class feed:
             user = database.load_profile_cached(sid, stale = True)
             items = database.load_pack_cached(user)
             items = itemtools.process_attributes(items)
-            items = itemtools.sort(items, web.input().get("sort", "time"))
+            items = itemtools.sort(items, web.input().get("sort", "time"), mergedisplaced = True)[0]
 
             return renderer.inventory_feed(user, items)
 
