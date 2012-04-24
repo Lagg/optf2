@@ -288,7 +288,7 @@ function Cell(container) {
 	container = document;
     }
 
-    cells = $(container).find(cellSelector);
+    cells = $(cellSelector);
 
     this.cellsPerRow = 10;
 
