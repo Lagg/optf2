@@ -144,23 +144,14 @@ class fetch:
             items = itemtools.process_attributes(items)
             stats = itemtools.get_stats(items)
 
-            baditems = itemtools.get_invalid_pos(items)
-
-            items = itemtools.sort(items, sortby)
+            sorted_items = itemtools.sort(items, sortby)
+            items = sorted_items[0]
+            baditems = sorted_items[1]
 
             total_pages = len(items) / 50
             if len(items) % 50 != 0:
                 total_pages += 1
             total_pages = range(1, total_pages + 1)
-
-            for bitem in baditems:
-                if bitem in items:
-                    bpos = bitem.get_position()
-                    if bpos > 0 and sortby == "cell":
-                        items[items.index(bitem)] = None
-                    else:
-                        items.remove(bitem)
-                        items.append(None)
 
         except steam.items.Error as E:
             return templates.error("Failed to load backpack ({0})".format(E))

@@ -34,7 +34,11 @@ class items:
         except KeyError: pass
         try: items = itemtools.filter_by_quality(items, query["quality"])
         except KeyError: pass
-        try: items = itemtools.sort(items, query["sort"])
+        # All of these will probably be displaced because of no positioning info
+        try:
+            displaced = []
+            (items, displaced) = itemtools.sort(items, query["sort"], mergedisplaced = True)
+            items += displaced
         except KeyError: pass
         try: items = itemtools.filter_by_capability(items, query["capability"])
         except KeyError: pass

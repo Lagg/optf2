@@ -22,6 +22,7 @@ import steam
 import database
 from optf2.frontend.markup import absolute_url
 from optf2.backend import config
+from optf2.backend import log
 
 qualitydict = {"unique": "The",
                "normal": ""}
@@ -40,37 +41,30 @@ capabilitydict = {"can_gift_wrap": "Gift wrappable",
 def _(thestring):
     return web.utils.safestr(thestring)
 
-def get_invalid_pos(items):
-    poslist = []
-    invalid_items = []
-    for item in items:
-        if not item: continue
-        pos = item.get_position()
-        if pos != -1 and pos not in poslist:
-            poslist.append(item.get_position())
-        else:
-            invalid_items.append(item)
-
-    return invalid_items
-
 def condensed_to_id64(value):
     return "7656" + str(int(value) + 1197960265728)
 
-def sort(items, sortby, defaultsize = 0):
+def sort(items, sortby, mergedisplaced = False):
+    """ If mergedisplaced is true positions are ignored in list appending """
+
     if not items:
-        return [None] * defaultsize
+        return [], []
 
-    items = list(items)
+    solid_items = []
+    displaced_items = []
     itemcmp = None
+    highestpos = 0
 
-    items.sort(key = operator.methodcaller("get_position"))
-    highestpos = items[-1].get_position()
+    for item in items:
+        if mergedisplaced or item.get_position() > 0: solid_items.append(item)
+        else: displaced_items.append(item)
 
-    if sortby == "serial" or sortby == "time":
+    if solid_items:
+        solid_items.sort(key = operator.methodcaller("get_position"))
+        highestpos = solid_items[-1].get_position()
+
+    if sortby == "id" or sortby == "time":
         itemcmp = operator.methodcaller("get_id")
-    elif sortby == "cell":
-        # done by pos sort
-        pass
     elif sortby == "level":
         def levelcmp(obj):
             level = obj.get_level()
@@ -100,25 +94,29 @@ def sort(items, sortby, defaultsize = 0):
         itemcmp = operator.methodcaller("get_schema_id")
 
     if itemcmp:
-        items.sort(key = itemcmp)
+        solid_items.sort(key = itemcmp)
 
     if sortby == "time":
-        items.reverse()
+        solid_items.reverse()
 
     highestpos += (50 - (highestpos % 50 or 50))
 
     if sortby == "cell":
         newitems = [None] * (highestpos + 1)
-        for item in items:
+        for item in solid_items:
             pos = item.get_position()
             try:
-                if pos > -1 and newitems[pos] == None:
+                if newitems[pos] != None:
+                    displaced_items.append(item)
+                else:
                     newitems[pos] = item
-            except IndexError: pass
+            except IndexError:
+                log.main.error("Got an index error in cell sort for pos {0}.".format(pos))
+                pass
         del newitems[0]
-        return newitems
+        return newitems, displaced_items
 
-    return items + ([None] * (highestpos - len(items)))
+    return solid_items + [None] * (highestpos - len(solid_items)), displaced_items
 
 def filter_by_class(items, theclass):
     filtered_items = []
