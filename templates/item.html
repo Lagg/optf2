@@ -2,18 +2,20 @@ $def with (user, item, outdated)
 $ qitem = item.get_quality()
 $ extra = item.optf2
 $ contents = extra.get("contents")
-$ current_wiki = wiki_map[instance.current_game]
+$ current_wiki = wiki_map.get(instance.current_game)
 $if not user:
     $ usern = "Schema"
 $else:
     $ usern = user.get_persona() + "'s"
 $var title: $project_name - $usern $extra["title_name"]
 $def generate_class_icon_link(classes):
+    $ classlink = '#'
     $for ec in classes:
         $if user:
             $ classlink = markup.generate_mode_url("loadout/{0}#{1}".format(user.get_id64(), ec))
         $else:
-            $ classlink = current_wiki[1] + ec
+            $if current_wiki:
+                $ classlink = current_wiki[1] + ec
         <a href="$classlink"><img src="${static_prefix}${ec}_icon.png" title="$ec" alt="$ec"/></a>&nbsp;
 <div id="header">
   <h1 class="prefix-${qitem['str']}">
@@ -35,7 +37,9 @@ $def generate_class_icon_link(classes):
     </div>
   <img class="stat_vertrule" src="${static_prefix}vertical.gif" height="100%" width="1" alt="divider"/>
   <div class="item-attrs">
-  $ item_wiki_url = current_wiki[1] + encode_url(item.get_name())
+  $ item_wiki_url = None
+  $if current_wiki:
+      $ item_wiki_url = current_wiki[1] + encode_url(item.get_name())
   $:extra["level_string"]
   $if extra["description"]:
       <div class="item-description">
@@ -137,7 +141,8 @@ $def generate_class_icon_link(classes):
       $if "price" in item.optf2:
           <div class="attr-neutral">Store price: $$$item.optf2["price"]["USD"]</div>
   <ul class="button-list">
-    <li><a class="button" href="$item_wiki_url">$current_wiki[0] article</a></li>
+    $if item_wiki_url:
+        <li><a class="button" href="$item_wiki_url">$current_wiki[0] article</a></li>
     $if user:
         <li><a class="button" href="$markup.generate_mode_url('item/{0}'.format(item.get_schema_id()))">Schema version</a></li>
   </ul>
