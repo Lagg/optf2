@@ -62,7 +62,7 @@ def motd_hook():
 
     with open(motdfile, "r") as motd:
         motdlines = motd.readlines()
-        web.ctx["motd"] = motdlines[random.randint(0, len(motdlines) -1 )]
+        web.ctx["motd"] = random.choice(motdlines)
 
 def internalerror():
     log.main.error(traceback.format_exc())
