@@ -1,4 +1,4 @@
-body { background: #141414; color: white; font-family: Arial, Helvetica, sans-serif; font-size: 11px; margin: 0; }
+body { background: #141515; color: white; font-family: Arial, Helvetica, sans-serif; font-size: 11px; margin: 0; }
 
 .backpack-page, .box { zoom: 1; }
 .backpack-page:after, .box:after {
@@ -16,6 +16,7 @@ body { background: #141414; color: white; font-family: Arial, Helvetica, sans-se
     position: relative;
     margin: 30px;
     padding: 2.8em 1.3em 0em 1.3em;
+    background: #1a1a1a;
 }
 .box .titlebar {
     position: absolute;
@@ -62,7 +63,7 @@ body { background: #141414; color: white; font-family: Arial, Helvetica, sans-se
 .item_cell {
     border: 2px solid black;
     margin: 3px;
-    background: #3d3d3d;
+    background: #5c5c5d;
     width: 94px;
     height: 94px;
     text-align: center;
@@ -70,10 +71,6 @@ body { background: #141414; color: white; font-family: Arial, Helvetica, sans-se
     position: relative;
     z-index: 24;
     cursor: pointer;
-    /* Yes I'm using non-standard properties. Better than wasting bandwidth
-       with corner images */
-    -moz-border-radius: 13px;
-    -webkit-border-radius: 13px;
     border-radius: 13px;
 }
 .item_cell[class~=undropped] { background: #302323; }
@@ -100,8 +97,6 @@ body { background: #141414; color: white; font-family: Arial, Helvetica, sans-se
     top: 6px; left: 6px;
     width: 10px;
     height: 10px;
-    -moz-border-radius: 10px;
-    -webkit-border-radius: 10px;
     border-radius: 10px;
 }
 .paint_splotch[class~=secondary] {
@@ -131,8 +126,6 @@ body { background: #141414; color: white; font-family: Arial, Helvetica, sans-se
     right: 5px;
     font-size: 9px;
     padding: 4px;
-    -moz-border-radius: 10px;
-    -webkit-border-radius: 10px;
     border-radius: 10px;
 }
 .tooltip { display: none; cursor: default; overflow: hidden; }
@@ -153,19 +146,15 @@ body { background: #141414; color: white; font-family: Arial, Helvetica, sans-se
     background: black;
     margin: 10px;
     margin-left: 0;
-    -moz-border-radius: 10px;
-    -webkit-border-radius: 10px;
     border-radius: 10px;
-    -moz-box-shadow: 0px 0px 5px black;
-    -webkit-box-shadow: 0px 0px 5px black;
     box-shadow: 0px 0px 5px black;
     z-index: 30;
 }
 
 #footer {
     text-align: center;
-    max-width: 100%;
-    padding: 8px;
+    width: 100%;
+    padding-top: 50px;
     clear: both;
 }
 
@@ -179,24 +168,22 @@ body { background: #141414; color: white; font-family: Arial, Helvetica, sans-se
     background-color: #353535;
     border: 1px solid black;
     color: white;
-    margin: 0 0 0 20px;
     font-style: italic;
-    padding: 4px;
-    width: 150px;
-    font-size: 12px;
+    margin: 5px 0 0 0;
+    width: 180px;
+    font-size: 14px;
 }
 #search-button {
     border-bottom-right-radius: 8px;
     border-top-right-radius: 8px;
     border: 1px solid black;
     border-left: 0;
-    margin: 0;
     color: white;
     background-color: #282828;
     cursor: pointer;
+    margin: 0;
     font-weight: bold;
-    padding: 4px;
-    font-size: 12px;
+    font-size: 14px;
 }
 
 #filterbar {
@@ -216,9 +203,24 @@ a:visited { text-decoration: none; }
 #status_offline { color: #808080; }
 #status_snooze, #status_away, #status_busy { color: #2fb3ff; }
 
-.navbar { background: #2e2e2e; text-align: left; width: 100%; padding: 6px 0 6px 0; margin: 0; position: relative; border-top: 1px solid black; border-bottom: 1px solid black; }
-.navbar a { padding: 6px 4px 6px 4px; margin-left: 16px; }
-.navbar a:hover { background: #535353; text-decoration: none; }
+.navbar { background-color: #313231; text-align: left; height: 30px; width: 100%; padding: 0; margin: 0; position: relative; border-top: 1px solid black; list-style: none; }
+.navbar > * { margin: 8px 10px 0 10px; }
+.navbar > li { background-color: #5c5c5d; color: #171718; position: relative; float: left; height: 30px; margin: 0; padding: 0; border-right: 1px solid black; }
+.navbar a { /*color: #171718;*/ display: block; height: 22px; margin: 0; padding: 8px 10px 0 10px; white-space: nowrap; text-decoration: none; }
+.navbar li:hover, .navbar li.focused .dropdown-menu { background-color: #060412; color: white; text-decoration: none; }
+.navbar .dropdown-menu { border: 0; background-color: #5c5c5d; border-radius: 0; }
+.navbar .dropdown-menu:hover { background-color: #202020; }
+
+.toolbar { background: #202021; position: relative; border-top: 1px solid black; border-bottom: 1px solid black; padding: 1em 0 1em 0; height: 3em; width: 100%; }
+.tool {
+    text-align: left;
+    padding: 2px 20px 0 20px;
+    float: left;
+    border-right: 1px solid white;
+    height: 100%;
+}
+.tool[class~=terminator] { border-right: 0; }
+.tool .dropdown-menu, .tool .button { float: left; margin: 3px; padding: 3px; }
 
 img { border: 0; }
 
@@ -238,8 +240,6 @@ img { border: 0; }
     bottom: 2px;
     right: 2px;
     background: #040011;
-    -moz-border-radius: 13px;
-    -webkit-border-radius: 13px;
     border-radius: 13px;
 }
 
@@ -276,7 +276,6 @@ img { border: 0; }
 #logo { width: 389px; height: 126px; margin: 50px auto 50px auto; display: block; }
 
 .button {
-    margin: 3px;
     position: relative;
     display: inline;
     cursor: pointer;
@@ -285,8 +284,6 @@ img { border: 0; }
     font-weight: bold;
     text-align: center;
     border: 1px solid black;
-    -moz-border-radius: 8px;
-    -webkit-border-radius: 8px;
     border-radius: 8px;
 }
 .button[class~=inactive], .button[class~=inactive]:hover, .button[class~=inactive]:active {
@@ -303,48 +300,34 @@ a.button { text-decoration: none; }
 
 .dropdown-menu {
     text-align: left;
-    margin: 3px;
     position: relative;
     cursor: pointer;
-    background-color: #505050;
+    background-color: #444444;
     background-image: url("dropdown_arrow.png");
     background-position: 100% 50%;
     background-repeat: no-repeat;
-    padding: 3px 20px 3px 3px;
     border: 1px solid black;
-    -moz-border-radius: 8px;
-    -webkit-border-radius: 8px;
     border-radius: 8px;
 }
-.dropdown-menu b { padding-right: 3px; }
 .dropdown-menu:hover { background-color: #202020; }
-.dropdown-menu a { color: white; display: block; padding: 5px; width: 100%; height: 100%; text-decoration: none; font-weight: normal; }
+.dropdown-menu a { color: white; display: block; padding: 5px; height: 100%; text-decoration: none; font-weight: normal; }
+.dropdown-menu > a, .dropdown-menu > b { width: 100%; padding: 8px; margin-right: 15px; font-weight: bold; }
 .dropdown-menu ul {
+    list-style: none;
     border: 1px solid white;
     border-bottom: 0;
     display: none;
     background: black;
     padding: 0;
+    margin: 0;
     position: absolute;
-    top: 0.9em;
-    list-style-type: none;
+    top: 99%;
     z-index: 30;
     min-width: 100px;
 }
-.dropdown-menu ul li { text-align: left; padding: 0 3px 0 3px; border-bottom: 1px solid white; }
+.dropdown-menu ul li { text-align: left; border-bottom: 1px solid white; }
 .dropdown-menu ul li:hover { background: #404040; }
 .dropdown-menu:hover ul { display: block; }
-
-.toolbar { background: #202020; position: relative; border-top: 1px solid black; border-bottom: 1px solid black; padding: 1em 0 1em 0; height: 3em; width: 100%; }
-.tool {
-    text-align: left;
-    padding: 2px 20px 0 20px;
-    float: left;
-    border-right: 1px solid white;
-    height: 100%;
-}
-.tool[class~=terminator] { border-right: 0; }
-.tool .dropdown-menu, .tool .button { float: left; }
 
 .capability-list {
     list-style-type: none;
@@ -356,5 +339,3 @@ a.button { text-decoration: none; }
 .capability-list li {
     margin-left: 8px;
 }
-
-.motd { padding-left: 4px; }

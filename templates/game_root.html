@@ -5,7 +5,7 @@ $if instance.current_game:
             $ game_label = mode[1]
             $break
     $ game_logo_suffix = instance.current_game
-    $var title: $project_name $game_label
+    $var title: $project_name - $game_label
 $else:
     $var title: $project_name
     $ game_logo_suffix = "tf2"

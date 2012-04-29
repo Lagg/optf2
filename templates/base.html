@@ -16,32 +16,38 @@ $def with (content)
     $ rss_title = instance.env.get("optf2_rss_title")
     $if rss_url:
         <link rel="alternate" title="$rss_title" href="$rss_url" type="application/rss+xml"/>
-    <script type="text/javascript"><!--
+    <script type="text/javascript">
     virtual_root = "${virtual_root}";
     static_prefix = "${static_prefix}";
     current_game = "${instance.current_game}";
-    --></script>
+    </script>
     <script type="text/javascript" src="${static_prefix}jquery-1.7.1.min.js"></script>
     <script type="text/javascript" src="${static_prefix}jquery-ui-1.8.17.custom.min.js"></script>
     <script type="text/javascript" src="${static_prefix}optf2.js"></script>
   </head>
   <body>
-    <div class="navbar">
-      <a href="$virtual_root">$project_name</a>
+    <ul class="navbar">
+      <li><a href="$virtual_root">$project_name</a></li>
       $for mode in game_modes:
-          <a href="$virtual_root${mode[0]}">${mode[1]}</a>
-      <a href="${virtual_root}about">Credits</a>
+          $ mid = mode[0]
+          $ extra = None
+          $if mid == instance.current_game: $ extra = ' class="focused"'
+          <li$:extra>
+	    <div class="dropdown-menu">
+	      <a href="$virtual_root$mid">${mode[1]}</a>
+              <ul>
+		<li><a href="$virtual_root$mid/items">Item list</a></li>
+		<li><a href="$virtual_root$mid/attributes">Attribute list</a></li>
+		<li><a href="$virtual_root$mid/particles">Particle list</a></li>
+              </ul>
+	    </div>
+	  </li>
+      <li><a href="${virtual_root}about">Credits</a></li>
       <form method="get" id="search-form" action="$markup.generate_mode_url()"><input type="text" id="search-field" name="user"/><input type="submit" id="search-button" value="Go"/></form>
       $ motd = instance.get("motd")
       $if motd:
           <span class="motd">$:motd</span>
-    </div>
-    $if instance.current_game:
-        <div class="navbar">
-          <a href="$markup.generate_mode_url("items")">Item list</a>
-          <a href="$markup.generate_mode_url("attributes")">Attribute list</a>
-          <a href="$markup.generate_mode_url("particles")">Particle list</a>
-        </div>
+    </ul>
     $:content
   </body>
 </html>
