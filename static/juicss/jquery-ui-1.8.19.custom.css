@@ -1,7 +1,7 @@
-/*
- * jQuery UI CSS Framework 1.8.17
+/*!
+ * jQuery UI CSS Framework 1.8.19
  *
- * Copyright 2011, AUTHORS.txt (http://jqueryui.com/about)
+ * Copyright 2012, AUTHORS.txt (http://jqueryui.com/about)
  * Dual licensed under the MIT or GPL Version 2 licenses.
  * http://jquery.org/license
  *
@@ -38,16 +38,16 @@
 .ui-widget-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; }
 
 
-/*
- * jQuery UI CSS Framework 1.8.17
+/*!
+ * jQuery UI CSS Framework 1.8.19
  *
- * Copyright 2011, AUTHORS.txt (http://jqueryui.com/about)
+ * Copyright 2012, AUTHORS.txt (http://jqueryui.com/about)
  * Dual licensed under the MIT or GPL Version 2 licenses.
  * http://jquery.org/license
  *
  * http://docs.jquery.com/UI/Theming/API
  *
- * To view and modify this theme, visit http://jqueryui.com/themeroller/?ctl=themeroller&ffDefault=Verdana,Arial,sans-serif&fwDefault=normal&fsDefault=1em&cornerRadius=8px&bgColorHeader=404040&bgTextureHeader=01_flat.png&bgImgOpacityHeader=75&borderColorHeader=4d4d4d&fcHeader=ffffff&iconColorHeader=a8a8a8&bgColorContent=252525&bgTextureContent=01_flat.png&bgImgOpacityContent=75&borderColorContent=474747&fcContent=ffffff&iconColorContent=a8a8a8&bgColorDefault=424242&bgTextureDefault=01_flat.png&bgImgOpacityDefault=75&borderColorDefault=d3d3d3&fcDefault=cacaca&iconColorDefault=c9c9c9&bgColorHover=949494&bgTextureHover=01_flat.png&bgImgOpacityHover=75&borderColorHover=3b3b3b&fcHover=212121&iconColorHover=e0e0e0&bgColorActive=c7c8c6&bgTextureActive=01_flat.png&bgImgOpacityActive=65&borderColorActive=030303&fcActive=212121&iconColorActive=cccccc&bgColorHighlight=454545&bgTextureHighlight=01_flat.png&bgImgOpacityHighlight=55&borderColorHighlight=2e2e2e&fcHighlight=ffffff&iconColorHighlight=6973ce&bgColorError=303030&bgTextureError=01_flat.png&bgImgOpacityError=95&borderColorError=cd0a0a&fcError=ff0000&iconColorError=cd0a0a&bgColorOverlay=000000&bgTextureOverlay=01_flat.png&bgImgOpacityOverlay=0&opacityOverlay=75&bgColorShadow=aaaaaa&bgTextureShadow=01_flat.png&bgImgOpacityShadow=0&opacityShadow=30&thicknessShadow=8px&offsetTopShadow=-8px&offsetLeftShadow=-8px&cornerRadiusShadow=8px
+ * To view and modify this theme, visit http://jqueryui.com/themeroller/?ffDefault=Verdana,Arial,sans-serif&fwDefault=normal&fsDefault=1em&cornerRadius=8px&bgColorHeader=454545&bgTextureHeader=01_flat.png&bgImgOpacityHeader=75&borderColorHeader=454545&fcHeader=ffffff&iconColorHeader=ffffff&bgColorContent=1a1a1a&bgTextureContent=01_flat.png&bgImgOpacityContent=75&borderColorContent=454545&fcContent=ffffff&iconColorContent=ffffff&bgColorDefault=292929&bgTextureDefault=01_flat.png&bgImgOpacityDefault=75&borderColorDefault=1c1c1c&fcDefault=ffffff&iconColorDefault=ffffff&bgColorHover=10060f&bgTextureHover=01_flat.png&bgImgOpacityHover=75&borderColorHover=1c1c1c&fcHover=ffffff&iconColorHover=ffffff&bgColorActive=5a5a5a&bgTextureActive=01_flat.png&bgImgOpacityActive=65&borderColorActive=1c1c1c&fcActive=ffffff&iconColorActive=ffffff&bgColorHighlight=454545&bgTextureHighlight=01_flat.png&bgImgOpacityHighlight=55&borderColorHighlight=17080a&fcHighlight=ffffff&iconColorHighlight=6973ce&bgColorError=1d1d1d&bgTextureError=01_flat.png&bgImgOpacityError=95&borderColorError=cd0a0a&fcError=ff0000&iconColorError=cd0a0a&bgColorOverlay=000000&bgTextureOverlay=01_flat.png&bgImgOpacityOverlay=0&opacityOverlay=75&bgColorShadow=aaaaaa&bgTextureShadow=01_flat.png&bgImgOpacityShadow=0&opacityShadow=30&thicknessShadow=8px&offsetTopShadow=-8px&offsetLeftShadow=-8px&cornerRadiusShadow=8px
  */
 
 
@@ -56,26 +56,26 @@
 .ui-widget { font-family: Verdana,Arial,sans-serif; font-size: 1em; }
 .ui-widget .ui-widget { font-size: 1em; }
 .ui-widget input, .ui-widget select, .ui-widget textarea, .ui-widget button { font-family: Verdana,Arial,sans-serif; font-size: 1em; }
-.ui-widget-content { border: 1px solid #474747; background: #252525 url(images/ui-bg_flat_75_252525_40x100.png) 50% 50% repeat-x; color: #ffffff; }
+.ui-widget-content { border: 1px solid #454545; background: #1a1a1a url(images/ui-bg_flat_75_1a1a1a_40x100.png) 50% 50% repeat-x; color: #ffffff; }
 .ui-widget-content a { color: #ffffff; }
-.ui-widget-header { border: 1px solid #4d4d4d; background: #404040 url(images/ui-bg_flat_75_404040_40x100.png) 50% 50% repeat-x; color: #ffffff; font-weight: bold; }
+.ui-widget-header { border: 1px solid #454545; background: #454545 url(images/ui-bg_flat_75_454545_40x100.png) 50% 50% repeat-x; color: #ffffff; font-weight: bold; }
 .ui-widget-header a { color: #ffffff; }
 
 /* Interaction states
 ----------------------------------*/
-.ui-state-default, .ui-widget-content .ui-state-default, .ui-widget-header .ui-state-default { border: 1px solid #d3d3d3; background: #424242 url(images/ui-bg_flat_75_424242_40x100.png) 50% 50% repeat-x; font-weight: normal; color: #cacaca; }
-.ui-state-default a, .ui-state-default a:link, .ui-state-default a:visited { color: #cacaca; text-decoration: none; }
-.ui-state-hover, .ui-widget-content .ui-state-hover, .ui-widget-header .ui-state-hover, .ui-state-focus, .ui-widget-content .ui-state-focus, .ui-widget-header .ui-state-focus { border: 1px solid #3b3b3b; background: #949494 url(images/ui-bg_flat_75_949494_40x100.png) 50% 50% repeat-x; font-weight: normal; color: #212121; }
-.ui-state-hover a, .ui-state-hover a:hover { color: #212121; text-decoration: none; }
-.ui-state-active, .ui-widget-content .ui-state-active, .ui-widget-header .ui-state-active { border: 1px solid #030303; background: #c7c8c6 url(images/ui-bg_flat_65_c7c8c6_40x100.png) 50% 50% repeat-x; font-weight: normal; color: #212121; }
-.ui-state-active a, .ui-state-active a:link, .ui-state-active a:visited { color: #212121; text-decoration: none; }
+.ui-state-default, .ui-widget-content .ui-state-default, .ui-widget-header .ui-state-default { border: 1px solid #1c1c1c; background: #292929 url(images/ui-bg_flat_75_292929_40x100.png) 50% 50% repeat-x; font-weight: normal; color: #ffffff; }
+.ui-state-default a, .ui-state-default a:link, .ui-state-default a:visited { color: #ffffff; text-decoration: none; }
+.ui-state-hover, .ui-widget-content .ui-state-hover, .ui-widget-header .ui-state-hover, .ui-state-focus, .ui-widget-content .ui-state-focus, .ui-widget-header .ui-state-focus { border: 1px solid #1c1c1c; background: #10060f url(images/ui-bg_flat_75_10060f_40x100.png) 50% 50% repeat-x; font-weight: normal; color: #ffffff; }
+.ui-state-hover a, .ui-state-hover a:hover { color: #ffffff; text-decoration: none; }
+.ui-state-active, .ui-widget-content .ui-state-active, .ui-widget-header .ui-state-active { border: 1px solid #1c1c1c; background: #5a5a5a url(images/ui-bg_flat_65_5a5a5a_40x100.png) 50% 50% repeat-x; font-weight: normal; color: #ffffff; }
+.ui-state-active a, .ui-state-active a:link, .ui-state-active a:visited { color: #ffffff; text-decoration: none; }
 .ui-widget :active { outline: none; }
 
 /* Interaction Cues
 ----------------------------------*/
-.ui-state-highlight, .ui-widget-content .ui-state-highlight, .ui-widget-header .ui-state-highlight  {border: 1px solid #2e2e2e; background: #454545 url(images/ui-bg_flat_55_454545_40x100.png) 50% 50% repeat-x; color: #ffffff; }
+.ui-state-highlight, .ui-widget-content .ui-state-highlight, .ui-widget-header .ui-state-highlight  {border: 1px solid #17080a; background: #454545 url(images/ui-bg_flat_55_454545_40x100.png) 50% 50% repeat-x; color: #ffffff; }
 .ui-state-highlight a, .ui-widget-content .ui-state-highlight a,.ui-widget-header .ui-state-highlight a { color: #ffffff; }
-.ui-state-error, .ui-widget-content .ui-state-error, .ui-widget-header .ui-state-error {border: 1px solid #cd0a0a; background: #303030 url(images/ui-bg_flat_95_303030_40x100.png) 50% 50% repeat-x; color: #ff0000; }
+.ui-state-error, .ui-widget-content .ui-state-error, .ui-widget-header .ui-state-error {border: 1px solid #cd0a0a; background: #1d1d1d url(images/ui-bg_flat_95_1d1d1d_40x100.png) 50% 50% repeat-x; color: #ff0000; }
 .ui-state-error a, .ui-widget-content .ui-state-error a, .ui-widget-header .ui-state-error a { color: #ff0000; }
 .ui-state-error-text, .ui-widget-content .ui-state-error-text, .ui-widget-header .ui-state-error-text { color: #ff0000; }
 .ui-priority-primary, .ui-widget-content .ui-priority-primary, .ui-widget-header .ui-priority-primary { font-weight: bold; }
@@ -86,12 +86,12 @@
 ----------------------------------*/
 
 /* states and images */
-.ui-icon { width: 16px; height: 16px; background-image: url(images/ui-icons_a8a8a8_256x240.png); }
-.ui-widget-content .ui-icon {background-image: url(images/ui-icons_a8a8a8_256x240.png); }
-.ui-widget-header .ui-icon {background-image: url(images/ui-icons_a8a8a8_256x240.png); }
-.ui-state-default .ui-icon { background-image: url(images/ui-icons_c9c9c9_256x240.png); }
-.ui-state-hover .ui-icon, .ui-state-focus .ui-icon {background-image: url(images/ui-icons_e0e0e0_256x240.png); }
-.ui-state-active .ui-icon {background-image: url(images/ui-icons_cccccc_256x240.png); }
+.ui-icon { width: 16px; height: 16px; background-image: url(images/ui-icons_ffffff_256x240.png); }
+.ui-widget-content .ui-icon {background-image: url(images/ui-icons_ffffff_256x240.png); }
+.ui-widget-header .ui-icon {background-image: url(images/ui-icons_ffffff_256x240.png); }
+.ui-state-default .ui-icon { background-image: url(images/ui-icons_ffffff_256x240.png); }
+.ui-state-hover .ui-icon, .ui-state-focus .ui-icon {background-image: url(images/ui-icons_ffffff_256x240.png); }
+.ui-state-active .ui-icon {background-image: url(images/ui-icons_ffffff_256x240.png); }
 .ui-state-highlight .ui-icon {background-image: url(images/ui-icons_6973ce_256x240.png); }
 .ui-state-error .ui-icon, .ui-state-error-text .ui-icon {background-image: url(images/ui-icons_cd0a0a_256x240.png); }
 
@@ -284,10 +284,10 @@
 
 /* Overlays */
 .ui-widget-overlay { background: #000000 url(images/ui-bg_flat_0_000000_40x100.png) 50% 50% repeat-x; opacity: .75;filter:Alpha(Opacity=75); }
-.ui-widget-shadow { margin: -8px 0 0 -8px; padding: 8px; background: #aaaaaa url(images/ui-bg_flat_0_aaaaaa_40x100.png) 50% 50% repeat-x; opacity: .30;filter:Alpha(Opacity=30); -moz-border-radius: 8px; -khtml-border-radius: 8px; -webkit-border-radius: 8px; border-radius: 8px; }/*
- * jQuery UI Resizable 1.8.17
+.ui-widget-shadow { margin: -8px 0 0 -8px; padding: 8px; background: #aaaaaa url(images/ui-bg_flat_0_aaaaaa_40x100.png) 50% 50% repeat-x; opacity: .30;filter:Alpha(Opacity=30); -moz-border-radius: 8px; -khtml-border-radius: 8px; -webkit-border-radius: 8px; border-radius: 8px; }/*!
+ * jQuery UI Resizable 1.8.19
  *
- * Copyright 2011, AUTHORS.txt (http://jqueryui.com/about)
+ * Copyright 2012, AUTHORS.txt (http://jqueryui.com/about)
  * Dual licensed under the MIT or GPL Version 2 licenses.
  * http://jquery.org/license
  *
@@ -303,23 +303,32 @@
 .ui-resizable-se { cursor: se-resize; width: 12px; height: 12px; right: 1px; bottom: 1px; }
 .ui-resizable-sw { cursor: sw-resize; width: 9px; height: 9px; left: -5px; bottom: -5px; }
 .ui-resizable-nw { cursor: nw-resize; width: 9px; height: 9px; left: -5px; top: -5px; }
-.ui-resizable-ne { cursor: ne-resize; width: 9px; height: 9px; right: -5px; top: -5px;}/*
- * jQuery UI Autocomplete 1.8.17
+.ui-resizable-ne { cursor: ne-resize; width: 9px; height: 9px; right: -5px; top: -5px;}/*!
+ * jQuery UI Selectable 1.8.19
  *
- * Copyright 2011, AUTHORS.txt (http://jqueryui.com/about)
+ * Copyright 2012, AUTHORS.txt (http://jqueryui.com/about)
+ * Dual licensed under the MIT or GPL Version 2 licenses.
+ * http://jquery.org/license
+ *
+ * http://docs.jquery.com/UI/Selectable#theming
+ */
+.ui-selectable-helper { position: absolute; z-index: 100; border:1px dotted black; }
+/*!
+ * jQuery UI Autocomplete 1.8.19
+ *
+ * Copyright 2012, AUTHORS.txt (http://jqueryui.com/about)
  * Dual licensed under the MIT or GPL Version 2 licenses.
  * http://jquery.org/license
  *
  * http://docs.jquery.com/UI/Autocomplete#theming
  */
 .ui-autocomplete { position: absolute; cursor: default; }	
-.ui-autocomplete-loading { background: white url('images/ui-anim_basic_16x16.gif') right center no-repeat; }
 
 /* workarounds */
 * html .ui-autocomplete { width:1px; } /* without this, the menu expands to 100% in IE6 */
 
 /*
- * jQuery UI Menu 1.8.17
+ * jQuery UI Menu @VERSION
  *
  * Copyright 2010, AUTHORS.txt (http://jqueryui.com/about)
  * Dual licensed under the MIT or GPL Version 2 licenses.
@@ -357,10 +366,10 @@
 	font-weight: normal;
 	margin: -1px;
 }
-/*
- * jQuery UI Dialog 1.8.17
+/*!
+ * jQuery UI Dialog 1.8.19
  *
- * Copyright 2011, AUTHORS.txt (http://jqueryui.com/about)
+ * Copyright 2012, AUTHORS.txt (http://jqueryui.com/about)
  * Dual licensed under the MIT or GPL Version 2 licenses.
  * http://jquery.org/license
  *
@@ -378,3 +387,21 @@
 .ui-dialog .ui-dialog-buttonpane button { margin: .5em .4em .5em 0; cursor: pointer; }
 .ui-dialog .ui-resizable-se { width: 14px; height: 14px; right: 3px; bottom: 3px; }
 .ui-draggable .ui-dialog-titlebar { cursor: move; }
+/*!
+ * jQuery UI Tabs 1.8.19
+ *
+ * Copyright 2012, AUTHORS.txt (http://jqueryui.com/about)
+ * Dual licensed under the MIT or GPL Version 2 licenses.
+ * http://jquery.org/license
+ *
+ * http://docs.jquery.com/UI/Tabs#theming
+ */
+.ui-tabs { position: relative; padding: .2em; zoom: 1; } /* position: relative prevents IE scroll bug (element with position: relative inside container with overflow: auto appear as "fixed") */
+.ui-tabs .ui-tabs-nav { margin: 0; padding: .2em .2em 0; }
+.ui-tabs .ui-tabs-nav li { list-style: none; float: left; position: relative; top: 1px; margin: 0 .2em 1px 0; border-bottom: 0 !important; padding: 0; white-space: nowrap; }
+.ui-tabs .ui-tabs-nav li a { float: left; padding: .5em 1em; text-decoration: none; }
+.ui-tabs .ui-tabs-nav li.ui-tabs-selected { margin-bottom: 0; padding-bottom: 1px; }
+.ui-tabs .ui-tabs-nav li.ui-tabs-selected a, .ui-tabs .ui-tabs-nav li.ui-state-disabled a, .ui-tabs .ui-tabs-nav li.ui-state-processing a { cursor: text; }
+.ui-tabs .ui-tabs-nav li a, .ui-tabs.ui-tabs-collapsible .ui-tabs-nav li.ui-tabs-selected a { cursor: pointer; } /* first selector in group seems obsolete, but required to overcome bug in Opera applying cursor: text overall if defined elsewhere... */
+.ui-tabs .ui-tabs-panel { display: block; border-width: 0; padding: 1em 1.4em; background: none; }
+.ui-tabs .ui-tabs-hide { display: none !important; }

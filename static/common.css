@@ -340,3 +340,5 @@ a.button { text-decoration: none; }
 .capability-list li {
     margin-left: 8px;
 }
+
+.ui-autocomplete-loading { background: white url('juicss/images/ui-anim_basic_16x16.gif') right center no-repeat; }
