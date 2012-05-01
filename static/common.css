@@ -63,7 +63,7 @@ body { background: #141515; color: white; font-family: Arial, Helvetica, sans-se
 .item_cell {
     border: 2px solid black;
     margin: 3px;
-    background: #5c5c5d;
+    background: #505050;
     width: 94px;
     height: 94px;
     text-align: center;
@@ -203,14 +203,15 @@ a:visited { text-decoration: none; }
 #status_offline { color: #808080; }
 #status_snooze, #status_away, #status_busy { color: #2fb3ff; }
 
-.navbar { background-color: #313231; text-align: left; height: 30px; width: 100%; padding: 0; margin: 0; position: relative; border-top: 1px solid black; list-style: none; }
+.navbar { background-color: #2a2a2a; text-align: left; height: 30px; width: 100%; padding: 0; margin: 0; position: relative; border-top: 1px solid black; list-style: none; }
 .navbar > * { margin: 8px 10px 0 10px; }
-.navbar > li { background-color: #5c5c5d; color: #171718; position: relative; float: left; height: 30px; margin: 0; padding: 0; border-right: 1px solid black; }
-.navbar a { /*color: #171718;*/ display: block; height: 22px; margin: 0; padding: 8px 10px 0 10px; white-space: nowrap; text-decoration: none; }
-.navbar li:hover, .navbar li.focused .dropdown-menu { background-color: #060412; color: white; text-decoration: none; }
-.navbar .dropdown-menu { border: 0; background-color: #5c5c5d; border-radius: 0; }
-.navbar .dropdown-menu:hover { background-color: #202020; }
+.navbar > li { background-color: #505050; color: white; position: relative; float: left; height: 30px; margin: 0; padding: 0; border-right: 1px solid black; }
+.navbar a { display: block; height: 22px; padding: 8px 10px 0 10px; white-space: nowrap; text-decoration: none; }
+.navbar li:hover, .navbar li.focused .dropdown-menu, .navbar li:hover .dropdown-menu { background-color: #060910; }
+.navbar li:hover a, .navbar li.focused a { color: white; }
+.navbar .dropdown-menu { border: 0; background-color: #505050; border-radius: 0; }
 .navbar .motd * { display: inline; }
+.navbar .dropdown-menu > a, .navbar > li > a { color: white; font-weight: bold; }
 
 .toolbar { background: #202021; position: relative; border-top: 1px solid black; border-bottom: 1px solid black; padding: 1em 0 1em 0; height: 3em; width: 100%; }
 .tool {
@@ -330,15 +331,8 @@ a.button { text-decoration: none; }
 .dropdown-menu ul li:hover { background: #404040; }
 .dropdown-menu:hover ul { display: block; }
 
-.capability-list {
-    list-style-type: none;
-    padding-left: 4px;
-}
-.capability-list lh {
-    font-weight: bold;
-}
-.capability-list li {
-    margin-left: 8px;
-}
+.capability-list { list-style-type: none; padding-left: 4px; }
+.capability-list lh { font-weight: bold; }
+.capability-list li { margin-left: 8px; }
 
 .ui-autocomplete-loading { background: white url('juicss/images/ui-anim_basic_16x16.gif') right center no-repeat; }
