@@ -336,3 +336,5 @@ a.button { text-decoration: none; }
 .capability-list li { margin-left: 8px; }
 
 .ui-autocomplete-loading { background: white url('juicss/images/ui-anim_basic_16x16.gif') right center no-repeat; }
+.ui-widget-header {  border-bottom-left-radius: 0; border-bottom-right-radius: 0; }
+.ui-widget { padding: 0; margin: 0 5px 0 5px; }

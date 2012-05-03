@@ -76,7 +76,7 @@ a { color: #555555; }
 .toolbar a { color: white; }
 .toolbar a.button { color: black; }
 
-.ui-widget-content { border: 1px solid #474747; background: #d8d8d8; color: #ffffff; }
-.ui-widget-content a { color: black; }
-.ui-widget-header { border: 1px solid #4d4d4d; background: #919191; color: #ffffff; font-weight: bold; }
-.ui-widget-header a { color: white; }
+.ui-dialog { border: 1px solid #474747; background: #d8d8d8; color: #ffffff; }
+.ui-dialog a { color: black; }
+.ui-dialog-titlebar { border: 1px solid #4d4d4d; background: #919191; color: #ffffff; font-weight: bold; }
+.ui-dialog-titlebar a { color: white; }
