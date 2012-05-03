@@ -338,3 +338,5 @@ a.button { text-decoration: none; }
 .ui-autocomplete-loading { background: white url('juicss/images/ui-anim_basic_16x16.gif') right center no-repeat; }
 .ui-widget-header {  border-bottom-left-radius: 0; border-bottom-right-radius: 0; }
 .ui-widget { padding: 0; margin: 0 5px 0 5px; }
+.ui-tabs, .ui-tabs-nav { border: 0; background: none; }
+.ui-tabs-nav li { border-bottom-left-radius: 8px; border-bottom-right-radius: 8px; }

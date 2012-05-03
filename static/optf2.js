@@ -80,6 +80,27 @@ $(document).ready(function(){
         open: function() { $(".ui-autocomplete").css("z-index", "100"); },
         select: function(e, ui) { this.value = ui.item.value; $("#search-form").submit(); }
     });
+
+    $("#tabs").tabs({
+	create: function(e, ui) {
+	    $(this).width($("#backpack").width());
+	    $(this).css("margin", "0 auto 0 auto");
+	},
+	ajaxOptions: {
+	    dataFilter: function(data, type) {
+		return $(data).find("#loadout");
+	    },
+	    success: function(data) {
+		var cells = new Cell(data);
+		var dialogs = new ItemDialog(".item-link");
+
+		dialogs.bindOpenOnClick();
+
+		cells.fitToContainer();
+		cells.bindHoverAction();
+
+		autosizeBoxes();
+	    }}});
 });
 
 function autosizeBoxes() {

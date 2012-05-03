@@ -100,9 +100,14 @@ $ onlinestates = {0: "offline", 1: "online", 2: "busy", 3: "away", 4: "snooze"}
   </div>
 </div>
 <div id="content">
-  $if len(items) <= 0 and len(baditems) <= 0:
-      <h2>Empty!</h2>
+  <div id="tabs">
+    <ul>
+      <li><a href="#backpack">Backpack</a></li>
+      <li><a href="$markup.generate_mode_url('loadout/{0}'.format(user.get_id64()))">Loadout</a></li>
+    </ul>
   <div id="backpack" style="width: 1040px;" class="bp-${appid}-${user.get_id64()}">
+    $if len(items) <= 0 and len(baditems) <= 0:
+        <h2>Empty!</h2>
     $if len(baditems) > 0:
         <div class="autosize box" style="max-width: 1040px; margin: 15px auto 15px auto;">
 	  <div class="titlebar">Displaced items</div>
@@ -119,6 +124,7 @@ $ onlinestates = {0: "offline", 1: "online", 2: "busy", 3: "away", 4: "snooze"}
           $for item in items[slice - 50:slice]:
               $:markup.generate_cell(item, user = user)
         </div>
+  </div>
   </div>
 </div>
 <div id="footer">
