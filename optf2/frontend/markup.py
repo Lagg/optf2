@@ -41,7 +41,7 @@ def generate_item_url(item, user = None):
     itemid = item.get_id()
     pathuser = ""
 
-    if user:
+    if itemid and user:
         try: pathuser = str(user.get_id64())
         except AttributeError: pathuser = str(user)
 
