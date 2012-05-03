@@ -53,26 +53,7 @@ $(document).ready(function(){
 	cellFilter.byUntradable();
     });
 
-    $(".box").each(function() {
-        var box = $(this);
-
-        if(!box.hasClass("autosize")) {
-            return;
-        }
-
-        var innerlength = 0;
-	var maxwidth = parseInt(box.css("max-width"));
-
-        box.children().not(".titlebar").each(function() {
-	    var nextwidth = $(this).outerWidth(true);
-	    if ((innerlength + nextwidth) > maxwidth){
-		return false;
-	    } else {
-		innerlength += nextwidth;
-	    }
-        });
-        box.width(innerlength);
-    });
+    autosizeBoxes();
 
     var searchField = new Field("search-field");
     searchField.bindDefaultText("User, URL, or ID search...");
@@ -100,6 +81,29 @@ $(document).ready(function(){
         select: function(e, ui) { this.value = ui.item.value; $("#search-form").submit(); }
     });
 });
+
+function autosizeBoxes() {
+    $(".box").each(function() {
+        var box = $(this);
+
+        if(!box.hasClass("autosize")) {
+            return;
+        }
+
+        var innerlength = 0;
+	var maxwidth = parseInt(box.css("max-width"));
+
+        box.children().not(".titlebar").each(function() {
+	    var nextwidth = $(this).outerWidth(true);
+	    if ((innerlength + nextwidth) > maxwidth){
+		return false;
+	    } else {
+		innerlength += nextwidth;
+	    }
+        });
+        box.width(innerlength);
+    });
+}
 
 function inbetween(x, y, z) {
     return (y >= x && y <= z);
