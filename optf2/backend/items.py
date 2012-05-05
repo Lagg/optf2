@@ -38,6 +38,12 @@ capabilitydict = {"can_gift_wrap": "Gift wrappable",
                   "nameable": "Nameable",
                   "paintable": "Paintable"}
 
+# Russia, for the sake of OPTF2. Give real symbol.
+currencysymbols = {"USD": "$",
+                   "RUB": "",
+                   "GBP": unichr(0x00A3),
+                   "EUR": unichr(0x20AC)}
+
 def _(thestring):
     return web.utils.safestr(thestring)
 
@@ -429,7 +435,7 @@ def filter_by_capability(items, capability):
 
 def get_price_stats(items):
     assets = database.load_assets_cached(web.ctx.language)
-    stats = {"worth": {}, "most-expensive": [], "avg": {}}
+    stats = {"sym": currencysymbols, "worth": {}, "most-expensive": [], "avg": {}}
 
     if not assets:
         return stats
