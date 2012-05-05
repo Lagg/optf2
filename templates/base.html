@@ -30,15 +30,17 @@ $def with (content)
       <li><a href="$virtual_root">$project_name</a></li>
       $for mode in game_modes:
           $ mid = mode[0]
+          $ mhome = virtual_root + mid
           $ extra = None
           $if mid == instance.current_game: $ extra = ' class="focused"'
           <li$:extra>
 	    <div class="dropdown-menu">
-	      <a href="$virtual_root$mid">${mode[1]}</a>
+	      <a href="$mhome">${mode[1]}</a>
               <ul>
-		<li><a href="$virtual_root$mid/items">Item list</a></li>
-		<li><a href="$virtual_root$mid/attributes">Attribute list</a></li>
-		<li><a href="$virtual_root$mid/particles">Particle list</a></li>
+		<li><a href="$mhome">Home</a></li>
+		<li><a href="$mhome/items">Item list</a></li>
+		<li><a href="$mhome/attributes">Attribute list</a></li>
+		<li><a href="$mhome/particles">Particle list</a></li>
               </ul>
 	    </div>
 	  </li>

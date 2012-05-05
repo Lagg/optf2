@@ -1,5 +1,5 @@
+$ game_label = "Home"
 $if instance.current_game:
-    $ game_label = "OPNet"
     $for mode in game_modes:
         $if mode[0] == instance.current_game:
             $ game_label = mode[1]
