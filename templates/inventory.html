@@ -14,46 +14,6 @@ $ onlinestates = {0: "offline", 1: "online", 2: "busy", 3: "away", 4: "snooze"}
       $ name_suffix = '<img src="{0}valve.png" alt="Valve" title="Valve Employee"/>'.format(static_prefix)
   $if user.get_visibility() != 3:
       $ name_suffix += '<span class="attr-negative" style="font-weight: normal;"> (private)</span>'
-    <div class="tool" style="padding-right: 0; border: 0;">
-      <a href="$profileurl">
-        <img src="$user.get_avatar_url(user.AVATAR_SMALL)" alt="$realn" title="$realn"/>
-      </a>
-    </div>
-    <div class="tool" style="padding-left: 5px;">
-      <b><a href="$profileurl">$usern</a> $:name_suffix</b>
-      <div id="status_$cstatus">
-        $if cgame:
-            Playing \
-            $ game_extra = cgame.get("extra", "Unknown")
-            $ game_extra_title = game_extra
-            $if len(game_extra) >= 20:
-                $ game_extra = game_extra[:17] + "..."
-            $ game_server = cgame.get("server", "0.0.0.0:0")
-            $if cgame.has_key("id"):
-                <a href="http://store.steampowered.com/app/$cgame['id']" title="$game_extra_title">$game_extra</a>
-            $else:
-                $game_extra
-            $if game_server != "0.0.0.0:0":
-                <a href="steam://connect/$game_server">(Connect)</a>
-        $else:
-            $cstatus
-      </div>
-    </div>
-    <div class="tool">
-      $stats["weapons"] weapons | $stats["hats"] hats | $stats["misc"] misc ($stats["total"]/$cell_count total)
-      $if cell_count <= 50:
-          | <b>User is Free to Play</b>
-      $if cell_count < stats["total"]:
-          | <b style="color: red">Pack is over capacity</b>
-      <br/>
-      $if price_stats["worth"]:
-          Store worth:
-          $# loop.last breaks on iteritems. WORKAROUND
-          $ worth = price_stats["worth"]
-          $for k in worth.keys():
-              ${worth[k]} (${price_stats["avg"][k]} avg) <b>$k</b>
-              $if not loop.last: |
-    </div>
     <div id="option-controls" class="tool terminator">
       <div class="dropdown-menu">
         <b>Sort</b>
@@ -100,6 +60,60 @@ $ onlinestates = {0: "offline", 1: "online", 2: "busy", 3: "away", 4: "snooze"}
   </div>
 </div>
 <div id="content">
+  <div class="side-box">
+    <div class="header">Player</div>
+    <div class="player-badge" style="height: 70px; padding: 4px;">
+      <div style="float:left; margin-right: 10px;">
+	<a href="$profileurl">
+          <img src="$user.get_avatar_url(user.AVATAR_MEDIUM)" alt="$realn" title="$realn"/>
+	</a>
+      </div>
+      <div style="float: left;">
+	<b><a href="$profileurl">$usern</a> $:name_suffix</b><br/>
+	<span id="status_$cstatus">
+        $if cgame:
+            Playing \
+            $ game_extra = cgame.get("extra", "Unknown")
+            $ game_extra_title = game_extra
+            $if len(game_extra) >= 20:
+                $ game_extra = game_extra[:17] + "..."
+            $ game_server = cgame.get("server", "0.0.0.0:0")
+            $if cgame.has_key("id"):
+                <a href="http://store.steampowered.com/app/$cgame['id']" title="$game_extra_title">$game_extra</a>
+            $else:
+                $game_extra
+            $if game_server != "0.0.0.0:0":
+                <a href="steam://connect/$game_server">(Connect)</a>
+        $else:
+            $cstatus
+	</span>
+      </div>
+    </div>
+    <div class="header">Item store worth</div>
+    <table>
+      <tr><th>Currency</th><th>Total</th><th>Avg.</th></tr>
+      $if price_stats["worth"]:
+          $ worth = price_stats["worth"]
+          $ ckeys = worth.keys()
+          $ckeys.sort()
+          $for k in ckeys:
+              $ sym = price_stats["sym"][k]
+              <tr><th>$k</th> <td>$sym$worth[k]</td> <td>$sym$price_stats["avg"][k]</td></tr>
+    </table>
+    <div class="header">Item statistics</div>
+    <table>
+      $ typekeys = stats.keys()
+      $typekeys.sort()
+      $for k in typekeys:
+          $if k == "total": $continue
+          <tr><th>$k.title()</th><td>$stats[k]</td></tr>
+      <tr><th>Total</th><td>$stats["total"] / $cell_count</td></tr>
+      $if cell_count <= 50:
+          <tr><td colspan="2">User is free to play</td></tr>
+      $if cell_count < stats["total"]:
+          <tr><th colspan="2" style="color: red;">Pack is over capacity</th></tr>
+    </table>
+  </div>
   <div id="tabs">
     <ul>
       <li><a href="#backpack">Backpack</a></li>

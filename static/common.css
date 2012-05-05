@@ -331,9 +331,16 @@ a.button { text-decoration: none; }
 .dropdown-menu ul li:hover { background: #404040; }
 .dropdown-menu:hover ul { display: block; }
 
-.capability-list { list-style-type: none; padding-left: 4px; }
+.capability-list { list-style-type: none; padding-left: 4px; text-align: left; }
 .capability-list lh { font-weight: bold; }
 .capability-list li { margin-left: 8px; }
+
+.side-box { position: absolute; left: 10px; background: #1a1a1a; border: 1px solid #454545; min-height: 3px; min-width: 150px; padding-bottom: 5px; }
+.side-box .header { background: #454545; width: 100%; padding: 5px 0 5px 0; margin: 10px 0 10px 0; font-weight: bold; font-size: 1.1em; }
+.side-box .header:first-of-type { margin-top: 0; }
+
+.side-box table tr { text-align: left; }
+.side-box table td, .side-box table th { padding: 3px; }
 
 .ui-autocomplete-loading { background: white url('juicss/images/ui-anim_basic_16x16.gif') right center no-repeat; }
 .ui-widget-header {  border-bottom-left-radius: 0; border-bottom-right-radius: 0; }
