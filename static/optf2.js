@@ -104,10 +104,10 @@ $(document).ready(function(){
 });
 
 function autosizeBoxes() {
-    $(".box").each(function() {
+    $(".box.autosize").each(function() {
         var box = $(this);
 
-        if(!box.hasClass("autosize")) {
+        if(box.data("sized")) {
             return;
         }
 
@@ -116,6 +116,7 @@ function autosizeBoxes() {
 
         box.children().not(".titlebar").each(function() {
 	    var nextwidth = $(this).outerWidth(true);
+
 	    if ((innerlength + nextwidth) > maxwidth){
 		return false;
 	    } else {
@@ -123,6 +124,8 @@ function autosizeBoxes() {
 	    }
         });
         box.width(innerlength);
+
+	box.data("sized", true);
     });
 }
 
