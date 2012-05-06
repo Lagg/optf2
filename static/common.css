@@ -204,8 +204,8 @@ a:visited { text-decoration: none; }
 #status_snooze, #status_away, #status_busy { color: #2fb3ff; }
 
 .navbar { background-color: #2a2a2a; text-align: left; height: 30px; width: 100%; padding: 0; margin: 0; position: relative; border-top: 1px solid black; list-style: none; }
-.navbar > * { margin: 8px 10px 0 10px; }
 .navbar > li { background-color: #505050; color: white; position: relative; float: left; height: 30px; margin: 0; padding: 0; border-right: 1px solid black; }
+.navbar .open-space, .navbar .open-space:hover { background: none; border: none; padding: 0 0 0 30px; }
 .navbar a { display: block; height: 22px; padding: 8px 10px 0 10px; white-space: nowrap; text-decoration: none; }
 .navbar li:hover, .navbar li.focused .dropdown-menu, .navbar li:hover .dropdown-menu { background-color: #060910; }
 .navbar li:hover a, .navbar li.focused a { color: white; }

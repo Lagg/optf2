@@ -45,10 +45,12 @@ $def with (content)
 	    </div>
 	  </li>
       <li><a href="${virtual_root}about">Credits</a></li>
-      <span><form method="get" id="search-form" action="$markup.generate_mode_url()"><input type="text" id="search-field" name="user"/><input type="submit" id="search-button" value="Go"/></form></span>
-      $ motd = instance.get("motd")
-      $if motd:
-          <span class="motd">$:motd</span>
+      <li class="open-space">
+	<span><form method="get" id="search-form" action="$markup.generate_mode_url()"><input type="text" id="search-field" name="user"/><input type="submit" id="search-button" value="Go"/></form></span>
+	$ motd = instance.get("motd")
+	$if motd:
+            <span class="motd">$:motd</span>
+      </li>
     </ul>
     $:content
   </body>
