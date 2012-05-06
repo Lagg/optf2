@@ -213,17 +213,6 @@ a:visited { text-decoration: none; }
 .navbar .motd * { display: inline; }
 .navbar .dropdown-menu > a, .navbar > li > a { color: white; font-weight: bold; }
 
-.toolbar { background: #202021; position: relative; border-top: 1px solid black; border-bottom: 1px solid black; padding: 1em 0 1em 0; height: 3em; width: 100%; }
-.tool {
-    text-align: left;
-    padding: 2px 20px 0 20px;
-    float: left;
-    border-right: 1px solid white;
-    height: 100%;
-}
-.tool[class~=terminator] { border-right: 0; }
-.tool .dropdown-menu, .tool .button { float: left; margin: 3px; padding: 3px; }
-
 img { border: 0; }
 
 #item_stats {
@@ -293,7 +282,7 @@ img { border: 0; }
     color: gray;
     cursor: default;
 }
-.button[class~=clicked] { background-color: #212121; }
+.button[class~=clicked] { background-color: #10060F; border-color: #292929; }
 .button:hover { background-color: #282828; }
 .button:active { background-color: #383838; }
 a.button { text-decoration: none; }
@@ -334,6 +323,9 @@ a.button { text-decoration: none; }
 .capability-list { list-style-type: none; padding-left: 4px; text-align: left; }
 .capability-list lh { font-weight: bold; }
 .capability-list li { margin-left: 8px; }
+
+.item-tools { padding: 5px; width: 1040px; text-align: left; margin: 0 auto 0 auto; }
+.item-tools .dropdown-menu, .item-tools .button { float: left; padding: 3px; margin: 3px; }
 
 .side-box { position: absolute; left: 10px; background: #1a1a1a; border: 1px solid #454545; min-height: 3px; min-width: 150px; padding-bottom: 5px; }
 .side-box .header { background: #454545; width: 100%; padding: 5px 0 5px 0; margin: 10px 0 10px 0; font-weight: bold; font-size: 1.1em; }

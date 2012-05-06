@@ -5,8 +5,7 @@ $ realn = user.get_real_name()
 $var title: $project_name - $usern's Backpack
 $ rss = markup.generate_mode_url("feed/{0}".format(user.get_id64()))
 $ onlinestates = {0: "offline", 1: "online", 2: "busy", 3: "away", 4: "snooze"}
-<div id="header" style="position: relative;">
-  <div class="toolbar" style="margin: 0 0 15px 0;">
+<div id="header" style="position: relative; margin-bottom: 30px;">
   $ cgame = user.get_current_game()
   $ cstatus = onlinestates.get(user.get_status(), "offline")
   $ name_suffix = ""
@@ -14,50 +13,6 @@ $ onlinestates = {0: "offline", 1: "online", 2: "busy", 3: "away", 4: "snooze"}
       $ name_suffix = '<img src="{0}valve.png" alt="Valve" title="Valve Employee"/>'.format(static_prefix)
   $if user.get_visibility() != 3:
       $ name_suffix += '<span class="attr-negative" style="font-weight: normal;"> (private)</span>'
-    <div id="option-controls" class="tool terminator">
-      <div class="dropdown-menu">
-        <b>Sort</b>
-        <ul>
-          <li><a href="$qurl(sort = None)">Default</a></li>
-          <li><a href="$qurl(sort = 'id')">ID</a></li>
-          <li><a href="$qurl(sort = 'time')">Time</a></li>
-          <li><a href="$qurl(sort = 'level')">Level</a></li>
-          <li><a href="$qurl(sort = 'name')">Name</a></li>
-          <li><a href="$qurl(sort = 'slot')">Slot</a></li>
-          <li><a href="$qurl(sort = 'class')">Class</a></li>
-        </ul>
-      </div>
-      <div class="dropdown-menu">
-        <b>Class</b>
-        <ul>
-          <li><a href="$qurl(sortclass = None)"><img src="${static_prefix}tf_icon.png" alt="All" title="All"/> All</a></li>
-          $for k in filter_classes:
-              <li>
-                <a href="$qurl(sortclass = k)">
-                  <img src="${static_prefix}${k}_icon.png" alt="${k}" title="${k}"/> $k
-                </a>
-              </li>
-        </ul>
-      </div>
-      <div class="dropdown-menu">
-        <b>Quality</b>
-        <ul>
-          <li><a href="$qurl(quality = None)">All</a></li>
-          $for q in filter_qualities:
-              <li><a href="$qurl(quality = q['id'])"><span class="prefix-${q['str']}">$q["prettystr"]</span></a></li>
-        </ul>
-      </div>
-      <div class="dropdown-menu">
-        <b>OPNet</b>
-        <ul>
-          $for mode in game_modes:
-              <li><a href="${virtual_root}${mode[0]}/user/${user.get_id64()}">$mode[1]</a></li>
-        </ul>
-      </div>
-      <a class="button" href="$markup.generate_mode_url('loadout/{0}'.format(user.get_id64()))">Loadouts</a>
-      <a class="button" href="$rss">RSS</a>
-    </div>
-  </div>
 </div>
 <div id="content">
   <div class="side-box">
@@ -114,11 +69,49 @@ $ onlinestates = {0: "offline", 1: "online", 2: "busy", 3: "away", 4: "snooze"}
           <tr><th colspan="2" style="color: red;">Pack is over capacity</th></tr>
     </table>
   </div>
-  <div id="tabs">
-    <ul>
-      <li><a href="#backpack">Backpack</a></li>
-      <li><a href="$markup.generate_mode_url('loadout/{0}'.format(user.get_id64()))">Loadout</a></li>
-    </ul>
+  <div class="item-tools">
+      <div class="dropdown-menu">
+        <b>Sort</b>
+        <ul>
+          <li><a href="$qurl(sort = None)">Default</a></li>
+          <li><a href="$qurl(sort = 'id')">ID</a></li>
+          <li><a href="$qurl(sort = 'time')">Time</a></li>
+          <li><a href="$qurl(sort = 'level')">Level</a></li>
+          <li><a href="$qurl(sort = 'name')">Name</a></li>
+          <li><a href="$qurl(sort = 'slot')">Slot</a></li>
+          <li><a href="$qurl(sort = 'class')">Class</a></li>
+        </ul>
+      </div>
+      <div class="dropdown-menu">
+        <b>Class</b>
+        <ul>
+          <li><a href="$qurl(sortclass = None)"><img src="${static_prefix}tf_icon.png" alt="All" title="All"/> All</a></li>
+          $for k in filter_classes:
+              <li>
+                <a href="$qurl(sortclass = k)">
+                  <img src="${static_prefix}${k}_icon.png" alt="${k}" title="${k}"/> $k
+                </a>
+              </li>
+        </ul>
+      </div>
+      <div class="dropdown-menu">
+        <b>Quality</b>
+        <ul>
+          <li><a href="$qurl(quality = None)">All</a></li>
+          $for q in filter_qualities:
+              <li><a href="$qurl(quality = q['id'])"><span class="prefix-${q['str']}">$q["prettystr"]</span></a></li>
+        </ul>
+      </div>
+      <div class="dropdown-menu">
+        <b>OPNet</b>
+        <ul>
+          $for mode in game_modes:
+              <li><a href="${virtual_root}${mode[0]}/user/${user.get_id64()}">$mode[1]</a></li>
+        </ul>
+      </div>
+      <a class="button" id="loadout-button" href="$markup.generate_mode_url('loadout/{0}'.format(user.get_id64()))">Loadout</a>
+      <a class="button" href="$rss">RSS</a>
+  </div>
   <div id="backpack" style="width: 1040px;" class="bp-${appid}-${user.get_id64()}">
     $if len(items) <= 0 and len(baditems) <= 0:
         <h2>Empty!</h2>
@@ -138,7 +131,6 @@ $ onlinestates = {0: "offline", 1: "online", 2: "busy", 3: "away", 4: "snooze"}
           $for item in items[slice - 50:slice]:
               $:markup.generate_cell(item, user = user)
         </div>
-  </div>
   </div>
 </div>
 <div id="footer">

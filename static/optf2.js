@@ -16,7 +16,7 @@ $(document).ready(function(){
     var pagination_toggler = $(document.createElement("div"));
     var paginationButton = new Button("Show pages");
 
-    paginationButton.attachTo("#option-controls");
+    paginationButton.attachTo(".item-tools");
     paginationButton.bindClickStateHandler(function(clicked) {
 	if (clicked) {
 	    if (!hashpage) {
@@ -43,12 +43,12 @@ $(document).ready(function(){
     var filterField = new Field("filterbar");
     var cellFilter = new CellFilter($(".item_cell"));
 
-    filterField.attachTo("#option-controls");
+    filterField.attachTo(".item-tools");
     filterField.bindDefaultText("Search...");
     cellFilter.bindFilterToField(cellFilter.byRawAttribute, filterField);
 
     var untradableButton = new Button("Hide untradable");
-    untradableButton.attachTo("#option-controls");
+    untradableButton.attachTo(".item-tools");
     untradableButton.bindClickStateHandler(function() {
 	cellFilter.byUntradable();
     });
@@ -81,26 +81,45 @@ $(document).ready(function(){
         select: function(e, ui) { this.value = ui.item.value; $("#search-form").submit(); }
     });
 
-    $("#tabs").tabs({
-	create: function(e, ui) {
-	    $(this).width($("#backpack").width());
-	    $(this).css("margin", "0 auto 0 auto");
-	},
-	ajaxOptions: {
-	    dataFilter: function(data, type) {
-		return $(data).find("#loadout");
-	    },
-	    success: function(data) {
-		var cells = new Cell(data);
-		var dialogs = new ItemDialog(".item-link");
+    /* May want to encapsulate stuff below later after testing. */
+    var packdiv = $("#backpack");
+    if (packdiv.length > 0) {
+	$(".item-tools").width(packdiv.width());
+	$('<div id="loadout-result" style="display: none;"></div>').insertBefore(packdiv);
+    }
+    $("#loadout-button").click(function(e) {
+	var existingLoadout = $("#loadout");
 
-		dialogs.bindOpenOnClick();
+	e.preventDefault();
 
-		cells.fitToContainer();
-		cells.bindHoverAction();
+	$(this).toggleClass("clicked");
 
-		autosizeBoxes();
-	    }}});
+	if (existingLoadout.length == 0) {
+	    var lastText = this.innerHTML;
+	    this.innerHTML = "Loading...";
+
+	    $("#loadout-result").load(this.href + " #loadout",
+				      function(data) {
+					  var cells = new Cell(data);
+					  var dialogs = new ItemDialog(".item-link");
+
+					  $("#backpack").toggle();
+					  $("#loadout-result").toggle();
+
+					  $("#loadout-button").html(lastText);
+
+					  dialogs.bindOpenOnClick();
+
+					  cells.fitToContainer();
+					  cells.bindHoverAction();
+
+					  autosizeBoxes();
+				      });
+	} else {
+	    $("#backpack").toggle();
+	    $("#loadout-result").toggle();
+	}
+    });
 });
 
 function autosizeBoxes() {
