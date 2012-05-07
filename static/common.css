@@ -160,7 +160,8 @@ body { background: #141515; color: white; font-family: Arial, Helvetica, sans-se
 
 #content { height: 100%; text-align: center; }
 
-#search-form { display: inline; }
+#search-form-container { float: left; height: 100%; margin-top: 2px; }
+#search-form-container fieldset { border: 0; }
 #search-field {
     border-radius: 8px;
     border-bottom-right-radius: 0;
@@ -169,8 +170,8 @@ body { background: #141515; color: white; font-family: Arial, Helvetica, sans-se
     border: 1px solid black;
     color: white;
     font-style: italic;
-    margin: 5px 0 0 0;
     width: 180px;
+    margin: 0;
     font-size: 14px;
 }
 #search-button {
@@ -205,12 +206,11 @@ a:visited { text-decoration: none; }
 
 .navbar { background-color: #2a2a2a; text-align: left; height: 30px; width: 100%; padding: 0; margin: 0; position: relative; border-top: 1px solid black; list-style: none; }
 .navbar > li { background-color: #505050; color: white; position: relative; float: left; height: 30px; margin: 0; padding: 0; border-right: 1px solid black; }
-.navbar .open-space, .navbar .open-space:hover { background: none; border: none; padding: 0 0 0 30px; }
+.navbar .open-space, .navbar .open-space:hover { background: none; border: none; }
 .navbar a { display: block; height: 22px; padding: 8px 10px 0 10px; white-space: nowrap; text-decoration: none; }
 .navbar li:hover, .navbar li.focused .dropdown-menu, .navbar li:hover .dropdown-menu { background-color: #060910; }
 .navbar li:hover a, .navbar li.focused a { color: white; }
 .navbar .dropdown-menu { border: 0; background-color: #505050; border-radius: 0; }
-.navbar .motd * { display: inline; }
 .navbar .dropdown-menu > a, .navbar > li > a { color: white; font-weight: bold; }
 
 img { border: 0; }
@@ -320,8 +320,8 @@ a.button { text-decoration: none; }
 .dropdown-menu ul li:hover { background: #404040; }
 .dropdown-menu:hover ul { display: block; }
 
-.capability-list { list-style-type: none; padding-left: 4px; text-align: left; }
-.capability-list lh { font-weight: bold; }
+.capability-list { list-style-type: none; padding: 0; text-align: left; }
+.capability-list li:first-of-type { font-weight: bold; margin-left: 4px; }
 .capability-list li { margin-left: 8px; }
 
 .item-tools { padding: 5px; width: 1040px; text-align: left; margin: 0 auto 0 auto; }

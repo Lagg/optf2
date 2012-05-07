@@ -20,12 +20,12 @@ $var title: $project_name - All Item Attributes
       <tr>
         <td>$attr.get_id()</td>
         <td>
-          <a name="$name.replace(' ', '_')" class="attr-${type}" href="${qurl(att = name)}">$name</a>
+          <a id="$name.replace(' ', '_')" class="attr-${type}" href="${qurl(att = name)}">$name</a>
         </td>
         <td>
           $if desc:
               $ mmstr = " {0}-{1} ".format(minfval, maxfval)
-              $:desc.replace("\n", "<br/>").replace("%s1", mmstr)
+              $desc.replace("\n", "\\n").replace("%s1", mmstr)
         </td>
         <td>$valtype</td>
         <td>$attr.get_class()</td>
