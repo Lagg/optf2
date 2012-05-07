@@ -1,17 +1,20 @@
 $def with (user, items, erritem = None)
 <?xml version="1.0" encoding="UTF-8"?>
 
-<rss version="2.0">
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
     $ persona = ""
     $if user: $ persona = user.get_persona() + "'s "
-    <title>${persona}Backpack</title>
+    $ channel_title = persona + "Backpack"
+    <title>$channel_title</title>
+    <description>Backpack feed provided by $project_name</description>
     <generator>$project_name</generator>
     <link>$markup.absolute_url(virtual_root)</link>
+    <atom:link href="${instance.homedomain + instance.fullpath}" rel="self" type="application/rss+xml"/>
     <image>
       <link>$markup.absolute_url(virtual_root)</link>
       <url>$markup.absolute_url(static_prefix + "optf2_icon.png")</url>
-      <title>$project_name</title>
+      <title>$channel_title</title>
     </image>
   $if erritem:
       <item>
@@ -29,7 +32,7 @@ $def with (user, items, erritem = None)
         $ image = item.optf2["image_url"]
         $if not name:
             $ name = item.get_name()
-        <description>Level $level $type<br/><img alt="item-image" src="$image"/></description>
+        <description><![CDATA[Level $level $type<br/><img alt="item-image" src="$image"/>]]></description>
         <title>$:item.optf2["feed_name"]</title>
         <link>$permalink</link>
         <guid isPermaLink="true">$permalink</guid>
