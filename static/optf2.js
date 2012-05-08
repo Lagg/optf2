@@ -120,6 +120,12 @@ $(document).ready(function(){
 	    $("#loadout-result").toggle();
 	}
     });
+
+    var sideBox = $(".side-box");
+    if (sideBox.length > 0) {
+	var sideBoxWidth = parseInt(sideBox.css("width"));
+	sideBox.parent().css("padding-right", sideBoxWidth + 100 + "px");
+    }
 });
 
 function autosizeBoxes() {
@@ -390,7 +396,8 @@ function Cell(container) {
 	var jContainer = $(container);
 	if (container && cells.length != 0) {
 	    if(jContainer.length != 0) {
-		jContainer.width(cells.outerWidth(true) * this.cellsPerRow);
+		/* Ignore "detached" cells that happen to be in the same container */
+		jContainer.width(cells.not(".ungrouped > .item_cell").outerWidth(true) * this.cellsPerRow);
 	    }
 	}
     };

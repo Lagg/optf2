@@ -128,7 +128,7 @@ body { background: #141515; color: white; font-family: Arial, Helvetica, sans-se
     padding: 4px;
     border-radius: 10px;
 }
-.tooltip { display: none; cursor: default; overflow: hidden; }
+.tooltip { display: none; cursor: default; overflow: hidden; word-wrap: break-word; }
 .tooltip div { padding: 4px; text-align: center; }
 .item_cell:hover {
     background: #1c1c1c;
@@ -252,7 +252,7 @@ img { border: 0; }
 .item-attrs div { padding: 4px; }
 .stat_vertrule { float: left; }
 
-#backpack { width: 90%; margin: 0 auto 0 auto; clear: both; }
+#backpack { width: 90%; margin: 0 auto 0 auto; clear: both; position: relative; }
 
 .row_odd { background: #353535; }
 .row_even { background: #555555; }
@@ -315,6 +315,7 @@ a.button { text-decoration: none; }
     top: 99%;
     z-index: 30;
     min-width: 100px;
+    width: 100%;
 }
 .dropdown-menu ul li { text-align: left; border-bottom: 1px solid white; }
 .dropdown-menu ul li:hover { background: #404040; }
@@ -327,10 +328,13 @@ a.button { text-decoration: none; }
 .item-tools { padding: 5px; width: 1040px; text-align: left; margin: 0 auto 0 auto; }
 .item-tools .dropdown-menu, .item-tools .button { float: left; padding: 3px; margin: 3px; }
 
-.side-box { position: absolute; left: 10px; background: #1a1a1a; border: 1px solid #454545; min-height: 3px; min-width: 150px; padding-bottom: 5px; }
+.side-box { position: absolute; right: 10px; background: #1a1a1a; border: 1px solid #454545; min-width: 150px; padding-bottom: 5px; word-wrap: break-word; }
 .side-box .header { background: #454545; width: 100%; padding: 5px 0 5px 0; margin: 10px 0 10px 0; font-weight: bold; font-size: 1.1em; }
 .side-box .header:first-of-type { margin-top: 0; }
+.side-box .player-badge { min-height: 70px; padding: 4px; }
+.side-box .item_cell { float: none; margin: 0 auto 0 auto; }
 
+.side-box table { width: 100%; }
 .side-box table tr { text-align: left; }
 .side-box table td, .side-box table th { padding: 3px; }
 

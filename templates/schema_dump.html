@@ -4,28 +4,6 @@ $var title: $project_name - All Items
 <div id="header" style="margin-bottom: 30px;">
 </div>
 <div id="content">
-  <div class="side-box">
-    <div class="header">Item statistics</div>
-    <table>
-      $ typekeys = stats.keys()
-      $typekeys.sort()
-      $for k in typekeys:
-          $if k == "total": $continue
-          <tr><th>$k.title()</th><td>$stats[k]</td></tr>
-      <tr><th>Total</th><td>$stats["total"]</td></tr>
-    </table>
-    <div class="header">Store worth</div>
-    <table>
-      <tr><th>Currency</th><th>Total</th><th>Avg.</th></tr>
-      $if price_stats["worth"]:
-          $ worth = price_stats["worth"]
-          $ ckeys = worth.keys()
-          $ckeys.sort()
-          $for k in ckeys:
-              $ sym = price_stats["sym"][k]
-              <tr><th>$k</th> <td>$sym$worth[k]</td> <td>$sym$price_stats["avg"][k]</td></tr>
-    </table>
-  </div>
   <div class="item-tools">
     <div class="dropdown-menu">
       <b>Sort</b>
@@ -67,16 +45,35 @@ $var title: $project_name - All Items
       </ul>
     </div>
   </div>
-  $if price_stats["most-expensive"]:
-      <div class="autosize box" style="margin: 0 auto 15px auto;">
-        <div class="titlebar">Most expensive $instance.current_game.upper() items</div>
-        $for item in price_stats["most-expensive"]:
-            <div class="slot-item">
-              <div><b>$$$item.optf2["price"]["USD"]</b></div>
-              $:markup.generate_cell(item)
-            </div>
-      </div>
   <div id="backpack" style="width: 1040px;">
+    <div class="side-box">
+      <div class="header">Item statistics</div>
+      <table>
+        $ typekeys = stats.keys()
+        $typekeys.sort()
+        $for k in typekeys:
+            $if k == "total": $continue
+            <tr><th>$k.title()</th><td>$stats[k]</td></tr>
+        <tr><th>Total</th><td>$stats["total"]</td></tr>
+      </table>
+      <div class="header">Store worth</div>
+      <table>
+        <tr><th>Currency</th><th>Total</th><th>Avg.</th></tr>
+        $if price_stats["worth"]:
+            $ worth = price_stats["worth"]
+            $ ckeys = worth.keys()
+            $ckeys.sort()
+            $for k in ckeys:
+                $ sym = price_stats["sym"][k]
+                <tr><th>$k</th> <td>$sym$worth[k]</td> <td>$sym$price_stats["avg"][k]</td></tr>
+      </table>
+      <div class="header">Most expensive</div>
+      $if price_stats["most-expensive"]:
+          $for item in price_stats["most-expensive"]:
+              <div class="header">$$$item.optf2["price"]["USD"]</div>
+              <div class="ungrouped">$:markup.generate_cell(item)</div>
+
+    </div>
   $for item in items:
       $:markup.generate_cell(item)
   </div>
