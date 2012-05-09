@@ -170,24 +170,23 @@ def get_stats(items):
     return stats
 
 
-def process_attributes(items, gift = False):
+def process_attributes(items, gift = False, lang = None, mod = None):
     """ Filters attributes for the item list,
     optf2-specific data is stored in item.optf2 """
 
     default_item_image = config.ini.get("resources", "static-prefix") + "item_icons/Invalid_icon.png";
     newitems = []
-    schema = database.load_schema_cached(web.ctx.language)
-    assets = database.load_assets_cached(web.ctx.language)
+    cache = database.cache(modid = mod, language = lang)
+    schema = cache.get_schema()
+    assets = cache.get_assets()
 
     for item in items:
         if not item: continue
         if not getattr(item, "optf2", None):
-            item.optf2 = {}
+            item.optf2 = {"description": None, "attrs": [], "modid": cache.get_mod_id()}
         attrs = item.get_attributes()
-        item.optf2["attrs"] = []
         desc = item.get_custom_description() or item.get_description()
         if desc: item.optf2["description"] = web.websafe(desc)
-        else: item.optf2["description"] = None
         item.optf2["image_url"] = item.get_image(item.ITEM_IMAGE_SMALL) or default_item_image
         item.optf2["image_url_large"] = item.get_image(item.ITEM_IMAGE_LARGE) or default_item_image
         try:
@@ -374,7 +373,7 @@ def get_equippable_classes(items):
     """ Returns a set of classes that can equip the listed items """
 
     valid_classes = set()
-    schema = database.load_schema_cached(web.ctx.language)
+    schema = database.cache().get_schema()
 
     if not items: return []
 
@@ -434,7 +433,7 @@ def filter_by_capability(items, capability):
     return filtered
 
 def get_price_stats(items):
-    assets = database.load_assets_cached(web.ctx.language)
+    assets = database.cache().get_assets()
     stats = {"sym": currencysymbols, "worth": {}, "most-expensive": [], "avg": {}}
 
     if not assets:

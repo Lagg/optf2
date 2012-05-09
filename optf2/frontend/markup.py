@@ -24,22 +24,31 @@ static_prefix = config.ini.get("resources", "static-prefix")
 def absolute_url(relative_url):
     return urljoin(web.ctx.homedomain, relative_url)
 
-def generate_mode_url(path = None):
+def generate_mode_url(path = "", mode = None):
     """ Generates a URL appropriate for the current mode
     with path appended to it. """
 
+    cg = mode
     default = "tf2"
     try:
-        cg = web.ctx.current_game or default
+        if not mode:
+            cg = web.ctx.current_game or default
     except AttributeError:
         print("Couldn't get current game mode, falling back to tf2")
         cg = default
 
-    return virtual_root + cg + "/" + (path or "")
+    return virtual_root + cg + "/" + path
 
 def generate_item_url(item, user = None):
+    """ Intelligently generates a URL linking to
+    the given item """
+
     itemid = item.get_id()
     pathuser = ""
+    mode = None
+
+    try: mode = item.optf2["modid"]
+    except AttributeError: pass
 
     if itemid and user:
         try: pathuser = str(user.get_id64())
@@ -47,7 +56,7 @@ def generate_item_url(item, user = None):
 
     if pathuser: pathuser += "/"
 
-    return generate_mode_url("item/" + pathuser + str(itemid or item.get_schema_id()))
+    return generate_mode_url("item/" + pathuser + str(itemid or item.get_schema_id()), mode = mode)
 
 def generate_cell(item, invalid = False, show_equipped = True, user = None):
     if not item: return '<div class="item_cell"></div>'

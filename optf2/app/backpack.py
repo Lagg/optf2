@@ -18,10 +18,12 @@ class loadout:
 
     def GET(self, user):
         try:
-            userp = database.load_profile_cached(user)
-            items = itemtools.process_attributes(database.load_pack_cached(userp))
+            cache = database.cache()
+
+            userp = cache.get_profile(user)
+            schema = cache.get_schema()
+            items = itemtools.process_attributes(cache.get_backpack(userp))
             equippeditems = {}
-            schema = database.load_schema_cached(web.ctx.language)
             valid_classes = schema.get_classes().values()
             slotlist = ["Head", "Misc", "Primary", "Secondary", "Melee", "Pda", "Pda2", "Building", "Action"]
 
@@ -64,7 +66,7 @@ class loadout:
 
 class item:
     def GET(self, iid):
-        schema = database.load_schema_cached(web.ctx.language)
+        schema = database.cache().get_schema()
         user = None
         item_outdated = False
         try:
@@ -88,9 +90,10 @@ class live_item:
     """ More or less temporary until database stuff is sorted """
     def GET(self, user, iid):
         item_outdated = False
+        cache = database.cache()
         try:
-            user = database.load_profile_cached(user)
-            items = database.load_pack_cached(user)
+            user = cache.get_profile(user)
+            items = cache.get_backpack(user)
             theitem = None
             for item in items:
                 if item.get_id() == long(iid):
@@ -124,12 +127,13 @@ class fetch:
         query = web.input()
         sortby = query.get("sort", "cell")
         sortclass = query.get("sortclass")
-        packid = query.get("pid")
         filter_quality = query.get("quality")
+        cache = database.cache()
+        schema = cache.get_schema()
 
         try:
-            user = database.load_profile_cached(sid)
-            items = database.load_pack_cached(user, pid = packid)
+            user = cache.get_profile(sid)
+            items = cache.get_backpack(user)
             cell_count = items.get_total_cells()
             if not items and user.get_visibility() != 3:
                 raise steam.user.ProfileError("Backpack is private")
@@ -167,8 +171,6 @@ class fetch:
         if primary_group:
             isvalve = int(primary_group) == config.ini.getint("steam", "valve-group-id")
 
-        schema = database.load_schema_cached(web.ctx.language)
-
         web.ctx.env["optf2_rss_url"] = generate_mode_url("feed/" + str(user.get_id64()))
         web.ctx.env["optf2_rss_title"] = "{0}'s Backpack".format(user.get_persona().encode("utf-8"))
 
@@ -187,8 +189,9 @@ class feed:
         web.header("Content-Type", "application/rss+xml")
 
         try:
-            user = database.load_profile_cached(sid, stale = True)
-            items = database.load_pack_cached(user)
+            cache = database.cache()
+            user = cache.get_profile(sid)
+            items = cache.get_backpack(user)
             items = itemtools.process_attributes(items)
             items = itemtools.sort(items, web.input().get("sort", "time"), mergedisplaced = True)[0]
 

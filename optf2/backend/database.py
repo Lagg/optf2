@@ -29,76 +29,103 @@ memcached = memcache.Client([config.ini.get("cache", "memcached-address")],
 # Keeps track of connection times, until I think of a better way
 last_server_checks = {}
 
-def _load_generic_cached(sclass, label, freshfunc = None, lang = None):
-    """ For asset, schema, and whatever other compatible implementation """
+class cache:
+    """ Cache retrieval/setting functions """
 
-    lm = None
-    ctime = int(time())
-    memkey = "{0}-{1}-{2}".format(label, web.ctx.current_game, lang)
+    def _get_generic_aco(self, baseclass, keyprefix, freshcallback = None):
+        """ Initializes and caches Aggresively Cached Objects from steamodd """
 
-    oldobj = memcached.get(memkey)
-    if oldobj:
-        if (ctime - last_server_checks.get(memkey, 0)) < config.ini.getint("cache", label + "-check-interval"):
-            return oldobj
-        lm = oldobj.get_last_modified()
+        modulename = self._mod_id
+        language = self._language
+        lm = None
+        ctime = int(time())
+        memkey = "{0}-{1}-{2}".format(keyprefix, modulename, language)
 
-    result = None
-    try:
-        result = sclass(lang = lang, lm = lm)
-        if freshfunc: freshfunc(result)
-        memcached.set(memkey, result, min_compress_len = 1048576)
-    except steam.items.HttpStale:
-        result = oldobj
-    except Exception as E:
-        log.main.error("Cached loading error: {0}".format(E))
-        result = oldobj
+        oldobj = memcached.get(memkey)
+        if oldobj:
+            if (ctime - last_server_checks.get(memkey, 0)) < config.ini.getint("cache", keyprefix + "-check-interval"):
+                return oldobj
+            lm = oldobj.get_last_modified()
 
-    last_server_checks[memkey] = ctime
+        result = None
+        try:
+            result = baseclass(lang = language, lm = lm)
+            if freshcallback: freshcallback(result)
+            memcached.set(memkey, result, min_compress_len = 1048576)
+        except steam.items.HttpStale:
+            result = oldobj
+        except Exception as E:
+            log.main.error("Cached loading error: {0}".format(E))
+            result = oldobj
 
-    return result
+        last_server_checks[memkey] = ctime
 
-def load_schema_cached(lang = None):
-    def freshfunc(result):
-        result.optf2_paints = {}
-        for item in result:
-            if item._schema_item.get("name", "").startswith("Paint Can"):
-                for attr in item:
-                    if attr.get_name().startswith("set item tint RGB"):
-                        result.optf2_paints[int(attr.get_value())] = item.get_schema_id()
+        return result
 
-    try:
-        modclass = getattr(steam, web.ctx.current_game).item_schema
-    except AttributeError:
-        raise steam.items.SchemaError("steamodd hasn't implemented a schema for {0}".format(web.ctx.current_game))
+    def get_schema(self):
+        modulename = self._mod_id
+        language = self._language
 
-    return _load_generic_cached(modclass, "schema", freshfunc = freshfunc, lang = lang)
+        def freshfunc(result):
+            result.optf2_paints = {}
+            for item in result:
+                if item._schema_item.get("name", "").startswith("Paint Can"):
+                    for attr in item:
+                        if attr.get_name().startswith("set item tint RGB"):
+                            result.optf2_paints[int(attr.get_value())] = item.get_schema_id()
 
-def load_assets_cached(lang = None):
-    try:
-        modclass = getattr(steam, web.ctx.current_game).assets
-    except AttributeError:
-        print("Failing asset load for " + web.ctx.current_game + " softly")
-        return None
+        try:
+            modclass = getattr(steam, modulename).item_schema
+        except AttributeError:
+            raise steam.items.SchemaError("steamodd hasn't implemented a schema for {0}".format(modulename))
 
-    return _load_generic_cached(modclass, "assets", lang = lang)
+        return self._get_generic_aco(modclass, "schema", freshcallback = freshfunc)
 
-def load_profile_cached(sid, stale = False):
-    # Use hashing function to avoid weird character problems
-    memkey = "profile-" + str(memcache.cmemcache_hash(str(sid)))
+    def get_assets(self):
+        modulename = self._mod_id
+        language = self._language
 
-    profile = memcached.get(memkey)
-    if not profile:
-        profile = steam.user.profile(sid)
-        memcached.set(memkey, profile, time = config.ini.getint("cache", "profile-expiry"))
+        try:
+            modclass = getattr(steam, modulename).assets
+        except AttributeError:
+            print("Failing asset load for " + modulename + " softly")
+            return None
 
-    return profile
+        return self._get_generic_aco(modclass, "assets")
 
-def load_pack_cached(user, pid = None):
-    memkey = "backpack-{0}-{1}".format(web.ctx.current_game, user.get_id64())
+    def get_profile(self, sid):
+        # Use memcache's hashing function to avoid weird character problems
+        memkey = "profile-" + str(memcache.cmemcache_hash(str(sid)))
 
-    pack = memcached.get(memkey)
-    if not pack:
-        pack = getattr(steam, web.ctx.current_game).backpack(sid = user,
-                                                             schema = load_schema_cached(web.ctx.language))
-        memcached.set(memkey, pack, time = config.ini.getint("cache", "backpack-expiry"))
-    return pack
+        profile = memcached.get(memkey)
+        if not profile:
+            profile = steam.user.profile(sid)
+            memcached.set(memkey, profile, time = config.ini.getint("cache", "profile-expiry"))
+
+        return profile
+
+    def get_backpack(self, user):
+        modulename = self._mod_id
+        language = self._language
+
+        memkey = "backpack-{0}-{1}".format(modulename, user.get_id64())
+
+        pack = memcached.get(memkey)
+        if not pack:
+            pack = getattr(steam, modulename).backpack(user, schema = self._last_schema or self.get_schema())
+            memcached.set(memkey, pack, time = config.ini.getint("cache", "backpack-expiry"))
+
+        return pack
+
+    def get_mod_id(self):
+        return self._mod_id
+
+    def get_language(self):
+        return self._language
+
+    def __init__(self, modid = None, language = None):
+        """ modid and language will be set to their respective values in web.ctx if not given """
+
+        self._mod_id = modid or web.ctx.current_game
+        self._language = language or web.ctx.language
+        self._last_schema = None

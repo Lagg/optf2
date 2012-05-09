@@ -26,7 +26,7 @@ class items:
 
     def GET(self):
         query = web.input()
-        items = database.load_schema_cached(web.ctx.language)
+        items = database.cache().get_schema()
         filter_qualities = itemtools.get_present_qualities(items)
         filter_capabilities = itemtools.get_present_capabilities(items)
 
@@ -60,7 +60,7 @@ class attributes:
 
     def GET(self):
         query = web.input()
-        schema = database.load_schema_cached(web.ctx.language)
+        schema = database.cache().get_schema()
         attribs = schema.get_attributes()
 
         attachment_check = query.get("att")
@@ -92,7 +92,7 @@ class attributes:
 
 class particles:
     def GET(self):
-        schema = database.load_schema_cached(web.ctx.language)
+        schema = database.cache().get_schema()
         particles = schema.get_particle_systems()
 
         return templates.particle_dump(particles)

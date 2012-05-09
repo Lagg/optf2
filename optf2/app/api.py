@@ -66,7 +66,8 @@ class wiki_attributes:
         sattrs = None
 
         for lang in [str(l).strip() for l in config.ini.get("misc", "languages").split(',')]:
-            schema = database.load_schema_cached(lang = lang)
+            cache = database.cache(language = lang)
+            schema = cache.get_schema()
             sattrs = schema.get_attributes()
             for attr in sattrs:
                 aid = attr.get_id()

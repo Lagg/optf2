@@ -11,7 +11,7 @@ def handle_searchbar_input():
     baseurl = user.strip('/').split('/')
     if len(baseurl) > 0: baseurl = baseurl[-1]
 
-    try: prof = database.load_profile_cached(baseurl)
+    try: prof = database.cache().get_profile(baseurl)
     except: prof = None
 
     if prof:
