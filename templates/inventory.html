@@ -121,10 +121,6 @@ $ onlinestates = {0: "offline", 1: "online", 2: "busy", 3: "away", 4: "snooze"}
             $for item in baditems:
                 <div class="slot-item">$:markup.generate_cell(item, invalid = True, user = user)</div>
         </div>
-    $if price_stats["most-expensive"]:
-        $ most_expensive = price_stats["most-expensive"][0]
-    $else:
-        $ most_expensive = None
     $for p in total_pages:
         <div id="page-${p}" class="backpack-page">
           $ slice = p * 50
@@ -132,7 +128,4 @@ $ onlinestates = {0: "offline", 1: "online", 2: "busy", 3: "away", 4: "snooze"}
               $:markup.generate_cell(item, user = user)
         </div>
   </div>
-</div>
-<div id="footer">
-  $project_name uses the <a href="http://steampowered.com">Steam API</a>
 </div>
