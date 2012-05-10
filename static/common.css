@@ -7,16 +7,16 @@ body { background: #141515; color: white; font-family: Arial, Helvetica, sans-se
     height: 0;
     clear: both;
     visibility: hidden;
-    margin: 20px 0 20px 0;
 }
+.backpack-page { margin: 20px 0 20px 0; }
 
 .box {
     border-radius: 10px;
     border: 1px solid #454545;
     position: relative;
-    margin: 30px;
-    padding: 2.8em 1.3em 0em 1.3em;
+    padding: 3em 1.3em 1em 1.3em;
     background: #1a1a1a;
+    margin: 5px;
 }
 .box .titlebar {
     position: absolute;
@@ -31,6 +31,8 @@ body { background: #141515; color: white; font-family: Arial, Helvetica, sans-se
     font-weight: bold;
     padding: 0.5em 0 0.5em 0;
 }
+
+.sharp-corners, .sharp-corners .titlebar { border-radius: 0; }
 
 .box .nav-list { list-style-type: none; padding-left: 0;}
 .box .nav-list li { padding: 3px; }
