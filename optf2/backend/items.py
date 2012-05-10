@@ -147,28 +147,39 @@ def filter_by_quality(items, thequality):
 
 def get_stats(items):
     """ Returns a dict of various backpack stats """
-    stats = {"weapons": 0,
-             "misc": 0,
-             "hats": 0,
-             "total": 0}
+    stats = {"total": 0}
+    merged = {
+        "weapons": ["primary", "secondary", "melee", "weapon"],
+        "hats": ["hat", "head"],
+        "misc": ["misc"],
+        "pda": ["pda", "pda2"],
+        "other": ["none"]
+        }
 
     for item in items:
         if not item: continue
 
-        slot = item.get_slot()
+        slot = str(item.get_slot())
         iclass = item.get_class()
 
         stats["total"] += 1
 
-        if slot == "primary" or slot == "melee" or slot == "secondary":
-            if iclass.find("token") == -1:
-                stats["weapons"] += 1
-        elif slot == "head" and iclass.find("token") == -1:
-            stats["hats"] += 1
-        elif slot == "misc":
-            stats["misc"] += 1
-    return stats
+        ismerged = False
 
+        if iclass and iclass.find("token") != -1:
+            slot = "none"
+
+        for k, v in merged.iteritems():
+            if slot.lower() in v:
+                if k not in stats: stats[k] = 0
+                stats[k] += 1
+                ismerged = True
+
+        if not ismerged:
+            if slot not in stats: stats[slot] = 0
+            stats[slot] += 1
+
+    return stats
 
 def process_attributes(items, gift = False, lang = None, mod = None):
     """ Filters attributes for the item list,
