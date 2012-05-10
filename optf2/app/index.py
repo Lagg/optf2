@@ -1,9 +1,11 @@
 import web
 import json
 from optf2.backend import database
+from optf2.backend import items as itemtools
 from optf2.frontend.markup import generate_mode_url
 import api
 import template
+import random
 
 def handle_searchbar_input():
     user = web.input().get("user")
@@ -36,5 +38,21 @@ def handle_searchbar_input():
 
 class game_root:
     def GET(self):
+        mod = web.ctx.current_game
+        usestale = True
+
         handle_searchbar_input()
-        return template.template.game_root()
+
+        # Random items
+        if not mod:
+            from optf2.frontend import render
+            mod = random.choice(render.valid_modes)
+
+        cache = database.cache(modid = mod)
+
+        items = cache.get_schema(stale = usestale)
+
+        # Last packs
+        packs = cache.get_recent_pack_list()
+
+        return template.template.game_root(itemtools.process_attributes([random.choice(list(items))], cacheobj = cache, stale = usestale)[0], mod.upper(), (packs or []))

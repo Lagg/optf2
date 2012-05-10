@@ -17,6 +17,7 @@ OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 import web
 import cPickle as pickle
 import memcache
+from collections import deque
 from time import time
 
 import steam
@@ -115,6 +116,19 @@ class cache:
             pack = getattr(steam, modulename).backpack(user, schema = self._last_schema or self.get_schema())
             memcached.set(memkey, pack, time = config.ini.getint("cache", "backpack-expiry"))
 
+        lastpackskey = self._recent_packs_key
+        lastpacks = memcached.get(lastpackskey)
+        if not lastpacks:
+            lastpacks = deque(maxlen = 10)
+        else:
+            for p in lastpacks:
+                if p.get_id64() == user.get_id64():
+                    lastpacks.remove(p)
+                    break
+
+        lastpacks.appendleft(user)
+        memcached.set(lastpackskey, lastpacks)
+
         return pack
 
     def get_mod_id(self):
@@ -123,9 +137,13 @@ class cache:
     def get_language(self):
         return self._language
 
+    def get_recent_pack_list(self):
+        return memcached.get(self._recent_packs_key)
+
     def __init__(self, modid = None, language = None):
         """ modid and language will be set to their respective values in web.ctx if not given """
 
         self._mod_id = modid or web.ctx.current_game
         self._language = language or web.ctx.language
         self._last_schema = None
+        self._recent_packs_key = "lastpacks-" + str(self._mod_id)

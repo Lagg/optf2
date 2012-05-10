@@ -1,3 +1,4 @@
+$def with (item = None, mod = None, packs = [])
 $ game_label = "Home"
 $if instance.current_game:
     $for mode in game_modes:
@@ -12,6 +13,28 @@ $else:
 <div id="header"><img id="logo" src="${static_prefix}logo_${game_logo_suffix}.png" alt="Logo"/></div>
 
 <div id="content">
+  <div class="box" style="width: 500px; margin: 0 auto 0 auto;">
+    <div class="titlebar">$project_name - $game_label</div>
+    <h2>Welcome! Use the section links above to get started, or view a player's inventory with the search box.</h2>
+  </div>
+  <div style="width: 500px; margin: 0 auto 0 auto; position: relative;">
+  $if item:
+      <div class="box sharp-corners" style="width: 150px; float: left;">
+	<div class="titlebar">Random item from $mod</div>
+        <div style="width: 100px; margin: 0 auto 0 auto;">
+          $:markup.generate_cell(item)
+	</div>
+      </div>
+  $if packs:
+      <div class="box sharp-corners" style="width: 250px; float: left;">
+	<div class="titlebar">Recent $mod backpacks</div>
+	<table style="width: 300px; margin: 0 auto 0 auto; text-align: left;">
+	  $for p in packs:
+	      $ userp = p.get_persona()
+              <tr><td><img src="$p.get_avatar_url(p.AVATAR_SMALL)" alt="a" width="16" height="16"/></td><th><a href="$markup.generate_mode_url('user/{0}'.format(p.get_id64()), mod.lower())">$userp</a></th></tr>
+	</table>
+      </div>
+  </div>
 </div>
 
 <div id="footer">Parts of this project use the <a href="http://steampowered.com">Steam API</a> provided by Valve Software</div>
