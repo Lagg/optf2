@@ -26,7 +26,8 @@ class items:
 
     def GET(self):
         query = web.input()
-        items = database.cache().get_schema()
+        cache = database.cache()
+        items = cache.get_schema()
         filter_qualities = itemtools.get_present_qualities(items)
         filter_capabilities = itemtools.get_present_capabilities(items)
 
@@ -45,7 +46,7 @@ class items:
 
         stats = itemtools.get_stats(items)
         filter_classes = itemtools.get_equippable_classes(items)
-        items = itemtools.process_attributes(items)
+        items = itemtools.process_attributes(items, cacheobj = cache)
         price_stats = itemtools.get_price_stats(items)
 
         return templates.schema_dump(items,
@@ -60,7 +61,8 @@ class attributes:
 
     def GET(self):
         query = web.input()
-        schema = database.cache().get_schema()
+        cache = database.cache()
+        schema = cache.get_schema()
         attribs = schema.get_attributes()
 
         attachment_check = query.get("att")
@@ -86,7 +88,7 @@ class attributes:
                         attached_items.append(item)
                         break
 
-            return templates.attribute_attachments(itemtools.process_attributes(attached_items), attribute)
+            return templates.attribute_attachments(itemtools.process_attributes(attached_items, cacheobj = cache), attribute)
         else:
             return templates.attrib_dump(attribs)
 

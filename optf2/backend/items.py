@@ -181,18 +181,20 @@ def get_stats(items):
 
     return stats
 
-def process_attributes(items, gift = False, lang = None, mod = None):
+def process_attributes(items, gift = False, cacheobj = None, stale = False):
     """ Filters attributes for the item list,
     optf2-specific data is stored in item.optf2 """
 
     default_item_image = config.ini.get("resources", "static-prefix") + "item_icons/Invalid_icon.png";
     newitems = []
-    cache = database.cache(modid = mod, language = lang)
-    schema = cache.get_schema()
-    assets = cache.get_assets()
+    cache = cacheobj or database.cache()
+    assets = cache.get_assets(stale = stale)
 
     for item in items:
         if not item: continue
+
+        schema = item._schema
+
         if not getattr(item, "optf2", None):
             item.optf2 = {"description": None, "attrs": [], "modid": cache.get_mod_id()}
         attrs = item.get_attributes()

@@ -22,12 +22,12 @@ class loadout:
 
             userp = cache.get_profile(user)
             schema = cache.get_schema()
-            items = itemtools.process_attributes(cache.get_backpack(userp))
+            items = itemtools.process_attributes(cache.get_backpack(userp), cacheobj = cache)
             equippeditems = {}
             valid_classes = schema.get_classes().values()
             slotlist = ["Head", "Misc", "Primary", "Secondary", "Melee", "Pda", "Pda2", "Building", "Action"]
 
-            normalitems = itemtools.process_attributes(itemtools.filter_by_quality(schema, "0"))
+            normalitems = itemtools.process_attributes(itemtools.filter_by_quality(schema, "0"), cacheobj = cache)
             for item in normalitems:
                 classes = item.get_equipable_classes()
                 for c in classes:
@@ -66,17 +66,18 @@ class loadout:
 
 class item:
     def GET(self, iid):
-        schema = database.cache().get_schema()
+        cache = database.cache()
+        schema = cache.get_schema()
         user = None
         item_outdated = False
         try:
             theitem = schema[long(iid)]
 
-            item = itemtools.process_attributes([theitem])[0]
+            item = itemtools.process_attributes([theitem], cacheobj = cache)[0]
             if web.input().get("contents"):
                 itemcontents = item.optf2.get("contents")
                 if itemcontents:
-                    newitem = itemtools.process_attributes([itemcontents], gift = True)[0]
+                    newitem = itemtools.process_attributes([itemcontents], gift = True, cacheobj = cache)[0]
                     newitem.optf2 = dict(item.optf2, **newitem.optf2)
                     newitem.optf2["container_id"] = item.get_id()
                     item = newitem
@@ -102,11 +103,11 @@ class live_item:
             if not theitem:
                 return templates.item_error_notfound(iid)
 
-            item = itemtools.process_attributes([theitem])[0]
+            item = itemtools.process_attributes([theitem], cacheobj = cache)[0]
             if web.input().get("contents"):
                 itemcontents = item.optf2.get("contents")
                 if itemcontents:
-                    newitem = itemtools.process_attributes([itemcontents], gift = True)[0]
+                    newitem = itemtools.process_attributes([itemcontents], gift = True, cacheobj = cache)[0]
                     newitem.optf2 = dict(item.optf2, **newitem.optf2)
                     newitem.optf2["container_id"] = item.get_id()
                     item = newitem
@@ -145,7 +146,7 @@ class fetch:
             if filter_quality:
                 items = itemtools.filter_by_quality(items, filter_quality)
 
-            items = itemtools.process_attributes(items)
+            items = itemtools.process_attributes(items, cacheobj = cache)
             stats = itemtools.get_stats(items)
 
             sorted_items = itemtools.sort(items, sortby)
@@ -192,7 +193,7 @@ class feed:
             cache = database.cache()
             user = cache.get_profile(sid)
             items = cache.get_backpack(user)
-            items = itemtools.process_attributes(items)
+            items = itemtools.process_attributes(items, cacheobj = cache)
             items = itemtools.sort(items, web.input().get("sort", "time"), mergedisplaced = True)[0]
 
             return renderer.inventory_feed(user, items)

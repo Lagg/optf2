@@ -32,7 +32,7 @@ last_server_checks = {}
 class cache:
     """ Cache retrieval/setting functions """
 
-    def _get_generic_aco(self, baseclass, keyprefix, freshcallback = None):
+    def _get_generic_aco(self, baseclass, keyprefix, freshcallback = None, stale = False):
         """ Initializes and caches Aggresively Cached Objects from steamodd """
 
         modulename = self._mod_id
@@ -43,7 +43,7 @@ class cache:
 
         oldobj = memcached.get(memkey)
         if oldobj:
-            if (ctime - last_server_checks.get(memkey, 0)) < config.ini.getint("cache", keyprefix + "-check-interval"):
+            if stale or (ctime - last_server_checks.get(memkey, 0)) < config.ini.getint("cache", keyprefix + "-check-interval"):
                 return oldobj
             lm = oldobj.get_last_modified()
 
@@ -62,7 +62,7 @@ class cache:
 
         return result
 
-    def get_schema(self):
+    def get_schema(self, stale = False):
         modulename = self._mod_id
         language = self._language
 
@@ -79,9 +79,9 @@ class cache:
         except AttributeError:
             raise steam.items.SchemaError("steamodd hasn't implemented a schema for {0}".format(modulename))
 
-        return self._get_generic_aco(modclass, "schema", freshcallback = freshfunc)
+        return self._get_generic_aco(modclass, "schema", freshcallback = freshfunc, stale = stale)
 
-    def get_assets(self):
+    def get_assets(self, stale = False):
         modulename = self._mod_id
         language = self._language
 
@@ -91,7 +91,7 @@ class cache:
             print("Failing asset load for " + modulename + " softly")
             return None
 
-        return self._get_generic_aco(modclass, "assets")
+        return self._get_generic_aco(modclass, "assets", stale = stale)
 
     def get_profile(self, sid):
         # Use memcache's hashing function to avoid weird character problems
