@@ -47,6 +47,9 @@ currencysymbols = {"USD": "$",
 def _(thestring):
     return web.utils.safestr(thestring)
 
+def hilo_to_ugcid64(hi, lo):
+    return (int(hi) << 32) | int(lo)
+
 def condensed_to_id64(value):
     return "7656" + str(int(value) + 1197960265728)
 
@@ -194,6 +197,8 @@ def process_attributes(items, gift = False, cacheobj = None, stale = False):
         if not item: continue
 
         schema = item._schema
+        custom_texture_lo = None
+        custom_texture_hi = None
 
         if not getattr(item, "optf2", None):
             item.optf2 = {"description": None, "attrs": [], "modid": cache.get_mod_id()}
@@ -312,6 +317,11 @@ def process_attributes(items, gift = False, cacheobj = None, stale = False):
             if attrname == "unlimited quantity":
                 item._item["quantity"] = 1
 
+            if attrname == "custom texture lo":
+                custom_texture_lo = theattr.get_value()
+            elif attrname == "custom texture hi":
+                custom_texture_hi = theattr.get_value()
+
             if not newattr.get("hidden", theattr.is_hidden()):
                 newattr["description_string"] = web.websafe(newattr.get("description_string",
                                                                         theattr.get_description()))
@@ -328,6 +338,14 @@ def process_attributes(items, gift = False, cacheobj = None, stale = False):
             item.optf2["contents"] = giftcontents
             item.optf2["content_string"] = ('Contains <span class="prefix-{0}">{1}</span>').format(giftcontents.get_quality()["str"],
                                                                                                    web.websafe(giftcontents.get_full_item_name(prefixes = qualitydict)))
+
+        if custom_texture_hi != None and custom_texture_lo != None:
+            ugcid = hilo_to_ugcid64(custom_texture_hi, custom_texture_lo)
+            try:
+                test = steam.remote_storage.user_ugc(item._schema._app_id, ugcid)
+                item.optf2["custom texture"] = test.get_url()
+            except steam.remote_storage.UGCError:
+                pass
 
         quality_str = item.get_quality()["str"]
         full_qdict_name = web.websafe(item.get_full_item_name(prefixes = qualitydict))

@@ -113,6 +113,8 @@ def generate_cell(item, invalid = False, show_equipped = True, user = None):
         markup += '<span class="crate-series-icon">' + str(item.optf2["series"]) + '</span>'
     if "particle-id" in item.optf2:
         markup += '<img class="icon-particle" alt="Picon" src="' + static_prefix + 'particle_icons/' + str(item.optf2["particle-id"]) + '.png"/>'
+    if "custom texture" in item.optf2:
+        markup += '<img class="icon-custom-texture"  src="' + item.optf2["custom texture"] + '" alt="texture"/>'
     if equippedstr:
         markup += '<span class="equipped">' + equippedstr + '</span>'
 

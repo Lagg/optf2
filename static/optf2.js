@@ -595,7 +595,9 @@ function ItemDialog(baseLink) {
 	});
     };
 
-    this.resizeScaled = function (elem, ew, eh, w, h) {
+    this.resizeScaled = function (elem, w, h) {
+	var ew = elem.width();
+	var eh = elem.height();
 	var ratio = Math.min(w / ew, h / eh);
 
 	elem.width(ratio * ew);
@@ -606,6 +608,7 @@ function ItemDialog(baseLink) {
 	var item = $(event.target);
 	var image = item.find(".item-image");
 	var container = item.find(".item-zoom");
+	var icons = item.find(".icon-particle, .icon-custom-texture");
 
 
 	if (ui.size == undefined) {
@@ -615,14 +618,22 @@ function ItemDialog(baseLink) {
             self.lastDialogSize = ui.size;
 	}
 
-	self.resizeScaled(image, image.width(), image.height(),
+	self.resizeScaled(image,
                           Math.min(ui.size.width - 200, 512),
                           Math.min(ui.size.height - 100, 512));
 
-	var particle = item.find(".icon-particle");
-	self.resizeScaled(particle, particle.width(), particle.height(),
-                          Math.min(container.width()/2.5, 200),
-                          Math.min(container.height()/2.5, 200));
+	icons.each(function() {
+	    var icon = $(this);
+	    var sizeKey = "initialSize";
+
+	    if (!icon.data(sizeKey)) { icon.data(sizeKey, [icon.width(), icon.height()]); }
+
+	    var size = icon.data(sizeKey);
+
+	    self.resizeScaled(icon,
+                              Math.min(container.width()/2.5, size[0]),
+                              Math.min(container.height()/2.5, size[1]));
+	});
 
 	item.height(ui.size.height);
 	item.width(image.width() + item.find(".item-attrs").width() + 50);
