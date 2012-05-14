@@ -8,7 +8,7 @@ body { background: #141515; color: white; font-family: Arial, Helvetica, sans-se
     clear: both;
     visibility: hidden;
 }
-.backpack-page { margin: 20px 0 20px 0; }
+.backpack-page { margin-bottom: 20px; }
 
 .box {
     border-radius: 10px;
