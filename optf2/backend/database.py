@@ -53,7 +53,7 @@ class cache:
             result = baseclass(lang = language, lm = lm)
             if freshcallback: freshcallback(result)
             memcached.set(memkey, result, min_compress_len = 1048576)
-        except steam.items.HttpStale:
+        except steam.base.HttpStale:
             result = oldobj
         except Exception as E:
             log.main.error("Cached loading error: {0}".format(E))
