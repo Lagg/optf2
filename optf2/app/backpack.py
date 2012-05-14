@@ -61,7 +61,7 @@ class loadout:
             return templates.error("Backpack error: {0}".format(E))
         except steam.user.ProfileError as E:
             return templates.error("Profile error: {0}".format(E))
-        except urllib2.URLError:
+        except (urllib2.URLError, steam.base.HttpError):
             return templates.error("Couldn't connect to Steam")
 
 class item:
@@ -111,7 +111,7 @@ class live_item:
                     newitem.optf2 = dict(item.optf2, **newitem.optf2)
                     newitem.optf2["container_id"] = item.get_id()
                     item = newitem
-        except urllib2.URLError:
+        except (urllib2.URLError, steam.base.HttpError):
             return templates.error("Couldn't connect to Steam")
         except:
             return templates.item_error_notfound(iid)
@@ -162,7 +162,7 @@ class fetch:
             return templates.error("Failed to load backpack ({0})".format(E))
         except steam.user.ProfileError as E:
             return templates.error("Failed to load profile ({0})".format(E))
-        except urllib2.URLError:
+        except (urllib2.URLError, steam.base.HttpError):
             return templates.error("Couldn't connect to Steam")
 
         views = 0
@@ -198,7 +198,7 @@ class feed:
 
             return renderer.inventory_feed(user, items)
 
-        except (steam.user.ProfileError, urllib2.URLError, steam.items.Error) as E:
+        except (steam.user.ProfileError, urllib2.URLError, steam.items.Error, steam.base.HttpError) as E:
             return renderer.inventory_feed(None, [], erritem = E)
 
         except Exception as E:
