@@ -55,4 +55,9 @@ class game_root:
         # Last packs
         packs = cache.get_recent_pack_list()
 
-        return template.template.game_root(itemtools.process_attributes([random.choice(list(items))], cacheobj = cache, stale = usestale)[0], mod.upper(), (packs or []))
+        randitem = None
+        itemlist = list(items)
+        if itemlist:
+            randitem = itemtools.process_attributes([random.choice(itemlist)], cacheobj = cache, stale = usestale)[0]
+
+        return template.template.game_root(randitem, mod.upper(), (packs or []))

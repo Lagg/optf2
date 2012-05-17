@@ -88,17 +88,17 @@ $ onlinestates = {0: "offline", 1: "online", 2: "busy", 3: "away", 4: "snooze"}
 	  </span>
         </div>
       </div>
-      <div class="header">Item store worth</div>
-      <table>
-        <tr><th>Currency</th><th>Total</th><th>Avg.</th></tr>
-        $if price_stats["worth"]:
+      $if price_stats["worth"]:
+          <div class="header">Item store worth</div>
+          <table>
+            <tr><th>Currency</th><th>Total</th><th>Avg.</th></tr>
             $ worth = price_stats["worth"]
             $ ckeys = worth.keys()
             $ckeys.sort()
             $for k in ckeys:
                 $ sym = price_stats["sym"][k]
                 <tr><th>$k</th> <td>$sym$worth[k]</td> <td>$sym$price_stats["avg"][k]</td></tr>
-      </table>
+          </table>
       <div class="header">Item statistics</div>
       <table>
         $ typekeys = stats.keys()

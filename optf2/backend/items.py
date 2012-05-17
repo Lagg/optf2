@@ -328,7 +328,7 @@ def process_attributes(items, gift = False, cacheobj = None, stale = False):
             else:
                 continue
 
-            item.optf2["attrs"].append(steam.items.item_attribute(dict(theattr._attribute.items() + newattr.items())))
+            item.optf2["attrs"].append(type(theattr)(dict(theattr._attribute.items() + newattr.items())))
 
         caps = item.get_capabilities()
         if caps:
