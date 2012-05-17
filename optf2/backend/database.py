@@ -77,6 +77,8 @@ class cache:
 
         try:
             modclass = getattr(steam, modulename).item_schema
+            # there's no real schema yet, TODO
+            if modulename == "sim": return modclass()
         except AttributeError:
             raise steam.items.SchemaError("steamodd hasn't implemented a schema for {0}".format(modulename))
 
