@@ -90,11 +90,15 @@ def generate_cell(item, invalid = False, show_equipped = True, user = None):
     if untradable: cell_class += " untradable"
     if uncraftable: cell_class += " uncraftable"
 
-    markup = ('<div class="{0} cell-{1}" id="s{2}">' +
+    style = ""
+    if "namecolor" in item.optf2:
+        style = ' style="border-color: #{0};"'.format(item.optf2["namecolor"])
+
+    markup = ('<div class="{0} cell-{1}"{6} id="s{2}">' +
               '<a class="item-link" href="{3}">' +
               '</a>' +
               '<img class="item-image small" src="{4}" alt="{5}"/>'
-              ).format(cell_class, quality, item_id, item_link, item.optf2["image_url"], item_id)
+              ).format(cell_class, quality, item_id, item_link, item.optf2["image_url"], item_id, style)
 
     contents = item.optf2.get("contents")
     if contents:
@@ -127,7 +131,9 @@ def generate_cell(item, invalid = False, show_equipped = True, user = None):
     if item.optf2["description"]: markup += '<div class="item-description">' + item.optf2["description"].replace("\n", "<br/>").encode("utf-8") + '</div>'
 
     for attr in item.optf2["attrs"]:
-        markup += '<div class="attr-' + attr.get_type().encode("utf-8") + '">'
+        markup += '<div class="attr-' + attr.get_type().encode("utf-8") + '"'
+        if "color" in attr.optf2: markup += ' style="color: #{0};"'.format(attr.optf2["color"])
+        markup += '>'
         if attr.get_name() == "referenced item def":
             markup += item.optf2["content_string"]
         else:

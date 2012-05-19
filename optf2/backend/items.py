@@ -212,6 +212,11 @@ def process_attributes(items, gift = False, cacheobj = None, stale = False):
                 itemasset = assets[item].get_price()
                 item.optf2["price"] = itemasset
         except KeyError: pass
+        try:
+            namecolor = item.get_name_color()
+            if namecolor:
+                item.optf2["namecolor"] = namecolor
+        except AttributeError: pass
         min_level = item.get_min_level()
         max_level = item.get_max_level()
         pb_level = item.get_level()
@@ -328,7 +333,14 @@ def process_attributes(items, gift = False, cacheobj = None, stale = False):
             else:
                 continue
 
-            item.optf2["attrs"].append(type(theattr)(dict(theattr._attribute.items() + newattr.items())))
+            finalattr = type(theattr)(dict(theattr._attribute.items() + newattr.items()))
+            finalattr.optf2 = {}
+            try:
+                color = finalattr.get_description_color()
+                if color:
+                    finalattr.optf2["color"] = color
+            except AttributeError: pass
+            item.optf2["attrs"].append(finalattr)
 
         caps = item.get_capabilities()
         if caps:
@@ -373,8 +385,12 @@ def process_attributes(items, gift = False, cacheobj = None, stale = False):
         item.optf2["painted_text"] = paint_job
         item.optf2["dedicated_name"] = "{0} {1}".format(_(prefix), _(full_default_name))
 
-        item.optf2["cell_name"] = '<div class="prefix-{0} item-name">{1}</div>'.format(_(quality_str),
-                                                                                       _(full_qdict_name))
+        style = ""
+        if "namecolor" in item.optf2:
+            style = ' style="color: #' + item.optf2["namecolor"] + ';"'
+        item.optf2["cell_name"] = '<div class="prefix-{0} item-name"{2}>{1}</div>'.format(_(quality_str),
+                                                                                           _(full_qdict_name),
+                                                                                           style)
 
         if color:
             paint_job = "Painted"

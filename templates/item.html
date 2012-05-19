@@ -18,7 +18,9 @@ $def generate_class_icon_link(classes):
                 $ classlink = current_wiki[1] + ec
         <a href="$classlink"><img src="${static_prefix}${ec}_icon.png" title="$ec" alt="$ec"/></a>&nbsp;
 <div id="header">
-  <h1 class="prefix-${qitem['str']}">
+  $ style = ""
+  $if "namecolor" in item.optf2: $ style = ' style="color: #{0};"'.format(item.optf2["namecolor"])
+  <h1 class="prefix-$qitem['str']"$:style>
     $if not user:
         $ plink_user = "from_schema"
         $ urlpart = "items"
@@ -49,13 +51,14 @@ $def generate_class_icon_link(classes):
       </div>
   $for attr in extra["attrs"]:
       $ desc = attr.get_description_formatted()
-      <div class="attr-${attr.get_type()}">
+      $ style = ""
+      $if "color" in attr.optf2: $ style = ' style="color: #{0};"'.format(attr.optf2["color"])
+      <div class="attr-${attr.get_type()}"$:style>
 	$ acct = extra.get("{0}_account".format(attr.get_id()))
         $if contents and attr.get_name() == "referenced item def":
             $:extra["content_string"] <a href="$qurl(contents = 1)">(more)</a>
         $else:
             $:desc.replace("\n", "<br/>")
-
 	$if acct:
             <a href="$markup.generate_mode_url('user/{0}'.format(acct['id64']))">(more)</a>
       </div>
