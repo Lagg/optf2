@@ -39,16 +39,14 @@ def generate_mode_url(path = "", mode = None):
 
     return virtual_root + cg + "/" + path
 
-def generate_item_url(item, user = None):
+def generate_item_url(item, user = None, mode = None):
     """ Intelligently generates a URL linking to
     the given item """
 
     itemid = item.get_id()
     pathuser = ""
-    mode = None
 
-    try: mode = item.optf2["modid"]
-    except AttributeError: pass
+    if not mode: mode = web.ctx.current_game
 
     if itemid and user:
         try: pathuser = str(user.get_id64())
@@ -58,7 +56,18 @@ def generate_item_url(item, user = None):
 
     return generate_mode_url("item/" + pathuser + str(itemid or item.get_schema_id()), mode = mode)
 
-def generate_cell(item, invalid = False, show_equipped = True, user = None):
+def generate_item_price_string(item, stats):
+    assets = None
+
+    if not stats: return None
+
+    if isinstance(stats, dict): assets = stats["assets"]
+    else: assets = stats
+
+    try: return "Store price: ${0}".format(assets[item].get_price()["USD"])
+    except: return None
+
+def generate_cell(item, invalid = False, show_equipped = True, user = None, pricestats = None, mode = None):
     if not item: return '<div class="item_cell"></div>'
 
     item_id = item.get_id()
@@ -72,7 +81,7 @@ def generate_cell(item, invalid = False, show_equipped = True, user = None):
         schema_item = True
         item_id = item.get_schema_id()
 
-    item_link = generate_item_url(item, user)
+    item_link = generate_item_url(item, user, mode = mode)
     quality = item.get_quality()["str"]
     equippedstr = ""
     quantity = item.get_quantity()
@@ -155,8 +164,8 @@ def generate_cell(item, invalid = False, show_equipped = True, user = None):
     if uncraftable:
         markup += '<div class="attr-neutral">Uncraftable</div>'
 
-    if schema_item and "price" in item.optf2:
-        markup += '<div class="attr-neutral">Price: ${0}</div>'.format(item.optf2["price"]["USD"])
+    pricestr = generate_item_price_string(item, pricestats)
+    if pricestr: markup += '<div class="attr-neutral">{0}</div>'.format(pricestr)
 
     markup += '</div></div>\n'
 

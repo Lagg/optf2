@@ -45,9 +45,9 @@ class items:
         except KeyError: pass
 
         stats = itemtools.get_stats(items)
-        filter_classes = itemtools.get_equippable_classes(items)
-        items = itemtools.process_attributes(items, cacheobj = cache)
-        price_stats = itemtools.get_price_stats(items)
+        filter_classes = itemtools.get_equippable_classes(items, cache)
+        items = itemtools.process_attributes(items)
+        price_stats = itemtools.get_price_stats(items, cache)
 
         return templates.schema_dump(items,
                                      filter_classes,
@@ -88,7 +88,7 @@ class attributes:
                         attached_items.append(item)
                         break
 
-            return templates.attribute_attachments(itemtools.process_attributes(attached_items, cacheobj = cache), attribute)
+            return templates.attribute_attachments(itemtools.process_attributes(attached_items), attribute)
         else:
             return templates.attrib_dump(attribs)
 

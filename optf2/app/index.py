@@ -58,6 +58,6 @@ class game_root:
         randitem = None
         itemlist = list(items)
         if itemlist:
-            randitem = itemtools.process_attributes([random.choice(itemlist)], cacheobj = cache, stale = usestale)[0]
+            randitem = itemtools.process_attributes([random.choice(itemlist)])[0]
 
         return template.template.game_root(randitem, mod.upper(), (packs or []))

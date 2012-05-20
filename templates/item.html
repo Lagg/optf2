@@ -1,4 +1,4 @@
-$def with (user, item, outdated)
+$def with (user, item, outdated, price = None)
 $ qitem = item.get_quality()
 $ extra = item.optf2
 $ contents = extra.get("contents")
@@ -143,8 +143,7 @@ $def generate_class_icon_link(classes):
             $for cap in extra["capabilities"]:
                 <li style="padding: 2px 0 2px 0;">$cap</li>
           </ul>
-      $if "price" in item.optf2:
-          <div class="attr-neutral">Store price: $$$item.optf2["price"]["USD"]</div>
+      $if price: <div class="attr-neutral">$price</div>
   <ul class="button-list">
     $if item_wiki_url:
         <li><a class="button" href="$item_wiki_url">$current_wiki[0] article</a></li>

@@ -70,11 +70,11 @@ $var title: $project_name - All Items
       <div class="header">Most expensive</div>
       $if price_stats["most-expensive"]:
           $for item in price_stats["most-expensive"]:
-              <div class="header">$$$item.optf2["price"]["USD"]</div>
-              <div class="ungrouped">$:markup.generate_cell(item)</div>
+              <div class="header">$$$item[1]["USD"]</div>
+              <div class="ungrouped">$:markup.generate_cell(item[0])</div>
 
     </div>
   $for item in items:
-      $:markup.generate_cell(item)
+      $:markup.generate_cell(item, pricestats = price_stats)
   </div>
 </div>

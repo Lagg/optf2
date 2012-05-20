@@ -9,7 +9,7 @@ from optf2.backend import database
 from optf2.backend import items as itemtools
 from optf2.backend import config
 from optf2.backend import log
-from optf2.frontend.markup import generate_mode_url
+from optf2.frontend import markup
 
 templates = template.template
 
@@ -22,12 +22,12 @@ class loadout:
 
             userp = cache.get_profile(user)
             schema = cache.get_schema()
-            items = itemtools.process_attributes(cache.get_backpack(userp), cacheobj = cache)
+            items = itemtools.process_attributes(cache.get_backpack(userp))
             equippeditems = {}
             valid_classes = schema.get_classes().values()
             slotlist = ["Head", "Misc", "Primary", "Secondary", "Melee", "Pda", "Pda2", "Building", "Action"]
 
-            normalitems = itemtools.process_attributes(itemtools.filter_by_quality(schema, "0"), cacheobj = cache)
+            normalitems = itemtools.process_attributes(itemtools.filter_by_quality(schema, "0"))
             for item in normalitems:
                 classes = item.get_equipable_classes()
                 for c in classes:
@@ -68,16 +68,17 @@ class item:
     def GET(self, iid):
         cache = database.cache()
         schema = cache.get_schema()
+        assets = cache.get_assets()
         user = None
         item_outdated = False
         try:
             theitem = schema[long(iid)]
 
-            item = itemtools.process_attributes([theitem], cacheobj = cache)[0]
+            item = itemtools.process_attributes([theitem])[0]
             if web.input().get("contents"):
                 itemcontents = item.optf2.get("contents")
                 if itemcontents:
-                    newitem = itemtools.process_attributes([itemcontents], gift = True, cacheobj = cache)[0]
+                    newitem = itemtools.process_attributes([itemcontents], gift = True)[0]
                     newitem.optf2 = dict(item.optf2, **newitem.optf2)
                     newitem.optf2["container_id"] = item.get_id()
                     item = newitem
@@ -85,7 +86,10 @@ class item:
             return templates.error("Couldn't connect to Steam")
         except:
             return templates.item_error_notfound(iid)
-        return templates.item(user, item, item_outdated)
+
+        price = markup.generate_item_price_string(item, assets)
+
+        return templates.item(user, item, item_outdated, price = price)
 
 class live_item:
     """ More or less temporary until database stuff is sorted """
@@ -103,11 +107,11 @@ class live_item:
             if not theitem:
                 return templates.item_error_notfound(iid)
 
-            item = itemtools.process_attributes([theitem], cacheobj = cache)[0]
+            item = itemtools.process_attributes([theitem])[0]
             if web.input().get("contents"):
                 itemcontents = item.optf2.get("contents")
                 if itemcontents:
-                    newitem = itemtools.process_attributes([itemcontents], gift = True, cacheobj = cache)[0]
+                    newitem = itemtools.process_attributes([itemcontents], gift = True)[0]
                     newitem.optf2 = dict(item.optf2, **newitem.optf2)
                     newitem.optf2["container_id"] = item.get_id()
                     item = newitem
@@ -139,14 +143,14 @@ class fetch:
             if not items and user.get_visibility() != 3:
                 raise steam.user.ProfileError("Backpack is private")
 
-            filter_classes = itemtools.get_equippable_classes(items)
+            filter_classes = itemtools.get_equippable_classes(items, cache)
             filter_qualities = itemtools.get_present_qualities(items)
             if sortclass:
                 items = itemtools.filter_by_class(items, sortclass)
             if filter_quality:
                 items = itemtools.filter_by_quality(items, filter_quality)
 
-            items = itemtools.process_attributes(items, cacheobj = cache)
+            items = itemtools.process_attributes(items)
             stats = itemtools.get_stats(items)
 
             sorted_items = itemtools.sort(items, sortby)
@@ -172,10 +176,10 @@ class fetch:
         if primary_group:
             isvalve = int(primary_group) == config.ini.getint("steam", "valve-group-id")
 
-        web.ctx.env["optf2_rss_url"] = generate_mode_url("feed/" + str(user.get_id64()))
+        web.ctx.env["optf2_rss_url"] = markup.generate_mode_url("feed/" + str(user.get_id64()))
         web.ctx.env["optf2_rss_title"] = "{0}'s Backpack".format(user.get_persona().encode("utf-8"))
 
-        price_stats = itemtools.get_price_stats(items)
+        price_stats = itemtools.get_price_stats(items, cache)
         return templates.inventory(user, isvalve, items, views,
                                    filter_classes, baditems,
                                    stats, filter_qualities,
@@ -193,7 +197,7 @@ class feed:
             cache = database.cache()
             user = cache.get_profile(sid)
             items = cache.get_backpack(user)
-            items = itemtools.process_attributes(items, cacheobj = cache)
+            items = itemtools.process_attributes(items)
             items = itemtools.sort(items, web.input().get("sort", "time"), mergedisplaced = True)[0]
 
             return renderer.inventory_feed(user, items)

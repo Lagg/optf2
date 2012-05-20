@@ -19,7 +19,6 @@ import re
 import time
 import operator
 import steam
-import database
 from optf2.frontend.markup import absolute_url
 from optf2.backend import config
 from optf2.backend import log
@@ -184,14 +183,12 @@ def get_stats(items):
 
     return stats
 
-def process_attributes(items, gift = False, cacheobj = None, stale = False):
+def process_attributes(items, gift = False):
     """ Filters attributes for the item list,
     optf2-specific data is stored in item.optf2 """
 
     default_item_image = config.ini.get("resources", "static-prefix") + "item_icons/Invalid_icon.png";
     newitems = []
-    cache = cacheobj or database.cache()
-    assets = cache.get_assets(stale = stale)
 
     for item in items:
         if not item: continue
@@ -201,17 +198,12 @@ def process_attributes(items, gift = False, cacheobj = None, stale = False):
         custom_texture_hi = None
 
         if not getattr(item, "optf2", None):
-            item.optf2 = {"description": None, "attrs": [], "modid": cache.get_mod_id()}
+            item.optf2 = {"description": None, "attrs": []}
         attrs = item.get_attributes()
         desc = item.get_custom_description() or item.get_description()
         if desc: item.optf2["description"] = web.websafe(desc)
         item.optf2["image_url"] = item.get_image(item.ITEM_IMAGE_SMALL) or default_item_image
         item.optf2["image_url_large"] = item.get_image(item.ITEM_IMAGE_LARGE) or default_item_image
-        try:
-            if assets:
-                itemasset = assets[item].get_price()
-                item.optf2["price"] = itemasset
-        except KeyError: pass
         try:
             namecolor = item.get_name_color()
             if namecolor:
@@ -416,11 +408,11 @@ def process_attributes(items, gift = False, cacheobj = None, stale = False):
 
     return newitems
 
-def get_equippable_classes(items):
+def get_equippable_classes(items, cache):
     """ Returns a set of classes that can equip the listed items """
 
     valid_classes = set()
-    schema = database.cache().get_schema()
+    schema = cache.get_schema()
 
     if not items: return []
 
@@ -479,9 +471,9 @@ def filter_by_capability(items, capability):
 
     return filtered
 
-def get_price_stats(items):
-    assets = database.cache().get_assets()
-    stats = {"sym": currencysymbols, "worth": {}, "most-expensive": [], "avg": {}}
+def get_price_stats(items, cache):
+    assets = cache.get_assets()
+    stats = {"assets": assets, "sym": currencysymbols, "worth": {}, "most-expensive": [], "avg": {}}
 
     if not assets:
         return stats
@@ -504,7 +496,8 @@ def get_price_stats(items):
                 worth[k] = v
             else:
                 worth[k] += v
-    stats["most-expensive"] = [item[0] for item in sorted(costs.iteritems(), reverse = True, key = operator.itemgetter(1))[:10]]
+
+    stats["most-expensive"] = [item for item in sorted(costs.iteritems(), reverse = True, key = operator.itemgetter(1))[:10]]
 
     if count != 0:
         for k, v in worth.iteritems():

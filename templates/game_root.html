@@ -22,7 +22,7 @@ $else:
       <div class="box sharp-corners" style="width: 150px; float: left;">
 	<div class="titlebar">Random item from $mod</div>
         <div style="width: 100px; margin: 0 auto 0 auto;">
-          $:markup.generate_cell(item)
+          $:markup.generate_cell(item, mode = mod.lower())
 	</div>
       </div>
   $if packs:
