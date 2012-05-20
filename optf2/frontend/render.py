@@ -8,7 +8,6 @@ from optf2.backend import config
 from optf2 import app
 
 virtual_root = config.ini.get("resources", "virtual-root")
-valid_languages = [str(code).strip() for code in config.ini.get("misc", "languages").split(',')]
 valid_modes = [op[0] for op in config.ini.items("modes")]
 
 urls = (
@@ -53,7 +52,6 @@ def mode_hook():
 def lang_hook():
     lang = web.input().get("lang")
 
-    if lang not in valid_languages: lang = "en"
     web.ctx.language = lang
 
 def motd_hook():

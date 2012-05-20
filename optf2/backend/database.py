@@ -145,7 +145,14 @@ class cache:
     def __init__(self, modid = None, language = None):
         """ modid and language will be set to their respective values in web.ctx if not given """
 
+        clang = language or web.ctx.language
+        langpair = None
+
+        try: langpair = steam.get_language(clang)
+        except steam.LangErrorUnsupported: langpair = steam.get_language()
+
+        self._language = langpair[0]
+        self._language_name = langpair[1]
         self._mod_id = modid or web.ctx.current_game
-        self._language = language or web.ctx.language
         self._last_schema = None
         self._recent_packs_key = "lastpacks-" + str(self._mod_id)

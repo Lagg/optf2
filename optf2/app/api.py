@@ -64,18 +64,19 @@ class wiki_attributes:
     def GET(self):
         attrs = {}
         sattrs = None
+        lang = "en" # TODO: Rewrite all of this
 
-        for lang in [str(l).strip() for l in config.ini.get("misc", "languages").split(',')]:
-            cache = database.cache(language = lang)
-            schema = cache.get_schema()
-            sattrs = schema.get_attributes()
-            for attr in sattrs:
-                aid = attr.get_id()
-                if aid not in attrs:
-                    attrs[aid] = {}
-                desc = attr.get_description()
-                if desc:
-                    attrs[aid][lang] = desc.replace('\n', "<br/>").replace("%s1", "n")
+        cache = database.cache(language = lang)
+        schema = cache.get_schema()
+        sattrs = schema.get_attributes()
+        for attr in sattrs:
+            aid = attr.get_id()
+            if aid not in attrs:
+                attrs[aid] = {}
+
+            desc = attr.get_description()
+            if desc:
+                attrs[aid][lang] = desc.replace('\n', "<br/>").replace("%s1", "n")
 
         web.header("Content-Type", "text/plain; charset=UTF-8")
         output = "{{List of item attributes/Header}}\n"
