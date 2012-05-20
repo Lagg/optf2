@@ -39,6 +39,41 @@ def generate_mode_url(path = "", mode = None):
 
     return virtual_root + cg + "/" + path
 
+def generate_item_description(item):
+    desc = item.get_custom_description() or item.get_description()
+    if desc: return '<div class="item-description">' + web.websafe(desc).replace('\n', '<br/>') + '</div>'
+
+    return ''
+
+def generate_item_type_line(item, classic = True):
+    """ If classic is true the full Level X Y
+    formatting will be used, if not only the type and other relevant information
+    will be """
+
+    origin_name = ""
+    levelprefix = ""
+    rank = item.get_rank()
+    itemorigin = item.get_origin_name()
+
+    if classic and "level" in item.optf2:
+        levelprefix = "Level " + str(item.optf2["level"]) + " "
+
+    if itemorigin:
+        origin_name = " - " + itemorigin
+
+    itype = item.get_type()
+    if itype.startswith("TF_"): itype = ""
+
+    rankname = ""
+    if rank: rankname = rank["name"]
+    if rankname: levelprefix = ""
+
+    return '<div class="item-level">{0}{1} {2}{3}</div>'.format(levelprefix,
+                                                                web.websafe(rankname),
+                                                                web.websafe(itype),
+                                                                web.websafe(origin_name))
+
+
 def generate_item_url(item, user = None, mode = None):
     """ Intelligently generates a URL linking to
     the given item """
@@ -56,6 +91,15 @@ def generate_item_url(item, user = None, mode = None):
 
     return generate_mode_url("item/" + pathuser + str(itemid or item.get_schema_id()), mode = mode)
 
+def generate_item_paint_line(item):
+    """ Returns a "Painted with X" line if available """
+
+    if "paint_name" in item.optf2:
+        paintcan = item.optf2["paint_name"]
+        return '<div class="attr-positive">{0} with {1}</div>'.format(item.optf2["painted_text"], web.websafe(paintcan))
+    else:
+        return ''
+
 def generate_item_price_string(item, stats):
     assets = None
 
@@ -66,6 +110,52 @@ def generate_item_price_string(item, stats):
 
     try: return "Store price: ${0}".format(assets[item].get_price()["USD"])
     except: return None
+
+def generate_attribute_list(item, showlinks = False):
+    markup = ''
+    list_open = '<ul class="attribute-list">'
+    list_close = '</ul>'
+    extra = item.optf2
+
+    morestr = ""
+    if showlinks: morestr = ' <a href="{0}">(more)</a>'
+
+    for attr in extra["attrs"]:
+        desc = attr.get_description_formatted()
+        style = ""
+        acct = extra.get("{0}_account".format(attr.get_id()))
+        contents = extra.get("contents")
+
+        if "color" in attr.optf2: style = ' style="color: #{0};"'.format(attr.optf2["color"])
+        markup += '<li class="attr-{0}"{1}>'.format(attr.get_type(), style)
+
+        if contents and attr.get_name() == "referenced item def":
+            markup += extra["content_string"]
+            markup += morestr.format(web.http.changequery(contents = 1))
+        else:
+            markup += web.websafe(desc)
+
+        if acct: markup += morestr.format(generate_mode_url("user/"  + str(acct["id64"])))
+
+        markup += '</li>'
+
+    for eater in extra["eaters"]: markup += '<li class="attr-positive">{0}</li>'.format(eater)
+
+    style = item.get_current_style_name()
+    if style: markup += '<li class="attr-neutral">Style: {0}</li>'.format(style)
+
+    quantity = item.get_quantity()
+    if quantity > 1: markup += '<li class="attr-neutral">Quantity: {0}</li>'.format(quantity)
+
+    if item.is_untradable(): markup += '<li class="attr-negative">Untradable</li>'
+    if item.is_uncraftable(): markup += '<li class="attr-negative">Uncraftable</li>'
+
+    if not markup:
+        # XHTML compliance
+        markup = '<li></li>'
+
+    return (list_open + markup + list_close)
+
 
 def generate_cell(item, invalid = False, show_equipped = True, user = None, pricestats = None, mode = None):
     if not item: return '<div class="item_cell"></div>'
@@ -135,34 +225,13 @@ def generate_cell(item, invalid = False, show_equipped = True, user = None, pric
 
     painty = item.optf2.get("painted_text", "")
 
-    markup += item.optf2["level_string"]
+    markup += generate_item_type_line(item)
 
-    if item.optf2["description"]: markup += '<div class="item-description">' + item.optf2["description"].replace("\n", "<br/>").encode("utf-8") + '</div>'
+    markup += generate_item_description(item)
 
-    for attr in item.optf2["attrs"]:
-        markup += '<div class="attr-' + attr.get_type().encode("utf-8") + '"'
-        if "color" in attr.optf2: markup += ' style="color: #{0};"'.format(attr.optf2["color"])
-        markup += '>'
-        if attr.get_name() == "referenced item def":
-            markup += item.optf2["content_string"]
-        else:
-            markup += attr.get_description_formatted().replace("\n", "<br/>").encode("utf-8")
-        markup += '</div>'
+    markup += generate_attribute_list(item, showlinks = False)
 
-    style = item.get_current_style_name()
-    if style: markup += '<div class="attr-neutral">Style: {0}</div>'.format(style)
-
-    if "paintcan" in item.optf2:
-        paintcan = item.optf2["paint_name"]
-        markup += '<div class="attr-positive">{1} with {2}</div>'.format(item.optf2["painted_text"], item.get_name())
-
-    for line in item.optf2["eaters"]:
-        markup += '<div class="attr-positive">' + line + '</div>'
-
-    if untradable:
-        markup += '<div class="attr-neutral">Untradable</div>'
-    if uncraftable:
-        markup += '<div class="attr-neutral">Uncraftable</div>'
+    markup += generate_item_paint_line(item)
 
     pricestr = generate_item_price_string(item, pricestats)
     if pricestr: markup += '<div class="attr-neutral">{0}</div>'.format(pricestr)

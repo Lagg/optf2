@@ -1,7 +1,6 @@
 $def with (user, item, outdated, price = None)
 $ qitem = item.get_quality()
 $ extra = item.optf2
-$ contents = extra.get("contents")
 $ current_wiki = wiki_map.get(instance.current_game)
 $if not user:
     $ usern = "Schema"
@@ -44,106 +43,75 @@ $def generate_class_icon_link(classes):
   $ item_wiki_url = None
   $if current_wiki:
       $ item_wiki_url = current_wiki[1] + encode_url(item.get_name())
-  $:extra["level_string"]
-  $if extra["description"]:
-      <div class="item-description">
-        $:extra["description"].replace("\n", "<br/>")
-      </div>
-  $for attr in extra["attrs"]:
-      $ desc = attr.get_description_formatted()
-      $ style = ""
-      $if "color" in attr.optf2: $ style = ' style="color: #{0};"'.format(attr.optf2["color"])
-      <div class="attr-${attr.get_type()}"$:style>
-	$ acct = extra.get("{0}_account".format(attr.get_id()))
-        $if contents and attr.get_name() == "referenced item def":
-            $:extra["content_string"] <a href="$qurl(contents = 1)">(more)</a>
-        $else:
-            $:desc.replace("\n", "<br/>")
-	$if acct:
-            <a href="$markup.generate_mode_url('user/{0}'.format(acct['id64']))">(more)</a>
-      </div>
-  $for line in extra["eaters"]:
-    <div class="attr-positive">$line</div>
-  $ style = item.get_current_style_name()
-  $if style: <div class="attr-neutral">Style: $style</div>
-  $ quantity = item.get_quantity()
-  $if quantity > 1:
-      <div class="attr-neutral">
-        Quantity: $quantity
-      </div>
-  $if item.is_untradable():
-       <div class="attr-neutral">Untradable</div>
-  $if item.is_uncraftable():
-       <div class="attr-neutral">Uncraftable</div>
+  $:markup.generate_item_type_line(item)
+
+  $:markup.generate_item_description(item)
+
+  $:markup.generate_attribute_list(item, showlinks = True)
 
   <img src="${static_prefix}vertical.gif" height="1" width="100%" alt="divider"/>
 
-  $if "paint_name" in extra:
-      <div class="attr-positive">
-        $:{extra["painted_text"]} with ${extra["paint_name"]}
-      </div>
+  <ul class="attribute-list">
+    $:markup.generate_item_paint_line(item)
   $if user:
       $ serial = item.get_id()
       $if "container_id" in extra and not serial:
-          <div class="attr-positive">
+          <li class="attr-positive">
             Unopened <a href="$markup.generate_mode_url('item/{0}/{1}'.format(user.get_id64(), extra['container_id']))">Gift</a> from
 	    $ giftgiver = extra.get("gift")
 	    $if giftgiver:
                 <a href="$markup.generate_mode_url('user/{0}'.format(giftgiver["id64"]))">$giftgiver["persona"]</a>
-          </div>
+          </li>
       $elif serial:
 	  $ oserial = item.get_original_id()
-          <div class="attr-neutral">
-            ID: <span id="item_id">$serial</span>
-          </div>
+          <li class="attr-neutral">ID: <span id="item_id">$serial</span></li>
 	  $if oserial and oserial != serial:
-	      <div class="attr-neutral">Last ID: $oserial</div>
-      <div class="attr-neutral">
+	      <li class="attr-neutral">Last ID: $oserial</li>
+      <li class="attr-neutral">
         $ pos = item.get_position()
         Position: \
         $if pos <= -1:
             Not in backpack yet!
         $else:
             $pos
-      </div>
-      <div class="attr-neutral">
+      </li>
+      <li class="attr-neutral">
         $ equipped = item.get_equipped_classes()
         Equipped: \
         $if len(equipped) > 0:
             $:generate_class_icon_link(equipped)
         $else:
             No
-      </div>
+      </li>
       $if outdated:
-          <div class="attr-negative" style="font-weight: normal">
+          <li class="attr-negative" style="font-weight: normal">
             This item is out of date. It may have been deleted or customized.
-          </div>
+          </li>
   $else:
-      <div class="attr-neutral">
+      <li class="attr-neutral">
         ID: <span id="item_id">$item.get_schema_id()</span>
-      </div>
-      <div class="attr-neutral">
+      </li>
+      <li class="attr-neutral">
         $ equipable = item.get_equipable_classes()
         Classes: \
         $if len(equipable) <= 0 or not equipable[0]:
             Not equipable
         $else:
             $:generate_class_icon_link(equipable)
-      </div>
+      </li>
       $ styles = item.get_styles()
-      $if styles: <div class="attr-neutral">Styles: ${", ".join(styles)}</div>
+      $if styles: <li class="attr-neutral">Styles: ${", ".join(styles)}</li>
       $ slot = item.get_slot()
       $if slot:
-          <div class="attr-neutral">
-            Slot: $slot.title()
-          </div>
-      $if "capabilities" in extra:
-          <ul class="capability-list">
-            <li>Capabilities</li>
-            $for cap in extra["capabilities"]:
-                <li style="padding: 2px 0 2px 0;">$cap</li>
-          </ul>
-      $if price: <div class="attr-neutral">$price</div>
+          <li class="attr-neutral">Slot: $slot.title()</li>
+      $if price: <li class="attr-neutral">$price</li>
+  </ul>
+  $if "capabilities" in extra:
+      <ul class="capability-list">
+        <li>Capabilities</li>
+        $for cap in extra["capabilities"]:
+            <li style="padding: 2px 0 2px 0;">$cap</li>
+      </ul>
   <ul class="button-list">
     $if item_wiki_url:
         <li><a class="button" href="$item_wiki_url">$current_wiki[0] article</a></li>

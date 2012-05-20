@@ -47,6 +47,9 @@ body { background: #141515; color: white; font-family: Arial, Helvetica, sans-se
 .item-description, .item-level { color: white; font-size: 1.09em; }
 .item-name { overflow: hidden; font-size: 1.10em; font-weight: bold; }
 .item-link { width: 100%; height: 100%; position: absolute; top: 0; left: 0; z-index: 5; }
+
+.attribute-list { list-style: none; margin: 0; padding: 0; }
+.attribute-list li { padding: 5px 0 5px 0; }
 .attr-negative, .attr-negative:visited { color: #ff0000; }
 .attr-positive, .attr-positive:visited { color: #1a82ff; }
 .attr-neutral, .attr-neutral:visited { color: #dbdbdb; }
@@ -250,11 +253,11 @@ img { border: 0; }
     float: left;
     width: 250px;
     text-align: left;
-    padding: 8px 0 8px 8px;
-    margin-left: 20px;
+    padding: 8px 0 8px 0;
+    margin-left: 30px;
     overflow: auto;
 }
-.item-attrs div { padding: 4px; }
+.item-attrs div { padding: 4px 0 4px 0; }
 .stat_vertrule { float: left; }
 
 #backpack { width: 90%; margin: 0 auto 0 auto; clear: both; position: relative; }
@@ -327,7 +330,7 @@ a.button { text-decoration: none; }
 .dropdown-menu:hover ul { display: block; }
 
 .capability-list { list-style-type: none; padding: 0; text-align: left; }
-.capability-list li:first-of-type { font-weight: bold; margin-left: 4px; }
+.capability-list li:first-of-type { font-weight: bold; margin-left: 0; }
 .capability-list li { margin-left: 8px; }
 
 .item-tools { padding: 5px; width: 1040px; text-align: left; margin: 0 auto 0 auto; }

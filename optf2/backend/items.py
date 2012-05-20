@@ -200,8 +200,6 @@ def process_attributes(items, gift = False):
         if not getattr(item, "optf2", None):
             item.optf2 = {"description": None, "attrs": []}
         attrs = item.get_attributes()
-        desc = item.get_custom_description() or item.get_description()
-        if desc: item.optf2["description"] = web.websafe(desc)
         item.optf2["image_url"] = item.get_image(item.ITEM_IMAGE_SMALL) or default_item_image
         item.optf2["image_url_large"] = item.get_image(item.ITEM_IMAGE_LARGE) or default_item_image
         try:
@@ -214,25 +212,19 @@ def process_attributes(items, gift = False):
         pb_level = item.get_level()
         giftcontents = item.get_contents()
 
-        rank = item.get_rank()
-        if rank: item.optf2["rank_name"] = rank["name"]
-        else: item.optf2["rank_name"] = ""
-
-        item.optf2["eaters"] = []
-        if rank:
-            for line in item.get_kill_eaters():
-                item.optf2["eaters"].append("{0}: {1}".format(line[1], line[2]))
-
-        itype = item.get_type()
-        if itype.startswith("TF_"): itype = ""
-        item.optf2["type"] = itype
-
         if min_level == max_level:
             item.optf2["level"] = str(min_level)
         else:
             item.optf2["level"] = str(min_level) + "-" + str(max_level)
 
         if pb_level != None: item.optf2["level"] = pb_level
+
+        # Ordered kill eater attribute lines
+        rank = item.get_rank()
+        item.optf2["eaters"] = []
+        if rank:
+            for line in item.get_kill_eaters():
+                item.optf2["eaters"].append("{0}: {1}".format(line[1], line[2]))
 
         for theattr in attrs:
             newattr = {}
@@ -359,11 +351,6 @@ def process_attributes(items, gift = False):
         color_2 = item.optf2.get("color_2")
         paint_job = ""
         prefix = ""
-        origin_name = ""
-
-        itemorigin = item.get_origin_name()
-        if itemorigin:
-            origin_name = " - " + itemorigin
 
         if color and color_2:
             paint_job = '<span><b style="color: {0};">Pain</b><b style="color: {1};">ted</b></span>'.format(color,
@@ -395,14 +382,6 @@ def process_attributes(items, gift = False):
         else:
             paint_job = ""
         item.optf2["feed_name"] = "{0} {1}".format(_(full_qdict_name), _(paint_job))
-
-        levelprefix = "Level " + str(item.optf2["level"]) + " "
-        if item.optf2["rank_name"]:
-            levelprefix = ""
-        item.optf2["level_string"] = '<div class="item-level">{0}{1} {2}{3}</div>'.format(levelprefix,
-                                                                                          item.optf2["rank_name"],
-                                                                                          _(item.optf2["type"]),
-                                                                                          _(origin_name))
 
         newitems.append(item)
 
