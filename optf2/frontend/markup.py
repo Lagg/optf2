@@ -239,3 +239,19 @@ def generate_cell(item, invalid = False, show_equipped = True, user = None, pric
     markup += '</div></div>\n'
 
     return markup
+
+def generate_class_sprite_img(c, styleextra = "", mode = None):
+    if not mode: mode = web.ctx.current_game or "tf2"
+
+    idmap = {
+        "tf2": ["medic", "demoman", "engineer", "heavy", "pyro", "scout", "sniper", "soldier", "spy"],
+        "p2": ["atlas", "p-body"]
+        }
+
+    try:
+        spriteindex = idmap[mode].index(c.lower())
+        style = "background: url('{0}') -{1}px 0px;".format(static_prefix + mode + "_class_icons.png", spriteindex * 16)
+    except ValueError:
+        style = ""
+
+    return '<img class="class-icon" src="{0}" style="{1}{2}" alt="{3}"/>'.format(static_prefix + "pixel.png", style, styleextra, c)

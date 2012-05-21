@@ -259,6 +259,7 @@ img { border: 0; }
 }
 .item-attrs div { padding: 4px 0 4px 0; }
 .stat_vertrule { float: left; }
+.class-icon { width: 16px; height: 16px; }
 
 #backpack { width: 90%; margin: 0 auto 0 auto; clear: both; position: relative; }
 

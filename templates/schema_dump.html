@@ -23,7 +23,7 @@ $var title: $project_name - All Items
         $for k in filter_classes:
             <li>
               <a href="$qurl(sortclass = k)">
-                <img src="${static_prefix}${k}_icon.png" alt="${k}" title="${k}"/> $k
+                $:markup.generate_class_sprite_img(k) $k
               </a>
             </li>
       </ul>

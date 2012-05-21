@@ -15,7 +15,7 @@ $def generate_class_icon_link(classes):
         $else:
             $if current_wiki:
                 $ classlink = current_wiki[1] + ec
-        <a href="$classlink"><img src="${static_prefix}${ec}_icon.png" title="$ec" alt="$ec"/></a>&nbsp;
+        <a href="$classlink">$:markup.generate_class_sprite_img(ec)</a>&nbsp;
 <div id="header">
   $ style = ""
   $if "namecolor" in item.optf2: $ style = ' style="color: #{0};"'.format(item.optf2["namecolor"])

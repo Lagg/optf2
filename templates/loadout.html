@@ -10,7 +10,7 @@ $var title: $project_name - $user.get_persona()'s Loadout List
         $for lclass in classlist:
             <div class="autosize box" id="$lclass" style="margin: 30px auto 30px auto;">
               <div class="titlebar">
-                <img style="position: absolute; left: 2px; top: 2px;" src="${static_prefix}${lclass}_icon.png" alt="class icon"/>
+		$:markup.generate_class_sprite_img(lclass, styleextra = "position: absolute; left: 2px; top: 2px;")
                 <a href="#$lclass" style="margin-left: 30px;">$lclass</a>
               </div>
               $for slot in slotlist:
