@@ -26,13 +26,11 @@ $def with (user, items, erritem = None)
           $continue
       <item>
         $ permalink = markup.absolute_url(markup.generate_item_url(item, user))
-        $ level = item.optf2["level"]
-        $ type = item.optf2["type"]
         $ name = item.get_custom_name()
         $ image = item.optf2["image_url"]
         $if not name:
             $ name = item.get_name()
-        <description><![CDATA[Level $level $type<br/><img alt="item-image" src="$image"/>]]></description>
+        <description><![CDATA[$:markup.generate_item_type_line(item) <img alt="item-image" src="$image"/>]]></description>
         <title>$:item.optf2["feed_name"]</title>
         <link>$permalink</link>
         <guid isPermaLink="true">$permalink</guid>

@@ -245,13 +245,18 @@ def generate_class_sprite_img(c, styleextra = "", mode = None):
 
     idmap = {
         "tf2": ["medic", "demoman", "engineer", "heavy", "pyro", "scout", "sniper", "soldier", "spy"],
+        "tf2b": "tf2",
         "p2": ["atlas", "p-body"]
         }
 
     try:
-        spriteindex = idmap[mode].index(c.lower())
+        rec = idmap[mode]
+        if isinstance(rec, str):
+            mode = rec
+            rec = idmap[rec]
+        spriteindex = rec.index(c.lower())
         style = "background: url('{0}') -{1}px 0px;".format(static_prefix + mode + "_class_icons.png", spriteindex * 16)
-    except ValueError:
+    except (ValueError, KeyError):
         style = ""
 
     return '<img class="class-icon" src="{0}" style="{1}{2}" alt="{3}"/>'.format(static_prefix + "pixel.png", style, styleextra, c)
