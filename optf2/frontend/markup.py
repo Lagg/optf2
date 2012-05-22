@@ -133,7 +133,8 @@ def generate_attribute_list(item, showlinks = False):
             markup += extra["content_string"]
             markup += morestr.format(web.http.changequery(contents = 1))
         else:
-            markup += web.websafe(desc).replace('\n', "<br/>")
+            if attr.get_value_type() != "html": desc = web.websafe(desc).replace('\n', "<br/>")
+            markup += desc
 
         if acct: markup += morestr.format(generate_mode_url("user/"  + str(acct["id64"])))
 
