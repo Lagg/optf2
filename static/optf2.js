@@ -53,6 +53,10 @@ $(document).ready(function(){
 	cellFilter.byUntradable();
     });
 
+    var uncraftableButton = new Button("Hide uncraftable");
+    uncraftableButton.attachTo(".item-tools");
+    uncraftableButton.bindClickStateHandler(function() {cellFilter.byUncraftable();});
+
     autosizeBoxes();
 
     var searchField = new Field("search-field");
@@ -63,11 +67,11 @@ $(document).ready(function(){
 	$.getJSON (virtual_root + "comp/" + req.term, function (data, status) {
 	    for (var i = 0; i < data.length; i++) {
 		itemdata = data[i]
-		itemlabel = itemdata["persona"];
-		if (itemdata["id_type"] == "id") {
-		    itemlabel += " (" + itemdata["id"] + ')';
+		itemlabel = itemdata.persona;
+		if (itemdata.id_type == "id") {
+		    itemlabel += " (" + itemdata.id + ')';
 		}
-		finalcomp.push({label: itemlabel, value: itemdata["id"]});
+		finalcomp.push({label: itemlabel, value: itemdata.id});
 	    }
 
 	    resp (finalcomp.slice (0, 20));
@@ -353,13 +357,13 @@ function Cell(container) {
 	    var windowWidth = $(window).width();
 
             attribs.show();
-            currentOffset["top"] += $(this).height() + 5;
-            currentOffset["left"] -= (attribs.width() / 3.4);
+            currentOffset.top += $(this).height() + 5;
+            currentOffset.left -= (attribs.width() / 3.4);
 
             /* Check if attribs go off the document */
-            if (currentOffset["left"] < 0) { currentOffset["left"] = 0; }
-            if((currentOffset["left"] + attribs.width()) > windowWidth) {
-		currentOffset["left"] = windowWidth - attribs.width();
+            if (currentOffset.left < 0) { currentOffset.left = 0; }
+            if((currentOffset.left + attribs.width()) > windowWidth) {
+		currentOffset.left = windowWidth - attribs.width();
             }
 
             attribs.offset(currentOffset);
@@ -370,7 +374,7 @@ function Cell(container) {
 		var posbottom = (offsety + attribs.height());
 
 		if (posbottom > threshold) {
-                    attribs.offset({top: ($(this).offset()["top"] - attribs.height() - 5)});
+                    attribs.offset({top: ($(this).offset().top - attribs.height() - 5)});
 		}
             }
 	}, function() {
@@ -450,15 +454,27 @@ function CellFilter(data) {
 	    attribs.each(function() {
 		if (this.textContent.toLowerCase().search(filter) != -1) {
 		    cell.show();
-		    return;
+		    return false;
 		}
 	    });
 	});
     };
 
-    this.byUntradable = function(input) {
-	$(data).filter("[class~=untradable]").toggleClass("faded");
-    }
+    this.fadeByAttributeListContent = function(input) {
+	var cells = $(data);
+
+	cells.each(function() {
+	    var cell = $(this);
+	    var attribs = cell.find(".attribute-list");
+
+	    attribs.each(function() {
+		if (this.textContent.toLowerCase().search(input.toLowerCase()) != -1) { cell.toggleClass("faded"); }
+	    });
+	});
+    };
+
+    this.byUntradable = function(input) { return this.fadeByAttributeListContent("untradable"); };
+    this.byUncraftable = function(input) { return this.fadeByAttributeListContent("uncraftable"); };
 }
 
 function Field(id) {
@@ -562,8 +578,8 @@ function ItemDialog(baseLink) {
 	self.toggleLoadTicker(itemID);
 
 	if (self.lastDialogSize != null) {
-            width = self.lastDialogSize["width"];
-            height = self.lastDialogSize["height"];
+            width = self.lastDialogSize.width;
+            height = self.lastDialogSize.height;
 	}
 
 	title.css({"font-size": "1.6em", "margin": "0", "padding": "0"});
@@ -612,8 +628,9 @@ function ItemDialog(baseLink) {
 
 
 	if (ui.size == undefined) {
-            ui.size = {"height":  item.height(),
-                       "width": item.width()};
+	    ui.size = new Object();
+            ui.size.height = item.height();
+            ui.size.width = item.width();
 	} else {
             self.lastDialogSize = ui.size;
 	}
