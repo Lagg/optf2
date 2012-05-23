@@ -66,8 +66,12 @@ $(document).ready(function(){
 	var finalcomp = new Array ();
 	$.getJSON (virtual_root + "comp/" + req.term, function (data, status) {
 	    for (var i = 0; i < data.length; i++) {
-		itemdata = data[i]
-		itemlabel = itemdata.persona;
+		itemdata = data[i];
+		itemlabel = "";
+
+		if (itemdata.avatar != undefined) { itemlabel += '<img width="16" height="16" src="' + itemdata.avatar + '"/> '; }
+
+		itemlabel += itemdata.persona;
 		if (itemdata.id_type == "id") {
 		    itemlabel += " (" + itemdata.id + ')';
 		}
@@ -83,7 +87,12 @@ $(document).ready(function(){
         source: autocomplete_magic,
         open: function() { $(".ui-autocomplete").css("z-index", "100"); },
         select: function(e, ui) { this.value = ui.item.value; $("#search-form").submit(); }
-    });
+    }).data("autocomplete")._renderItem = function(ul, item) {
+	return $("<li></li>")
+	    .data("item.autocomplete", item)
+	    .append("<a>" + item.label + "</a>")
+	    .appendTo(ul);
+    };
 
     /* May want to encapsulate stuff below later after testing. */
     var packdiv = $("#backpack");
