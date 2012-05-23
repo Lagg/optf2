@@ -94,12 +94,20 @@ $(document).ready(function(){
 	    .appendTo(ul);
     };
 
+    var sideBox = $(".side-box");
+    if (sideBox.length > 0) {
+	var sideBoxWidth = parseInt(sideBox.css("width"));
+	sideBox.parent().css("padding-right", sideBoxWidth + 100 + "px");
+    }
+
     /* May want to encapsulate stuff below later after testing. */
     var packdiv = $("#backpack");
     if (packdiv.length > 0) {
 	$(".item-tools").width(packdiv.width());
+	$(".item-tools").css("padding-right", packdiv.css("padding-right"));
 	$('<div id="loadout-result" style="display: none;"></div>').insertBefore(packdiv);
     }
+
     $("#loadout-button").click(function(e) {
 	var existingLoadout = $("#loadout");
 
@@ -133,12 +141,6 @@ $(document).ready(function(){
 	    $("#loadout-result").toggle();
 	}
     });
-
-    var sideBox = $(".side-box");
-    if (sideBox.length > 0) {
-	var sideBoxWidth = parseInt(sideBox.css("width"));
-	sideBox.parent().css("padding-right", sideBoxWidth + 100 + "px");
-    }
 });
 
 function autosizeBoxes() {
@@ -562,7 +564,7 @@ function ItemDialog(baseLink) {
 	this.toggleLoadTicker(id);
 
 	$(".dedicated_item").find("#item_id").each(function() {
-	    if (parseInt(this.textContent) == parseInt(id)) {
+	    if (this.textContent == id) {
 		existingDialog = $(this).parentsUntil(".dedicated_item").parent().first();
 		return false;
 	    }
