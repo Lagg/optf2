@@ -6,9 +6,9 @@ $(document).ready(function(){
     cells.fitToContainer();
     cells.bindHoverAction();
 
-    var hashpage = parseInt(URL.getHashStore("page"));
+    var hashpage = URL.getHashStore("page");
 
-    if (!hashpage || hashpage <= 0) {
+    if (!hashpage) {
 	hashpage = null;
     }
 
@@ -169,10 +169,6 @@ function autosizeBoxes() {
     });
 }
 
-function inbetween(x, y, z) {
-    return (y >= x && y <= z);
-}
-
 function BackpackPager (container, initialpage) {
     var pageSelector = ".backpack-page";
     var jSwitcher = null;
@@ -183,15 +179,32 @@ function BackpackPager (container, initialpage) {
     }
 
     this.activePages = $(container).find(pageSelector);
+    this.currentPage = this.activePages.first();
 
-    if (inbetween(1, initialpage, this.activePages.length)) {
-	this.currentPage = initialpage;
-    } else {
-	var hashstore = parseInt(URL.getHashStore("page"));
-	if (inbetween(1, hashstore, this.activePages.length)) {
-	    this.currentPage = hashstore;
+    this.getPage = function(page) {
+	var res = this.activePages.filter("#page-" + page);
+
+	if (res.length <= 0) {
+	    return null;
 	} else {
-	    this.currentPage = 1;
+	    return res;
+	}
+    };
+    this.getCurrentPageId = function() {
+	return this.currentPage.attr("id").slice(this.currentPage.attr("id").indexOf('-') + 1);
+    };
+    this.getCurrentPageIndex = function() {
+	return this.activePages.index(this.currentPage);
+    };
+
+    var pagei = this.getPage(initialpage);
+    if (pagei) {
+	this.currentPage = pagei;
+    } else {
+	var hashstore = URL.getHashStore("page");
+	pagei = this.getPage(hashstore);
+	if (pagei) {
+	    this.currentPage = pagei;
 	}
     }
 
@@ -222,10 +235,10 @@ function BackpackPager (container, initialpage) {
 
 	jSwitcher.appendTo(container);
 
-	URL.setHashStore("page", current);
-	this.pageCounter.textContent = current + '/' + pages.length;
+	URL.setHashStore("page", this.getCurrentPageId());
+	this.pageCounter.textContent = this.getCurrentPageId() + '/' + pages.length;
 	pages.hide();
-	$(pages[current - 1]).show();
+	$(current).show();
 
 	this.setSwitcherButtonActivity();
     };
@@ -238,13 +251,14 @@ function BackpackPager (container, initialpage) {
 	var bButton = $(this.pageBackButton.buttonElement);
 	var fButton = $(this.pageForwardButton.buttonElement);
 
-	if (this.currentPage <= 1) {
+	var cIndex = this.getCurrentPageIndex();
+	if (cIndex <= 0) {
             bButton.addClass("inactive");
 	} else {
             bButton.removeClass("inactive");
 	}
 
-	if (this.currentPage >= this.activePages.length) {
+	if (cIndex >= this.activePages.length - 1) {
             fButton.addClass("inactive");
 	} else {
             fButton.removeClass("inactive");
@@ -252,30 +266,27 @@ function BackpackPager (container, initialpage) {
     };
 
     this.switchPage = function(direction) {
-	var newpage = 1;
+	var newpage = 0;
 	var pages = this.activePages;
 	var current = this.currentPage;
-
-	if (current <= 0) {
-	    return;
-	}
+	var cIndex = this.getCurrentPageIndex();
 
 	if (direction == "forward") {
-            newpage = current + 1;
+            newpage = cIndex + 1;
 	} else if (direction == "back") {
-            newpage = current - 1;
+            newpage = cIndex - 1;
 	}
 
-	if (!inbetween(1, newpage, pages.length)) {
+	if (!pages[newpage]) {
 	    return;
 	}
 
-	this.currentPage = newpage;
+	this.currentPage = $(pages[newpage]);
 	$(pages).hide();
-	$(pages[newpage - 1]).show();
+	this.currentPage.show();
 
-	URL.setHashStore("page", newpage);
-	this.pageCounter.innerHTML = newpage + '/' + pages.length;
+	URL.setHashStore("page", this.getCurrentPageId());
+	this.pageCounter.innerHTML = this.getCurrentPageId() + '/' + pages.length;
 
 	this.setSwitcherButtonActivity();
     };
@@ -740,14 +751,17 @@ var URL = {
 	var hashStores = location.hash.substr(1).split(';');
 
 	for (var i = 0; i < hashStores.length; i++) {
-	    var store = hashStores[i].split('-');
+	    var elem = hashStores[i];
+	    var store = [elem, ''];
+	    var sep = elem.indexOf('-');
 
-	    if (!store[0]) {
+	    if (!elem) {
 		continue;
 	    }
 
-	    if (!store[1]) {
-		store[1] = '';
+	    if (sep != -1) {
+		store[0] = elem.slice(0, sep);
+		store[1] = elem.slice(sep + 1);
 	    }
 
 	    values[decodeURI(store[0].trim())] = decodeURI(store[1].trim());
