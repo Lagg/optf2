@@ -1,4 +1,4 @@
-$def with (user, isvalve, items, views, filter_classes, baditems, stats, filter_qualities, total_pages, appid, price_stats, cell_count)
+$def with (user, isvalve, items, views, filter_classes, baditems, stats, filter_qualities, appid, price_stats, cell_count)
 $ usern = user.get_persona()
 $ profileurl = user.get_profile_url()
 $ realn = user.get_real_name()
@@ -121,10 +121,11 @@ $ onlinestates = {0: "offline", 1: "online", 2: "busy", 3: "away", 4: "snooze"}
             $for item in baditems:
                 <div class="slot-item">$:markup.generate_cell(item, invalid = True, user = user)</div>
         </div>
-    $for p in total_pages:
-        <div id="page-${p}" class="backpack-page">
-          $ slice = p * 50
-          $for item in items[slice - 50:slice]:
+    $ pagekeys = items.keys()
+    $ pagekeys.sort()
+    $for k in pagekeys:
+        <div id="page-${k}" class="backpack-page">
+          $for item in items[k]:
               $:markup.generate_cell(item, user = user)
         </div>
   </div>

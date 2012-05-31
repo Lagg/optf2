@@ -154,13 +154,8 @@ class fetch:
             stats = itemtools.get_stats(items)
 
             sorted_items = itemtools.sort(items, sortby)
-            items = sorted_items[0]
-            baditems = sorted_items[1]
-
-            total_pages = len(items) / 50
-            if len(items) % 50 != 0:
-                total_pages += 1
-            total_pages = range(1, total_pages + 1)
+            baditems = []
+            (items, baditems) = itemtools.build_page_object(sorted_items, ignore_position = (sortby != "cell"))
 
         except steam.items.Error as E:
             return templates.error("Failed to load backpack ({0})".format(E))
@@ -179,11 +174,11 @@ class fetch:
         web.ctx.env["optf2_rss_url"] = markup.generate_mode_url("feed/" + str(user.get_id64()))
         web.ctx.env["optf2_rss_title"] = "{0}'s Backpack".format(user.get_persona().encode("utf-8"))
 
-        price_stats = itemtools.get_price_stats(items, cache)
+        price_stats = itemtools.get_price_stats(sorted_items, cache)
         return templates.inventory(user, isvalve, items, views,
                                    filter_classes, baditems,
                                    stats, filter_qualities,
-                                   total_pages, schema._app_id,
+                                   schema._app_id,
                                    price_stats, cell_count)
 
 class feed:
@@ -198,7 +193,7 @@ class feed:
             user = cache.get_profile(sid)
             items = cache.get_backpack(user)
             items = itemtools.process_attributes(items)
-            items = itemtools.sort(items, web.input().get("sort", "time"), mergedisplaced = True)[0]
+            items = itemtools.sort(items, web.input().get("sort", "time"))
 
             return renderer.inventory_feed(user, items)
 

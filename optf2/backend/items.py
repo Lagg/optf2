@@ -52,24 +52,82 @@ def hilo_to_ugcid64(hi, lo):
 def condensed_to_id64(value):
     return "7656" + str(int(value) + 1197960265728)
 
-def sort(items, sortby, mergedisplaced = False):
-    """ If mergedisplaced is true positions are ignored in list appending """
+def build_page_object_unpositioned(items, pagesize = 50):
+    """ Returns the same thing build_page_object does, but
+    ignores positioning info and places cells in the order
+    items are listed """
 
-    if not items:
-        return [], []
+    fitems = filter(None, items)
+    ilen = len(fitems)
+    (pages, rem) = divmod(ilen, pagesize)
+    imap = {}
 
-    solid_items = []
-    displaced_items = []
-    itemcmp = None
-    highestpos = 0
+    if rem > 0: pages += 1
+
+    sections = range(1, pages + 1)
+
+    for i in sections:
+        imap[i] = fitems[(i - 1) * pagesize:i * pagesize]
+
+    if rem:
+        imap[sections[-1]] += [None] * (pagesize - rem)
+
+    return imap
+
+def build_page_object(items, pagesize = 50, ignore_position = False):
+    """ Returns a dict of items mapped to their sections and positions, or a default integer
+    map if not implemented. Pagesize is the default minimum number of cells to a page
+    if ignoreposition is true ignore any positioning info and build pages as items are given
+    in the list """
+
+    imap = {}
+    displaced = []
+
+    if ignore_position:
+        return build_page_object_unpositioned(items, pagesize), displaced
 
     for item in items:
-        if mergedisplaced or item.get_position() > 0: solid_items.append(item)
-        else: displaced_items.append(item)
+        if not item: continue
 
-    if solid_items:
-        solid_items.sort(key = operator.methodcaller("get_position"))
-        highestpos = solid_items[-1].get_position()
+        itempos = item.get_position()
+
+        if itempos < 0:
+            displaced.append(item)
+            continue
+
+        try:
+            section = item.get_category_name()
+        except AttributeError:
+            section = 1
+            if itempos > pagesize:
+                (section, diff) = divmod(itempos, pagesize)
+                if diff > 0: section += 1
+
+        if section not in imap:
+            imap[section] = [None] * (pagesize + 1)
+
+        expandedsize = 0
+        if itempos > len(imap[section]) - 1:
+            try:
+                itempos -= (pagesize * (section - 1))
+            except TypeError:
+                expandedsize = itempos
+                rem = expandedsize % pagesize
+                if rem > 0: expandedsize += (pagesize - rem)
+
+        imap[section] += [None] * expandedsize
+        imap[section][itempos] = item
+
+    def ded(x): del imap[x][0]
+    map(ded, imap.keys())
+
+    return imap, displaced
+
+def sort(items, sortby):
+    if not items:
+        return []
+
+    itemcmp = None
 
     if sortby == "id" or sortby == "time":
         itemcmp = operator.methodcaller("get_id")
@@ -101,30 +159,16 @@ def sort(items, sortby, mergedisplaced = False):
     elif sortby == "schemaid":
         itemcmp = operator.methodcaller("get_schema_id")
 
+    solid_items = items
+
     if itemcmp:
+        solid_items = list(items)
         solid_items.sort(key = itemcmp)
 
-    if sortby == "time":
-        solid_items.reverse()
+        if sortby == "time":
+            solid_items.reverse()
 
-    highestpos += (50 - (highestpos % 50 or 50))
-
-    if sortby == "cell":
-        newitems = [None] * (highestpos + 1)
-        for item in solid_items:
-            pos = item.get_position()
-            try:
-                if newitems[pos] != None:
-                    displaced_items.append(item)
-                else:
-                    newitems[pos] = item
-            except IndexError:
-                log.main.error("Got an index error in cell sort for pos {0}.".format(pos))
-                pass
-        del newitems[0]
-        return newitems, displaced_items
-
-    return solid_items + [None] * (highestpos - len(solid_items)), displaced_items
+    return solid_items
 
 def filter_by_class(items, theclass):
     filtered_items = []
