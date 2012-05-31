@@ -56,19 +56,19 @@ $var title: $project_name - All Items
             <tr><th>$k.title()</th><td>$stats[k]</td></tr>
         <tr><th>Total</th><td>$stats["total"]</td></tr>
       </table>
-      <div class="header">Store worth</div>
-      <table>
-        <tr><th>Currency</th><th>Total</th><th>Avg.</th></tr>
-        $if price_stats["worth"]:
+      $if price_stats["worth"]:
+          <div class="header">Store worth</div>
+          <table>
+            <tr><th>Currency</th><th>Total</th><th>Avg.</th></tr>
             $ worth = price_stats["worth"]
             $ ckeys = worth.keys()
             $ckeys.sort()
             $for k in ckeys:
                 $ sym = price_stats["sym"][k]
                 <tr><th>$k</th> <td>$sym$worth[k]</td> <td>$sym$price_stats["avg"][k]</td></tr>
-      </table>
-      <div class="header">Most expensive</div>
+	  </table>
       $if price_stats["most-expensive"]:
+	  <div class="header">Most expensive</div>
           $for item in price_stats["most-expensive"]:
               <div class="header">$$$item[1]["USD"]</div>
               <div class="ungrouped">$:markup.generate_cell(item[0])</div>

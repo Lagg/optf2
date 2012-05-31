@@ -12,27 +12,28 @@ $(document).ready(function(){
 	hashpage = null;
     }
 
-    var pager = new BackpackPager("#backpack", hashpage);
-    var pagination_toggler = $(document.createElement("div"));
-    var paginationButton = new Button("Show pages");
+    if ($("#backpack").has(".backpack-page").length) {
+	var pager = new BackpackPager("#backpack", hashpage);
+	var paginationButton = new Button("Show pages");
 
-    paginationButton.attachTo(".item-tools");
-    paginationButton.bindClickStateHandler(function(clicked) {
-	if (clicked) {
-	    if (!hashpage) {
-		Cookie.set("pagination", true);
+	paginationButton.attachTo(".item-tools");
+	paginationButton.bindClickStateHandler(function(clicked) {
+	    if (clicked) {
+		if (!hashpage) {
+		    Cookie.set("pagination", true);
+		}
+		pager.modePaged();
+	    } else {
+		if (!hashpage) {
+		    Cookie.remove("pagination");
+		}
+		pager.modeFull();
 	    }
-	    pager.modePaged();
-	} else {
-	    if (!hashpage) {
-		Cookie.remove("pagination");
-	    }
-	    pager.modeFull();
+	});
+
+	if (Cookie.get("pagination") || hashpage) {
+	    paginationButton.setClickState(true);
 	}
-    });
-
-    if (Cookie.get("pagination") || hashpage) {
-	paginationButton.setClickState(true);
     }
 
     var dialogs = new ItemDialog(".item-link");
