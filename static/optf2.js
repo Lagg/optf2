@@ -559,9 +559,9 @@ function ItemDialog(baseLink) {
     });
 
     this.bindOpenOnClick = function() {
-	$(baseLink).click(function(event) {
+	$(".item_cell[id]").click(function(event) {
             event.preventDefault();
-            self.open($(this).parent().attr("id").slice(1));
+            self.open($(this).attr("id").slice(1));
 	});
     };
 
