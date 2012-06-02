@@ -192,8 +192,8 @@ def generate_cell(item, invalid = False, show_equipped = True, user = None, pric
 
     markup = ('<div class="{0} cell-{1}"{6} id="s{2}">' +
               '<a class="item-link" href="{3}">' +
-              '</a>' +
-              '<img class="item-image small" src="{4}" alt="{5}"/>'
+              '<img class="item-image small" src="{4}" alt="{5}"/>' +
+              '</a>'
               ).format(cell_class, quality, item_id, item_link, item.optf2["image_url"], item_id, style)
 
     contents = item.optf2.get("contents")

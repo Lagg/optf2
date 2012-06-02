@@ -237,7 +237,7 @@ function BackpackPager (container, initialpage) {
 	jSwitcher.appendTo(container);
 
 	URL.setHashStore("page", this.getCurrentPageId());
-	this.pageCounter.textContent = this.getCurrentPageId() + '/' + pages.length;
+	this.pageCounter.innerHTML = this.getCurrentPageId() + '/' + pages.length;
 	pages.hide();
 	$(current).show();
 
@@ -349,7 +349,7 @@ function Button(defaultText) {
     };
 
     this.setText = function(text) {
-	this.buttonElement.textContent = text;
+	this.buttonElement.innerHTML = text;
     };
 
     if (defaultText) {
@@ -475,7 +475,7 @@ function CellFilter(data) {
 	    }
 
 	    attribs.each(function() {
-		if (this.textContent.toLowerCase().search(filter) != -1) {
+		if (this.innerHTML.toLowerCase().search(filter) != -1) {
 		    cell.show();
 		    return false;
 		}
@@ -491,7 +491,7 @@ function CellFilter(data) {
 	    var attribs = cell.find(".attribute-list");
 
 	    attribs.each(function() {
-		if (this.textContent.toLowerCase().search(input.toLowerCase()) != -1) { cell.toggleClass("faded"); }
+		if (this.innerHTML.toLowerCase().search(input.toLowerCase()) != -1) { cell.toggleClass("faded"); }
 	    });
 	});
     };
@@ -576,7 +576,7 @@ function ItemDialog(baseLink) {
 	this.toggleLoadTicker(id);
 
 	$(".dedicated_item").find("#item_id").each(function() {
-	    if (this.textContent == id) {
+	    if (this.innerHTML == id) {
 		existingDialog = $(this).parentsUntil(".dedicated_item").parent().first();
 		return false;
 	    }
@@ -699,7 +699,7 @@ function ItemDialog(baseLink) {
 	});
 
 	ticker.css({
-	    "z-index": 5,
+	    "z-index": 30,
 	    "position": "absolute",
 	    "top": "37.5px",
 	    "left": "37.5px"
@@ -765,7 +765,7 @@ var URL = {
 		store[1] = elem.slice(sep + 1);
 	    }
 
-	    values[decodeURI(store[0].trim())] = decodeURI(store[1].trim());
+	    values[decodeURI($.trim(store[0]))] = decodeURI($.trim(store[1]));
 	}
 
 	return values;
