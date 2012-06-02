@@ -118,6 +118,8 @@ class cache:
             pack = getattr(steam, modulename).backpack(user, schema = self._last_schema or self.get_schema())
             memcached.set(memkey, pack, time = config.ini.getint("cache", "backpack-expiry"))
 
+        if len(pack) <= 0: return pack
+
         lastpackskey = self._recent_packs_key
         lastpacks = memcached.get(lastpackskey)
         if not lastpacks:
