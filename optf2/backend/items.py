@@ -116,7 +116,11 @@ def build_page_object(items, pagesize = 50, ignore_position = False):
                 if rem > 0: expandedsize += (pagesize - rem)
 
         imap[section] += [None] * expandedsize
-        imap[section][itempos] = item
+
+        if imap[section][itempos] == None:
+            imap[section][itempos] = item
+        else:
+            displaced.append(item)
 
     def ded(x): del imap[x][0]
     map(ded, imap.keys())
