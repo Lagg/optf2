@@ -20,6 +20,7 @@ from optf2.backend import config
 
 virtual_root = config.ini.get("resources", "virtual-root")
 static_prefix = config.ini.get("resources", "static-prefix")
+particles = config.ini.options("particle-modes")
 
 def absolute_url(relative_url):
     return urljoin(web.ctx.homedomain, relative_url)
@@ -38,6 +39,12 @@ def generate_mode_url(path = "", mode = None):
         cg = default
 
     return virtual_root + cg + "/" + path
+
+def generate_particle_icon_url(pid, mode = None):
+    if not mode: mode = web.ctx.current_game or "tf2"
+    if mode in particles: mode = config.ini.get("particle-modes", mode)
+
+    return static_prefix + mode + "_particle_icons/" + str(pid) + ".png"
 
 def generate_item_description(item):
     desc = item.get_custom_description() or item.get_description()
@@ -164,6 +171,7 @@ def generate_cell(item, invalid = False, show_equipped = True, user = None, pric
     item_id = item.get_id()
     schema_item = False
     equipped = (len(item.get_equipped_classes()) > 0)
+    if not mode: mode = web.ctx.current_game or "tf2"
 
     if not show_equipped: equipped = False
     if not item_id:
@@ -212,7 +220,7 @@ def generate_cell(item, invalid = False, show_equipped = True, user = None, pric
     if "series" in item.optf2:
         markup += '<span class="crate-series-icon">' + str(item.optf2["series"]) + '</span>'
     if "particle-id" in item.optf2:
-        markup += '<img class="icon-particle" alt="Picon" src="' + static_prefix + 'particle_icons/' + str(item.optf2["particle-id"]) + '.png"/>'
+        markup += '<img class="icon-particle" alt="Picon" src="' + generate_particle_icon_url(item.optf2["particle-id"], mode) + '"/>'
     if "custom texture" in item.optf2:
         markup += '<img class="icon-custom-texture"  src="' + item.optf2["custom texture"] + '" alt="texture"/>'
     if equippedstr:

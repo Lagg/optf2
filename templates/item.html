@@ -34,7 +34,7 @@ $def generate_class_icon_link(classes):
     <div class="item-zoom">
       <img class="item-image large" src="$extra['image_url_large']" alt="$usern $extra['title_name']"/>
       $if 'particle-id' in extra:
-          <img class="icon-particle large" src="${static_prefix}particle_icons/${extra['particle-id']}.png" alt="Picon"/>
+          <img class="icon-particle large" src="$markup.generate_particle_icon_url(extra['particle-id'])" alt="Picon"/>
       $if 'custom texture' in extra:
 	  <img class="icon-custom-texture large" src="$extra['custom texture']" alt="texture"/>
     </div>
