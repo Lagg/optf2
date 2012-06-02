@@ -34,7 +34,8 @@ class loadout:
                     if c not in equippeditems:
                         equippeditems[c] = {}
 
-                    slot = item.get_slot().title()
+                    slot = item.get_slot() or ""
+                    slot = slot.title()
                     if slot not in slotlist: slotlist.append(slot)
                     if slot not in equippeditems[c]:
                         equippeditems[c][slot] = []
@@ -50,7 +51,8 @@ class loadout:
                     if item.get_schema_id() == 199 and c != "Engineer":
                         slot = "Secondary"
                     else:
-                        slot = item.get_slot().title()
+                        slot = item.get_slot() or ""
+                        slot = slot.title()
                     if slot not in slotlist: slotlist.append(slot)
                     if slot not in equippeditems[c] or equippeditems[c][slot][0].get_quality()["id"] == 0:
                         equippeditems[c][slot] = []
