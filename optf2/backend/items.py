@@ -122,8 +122,20 @@ def build_page_object(items, pagesize = 50, ignore_position = False):
         else:
             displaced.append(item)
 
+    mkeys = sorted(imap.keys())
+    mapkeys = set(mkeys)
     def ded(x): del imap[x][0]
-    map(ded, imap.keys())
+    map(ded, mapkeys)
+
+    try:
+        if imap:
+            lastpage = mkeys[-1]
+            secrange = set(range(1, lastpage + 1))
+            diff = secrange - mapkeys
+            def pagefill(x): imap[x] = [None] * pagesize
+            map(pagefill, diff)
+    except TypeError:
+        pass
 
     return imap, displaced
 
