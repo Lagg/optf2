@@ -125,6 +125,7 @@ $ onlinestates = {0: "offline", 1: "online", 2: "busy", 3: "away", 4: "snooze"}
     $ pagekeys.sort()
     $for k in pagekeys:
         <div id="page-${k}" class="backpack-page">
+	  <a class="page-label button" href="#page-$k">$k</a>
           $for item in items[k]:
               $:markup.generate_cell(item, user = user)
         </div>

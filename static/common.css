@@ -8,7 +8,7 @@ body { background: #141515; color: white; font-family: Arial, Helvetica, sans-se
     clear: both;
     visibility: hidden;
 }
-.backpack-page { margin-bottom: 20px; }
+.backpack-page { position: relative; margin-bottom: 20px; }
 
 .box {
     border-radius: 10px;
@@ -352,3 +352,5 @@ a.button { text-decoration: none; }
 .ui-widget { padding: 0; margin: 0 5px 0 5px; }
 .ui-tabs, .ui-tabs-nav { border: 0; background: none; }
 .ui-tabs-nav li { border-bottom-left-radius: 8px; border-bottom-right-radius: 8px; }
+
+.page-label { position: absolute; display: block; right: 99.5%; padding: 5px; top: 30px; border-radius: 10px 0 0 10px; }
