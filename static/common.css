@@ -119,8 +119,8 @@ body { background: #141515; color: white; font-family: Arial, Helvetica, sans-se
     color: white;
     font-weight: bold;
     position: absolute;
-    bottom: 37px;
-    right: 37px;
+    left: 37px;
+    top: 37px;
     font-size: 9px;
     padding: 3px;
     border-radius: 10px;

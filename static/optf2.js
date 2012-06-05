@@ -381,7 +381,7 @@ function Cell(container) {
 
             attribs.show();
             currentOffset.top += $(this).height() + 5;
-            currentOffset.left -= (attribs.width() / 3.4);
+            currentOffset.left -= (attribs.width() - $(this).width()) / 2;
 
             /* Check if attribs go off the document */
             if (currentOffset.left < 0) { currentOffset.left = 0; }
