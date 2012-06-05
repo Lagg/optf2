@@ -463,7 +463,7 @@ function CellFilter(data) {
 	    return;
 	}
 
-	filter = filter.toLowerCase();
+	filter = filter.toLowerCase().replace(/\s+/g, " ");
 
 	cells.each(function() {
 	    var cell = $(this);
@@ -475,7 +475,7 @@ function CellFilter(data) {
 	    }
 
 	    attribs.each(function() {
-		if (this.innerHTML.toLowerCase().search(filter) != -1) {
+		if (this.innerHTML.toLowerCase().replace(/\s+/g, " ").search(filter) != -1) {
 		    cell.show();
 		    return false;
 		}

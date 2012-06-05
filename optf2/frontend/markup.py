@@ -63,7 +63,7 @@ def generate_item_type_line(item, classic = True):
     itemorigin = item.get_origin_name()
 
     if classic and "level" in item.optf2:
-        levelprefix = "Level " + str(item.optf2["level"]) + " "
+        levelprefix = "Level " + str(item.optf2["level"])
 
     if itemorigin:
         origin_name = " - " + itemorigin
