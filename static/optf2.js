@@ -431,6 +431,10 @@ function Cell(container) {
 }
 
 function CellFilter(data) {
+    var self = this;
+
+    this.hasContainer = $(data).parent().hasClass("backpack-page");
+
     this.bindFilterToField = function(filter, field) {
 	var f = field.baseField;
 	var linkedFilter = URL.getHashStore("filter");
@@ -456,9 +460,11 @@ function CellFilter(data) {
 	var filter = input;
 	var cells = $(data);
 
+	if (self.hasContainer) { cells.parent().hide(); }
 	cells.hide();
 
 	if (!filter || filter.length == 0) {
+	    if (self.hasContainer) { cells.parent().show(); }
 	    cells.show();
 	    return;
 	}
@@ -470,12 +476,14 @@ function CellFilter(data) {
 	    var attribs = cell.find(".tooltip");
 
 	    if (cell.hasClass("cell-" + filter)) {
+		if (self.hasContainer) { cell.parent().show(); }
 		cell.show();
 		return;
 	    }
 
 	    attribs.each(function() {
 		if (this.innerHTML.toLowerCase().replace(/\s+/g, " ").search(filter) != -1) {
+		    if (self.hasContainer) { cell.parent().show(); }
 		    cell.show();
 		    return false;
 		}
