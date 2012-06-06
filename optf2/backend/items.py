@@ -376,8 +376,7 @@ def process_attributes(items, gift = False):
                 custom_texture_hi = theattr.get_value()
 
             if not newattr.get("hidden", theattr.is_hidden()):
-                newattr["description_string"] = web.websafe(newattr.get("description_string",
-                                                                        theattr.get_description()))
+                newattr["description_string"] = newattr.get("description_string", theattr.get_description())
             else:
                 continue
 
