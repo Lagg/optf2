@@ -354,14 +354,6 @@ def process_attributes(items, gift = False):
                 newattr["hidden"] = False
 
             if attrname == "tradable after date":
-                # WORKAROUND: For some reason this has the wrong type and is hidden,
-                # not sure if this should be in steamodd or not
-                try:
-                    d = time.gmtime(theattr.get_value())
-                    ttime = time.strftime("%F %H:%M:%S", d)
-                except ValueError:
-                    ttime = "someday"
-                newattr["description_string"] = "Tradable after: " + ttime
                 newattr["hidden"] = False
 
             if attrname == "set supply crate series":
