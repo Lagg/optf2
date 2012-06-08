@@ -31,8 +31,8 @@ class loadout:
             for item in normalitems:
                 classes = item.get_equipable_classes()
                 for c in classes:
-                    if c not in equippeditems:
-                        equippeditems[c] = {}
+                    if c not in valid_classes: valid_classes.append(c)
+                    if c not in equippeditems: equippeditems[c] = {}
 
                     slot = item.get_slot() or ""
                     slot = slot.title()
@@ -45,6 +45,7 @@ class loadout:
             for item in items:
                 classes = item.get_equipped_classes()
                 for c in classes:
+                    if c not in valid_classes: valid_classes.append(c)
                     if c not in equippeditems: equippeditems[c] = {}
                     # WORKAROUND: There is one unique shotgun for all classes, and it's in the primary slot. This
                     # has obvious problems
