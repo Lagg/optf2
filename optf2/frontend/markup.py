@@ -15,12 +15,14 @@ OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 """
 
 import web
+import re
 from urlparse import urljoin
 from optf2.backend import config
 
 virtual_root = config.ini.get("resources", "virtual-root")
 static_prefix = config.ini.get("resources", "static-prefix")
 particles = config.ini.options("particle-modes")
+htmldesc = re.compile("<(?P<tag>.+) ?.*>.+</(?P=tag)>")
 
 def absolute_url(relative_url):
     return urljoin(web.ctx.homedomain, relative_url)
@@ -47,8 +49,14 @@ def generate_particle_icon_url(pid, mode = None):
     return static_prefix + mode + "_particle_icons/" + str(pid) + ".png"
 
 def generate_item_description(item):
-    desc = item.get_custom_description() or item.get_description()
-    if desc: return '<div class="item-description">' + web.websafe(desc).replace('\n', '<br/>') + '</div>'
+    desc = web.websafe(item.get_custom_description())
+
+    if not desc:
+        desc = item.get_description()
+        if desc and not htmldesc.search(desc):
+            desc = web.websafe(desc)
+
+    if desc: return '<div class="item-description">' + desc.replace('\n', '<br/>') + '</div>'
 
     return ''
 
