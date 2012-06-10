@@ -69,8 +69,8 @@ body { background: #141515; color: white; font-family: Arial, Helvetica, sans-se
     border: 2px solid black;
     margin: 3px;
     background: #505050;
-    width: 86px;
-    height: 86px;
+    width: 96px;
+    height: 96px;
     text-align: center;
     float: left;
     position: relative;
@@ -119,8 +119,8 @@ body { background: #141515; color: white; font-family: Arial, Helvetica, sans-se
     color: white;
     font-weight: bold;
     position: absolute;
-    left: 37px;
-    top: 37px;
+    left: 40px;
+    top: 40px;
     font-size: 9px;
     padding: 3px;
     border-radius: 10px;
@@ -230,7 +230,7 @@ img { border: 0; }
     height: 600px;
 }
 
-.item-image[class~=small] { max-width: 86px; max-height: 86px; border-radius: 10px; }
+.item-image[class~=small] { max-width: 96px; max-height: 96px; border-radius: 10px; }
 .item-image[class~=large] { float: left; width: 512px; height: 512px; }
 .item-image[class~=gift-preview] {
     width: 48px;
