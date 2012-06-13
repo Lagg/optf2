@@ -50,13 +50,27 @@ $(document).ready(function(){
 
     var untradableButton = new Button("Hide untradable");
     untradableButton.attachTo(".item-tools");
-    untradableButton.bindClickStateHandler(function() {
-	cellFilter.byUntradable();
-    });
+    untradableButton.bindClickStateHandler(function() { cellFilter.byUntradable(); });
 
     var uncraftableButton = new Button("Hide uncraftable");
     uncraftableButton.attachTo(".item-tools");
-    uncraftableButton.bindClickStateHandler(function() {cellFilter.byUncraftable();});
+    uncraftableButton.bindClickStateHandler(function() { cellFilter.byUncraftable(); });
+
+    var cellExportButton = new Button("bbCode");
+    cellExportButton.attachTo(".item-tools");
+    cellExportButton.bindClickStateHandler(function() {
+	var textArea = $("#exportData");
+	if (textArea.length) {
+	    textArea.text('');
+	    textArea.remove();
+	} else {
+	    var data = CellDataExport();
+	    textArea = $('<textarea rows="30" cols="100" id="exportData"></textarea>');
+	    textArea.text(data);
+	    textArea.insertBefore(".backpack-page:first");
+	    textArea.select();
+	}
+    });
 
     autosizeBoxes();
 
@@ -428,6 +442,77 @@ function Cell(container) {
 	    }
 	}
     };
+}
+
+function rgb2hex(rgb) {
+    var rgb = rgb.match(/^rgb\((\d+),\s*(\d+),\s*(\d+)\)$/);
+    function hex(x) {
+        return ("0" + parseInt(x).toString(16)).slice(-2);
+    }
+
+    var vals = [];
+    for (var i = 1; i < rgb.length; i++) {
+	var v = rgb[i];
+
+	if (v > 180) {
+	    v -= 100;
+	}
+
+	vals.push(hex(v));
+    }
+
+    var res = vals.join('');
+    return "#" + res;
+}
+
+function CellDataExport() {
+    var outputText = "";
+    var SMNCColorMap = {
+	"regular": "000000",
+	"extra": "0040BF",
+	"mega": "00BF00",
+	"ultra": "BF00FF",
+	"bacon": "FF8000"
+    };
+
+    $(".backpack-page").each(function() {
+	var text = [];
+	var page = $(this);
+	var title = page.find(".page-label");
+	$(page.find(".item_cell").filter(":visible")).each(function() {
+	    var cell = $(this);
+	    var tt = cell.find(".tooltip");
+	    var itemname = tt.find(".item-name");
+	    var nametext = itemname.text();
+	    var fullurl = cell.find(".item-link").prop("href");
+	    var attrs = cell.find(".attribute-list");
+	    var suffixText = "";
+	    var quantity = /\(?(\d)\)?/.exec(cell.find(".equipped").html());
+
+	    if (!nametext || attrs.text().toLowerCase().search("untradable") != -1) {
+		return;
+	    }
+
+	    if (quantity) {
+		quantity = '[b]x' + quantity[1] + '[/b] ';
+	    } else {
+		quantity = '';
+	    }
+
+	    nametext = nametext.replace(/(.+) (Regular|Extra|Mega|Ultra|Bacon)/, function(str, p1, p2, offset, s) {
+		suffixText = " [b][color=#" + SMNCColorMap[p2.toLowerCase()] + "]" + p2 + "[/color][/b]";
+		return p1;
+	    });
+
+	    text.push('[color=' + rgb2hex(itemname.css("color")) + '][b]' + nametext + '[/b][/color] ' + suffixText + ' ' + quantity + '- [url=' + fullurl + ']Link[/url]\n');
+	});
+	if (text.length > 0) {
+	    text = text.sort().join('');
+	    outputText += "[b][size=185]" + title.html() + "[/size][/b]\n[list]\n" + text + "[/list]\n\n";
+	}
+    });
+
+    return outputText;
 }
 
 function CellFilter(data) {
