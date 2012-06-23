@@ -53,6 +53,7 @@ class cache:
             if not appid: result = baseclass(lang = language, lm = lm)
             else: result = baseclass(appid, lang = language, lm = lm)
             if freshcallback: freshcallback(result)
+            result._get()
             memcached.set(memkey, result, min_compress_len = 1048576)
         except steam.base.HttpStale:
             result = oldobj
@@ -105,11 +106,29 @@ class cache:
 
     def get_profile(self, sid):
         # Use memcache's hashing function to avoid weird character problems
-        memkey = "profile-" + str(memcache.cmemcache_hash(str(sid)))
+        sid = str(sid)
+        vanitykey = "vanity-" + str(memcache.cmemcache_hash(sid))
 
+        vanity = memcached.get(vanitykey)
+        if not vanity:
+            # People usually use their vanity URLs, and the request is usually timely
+            try:
+                vanity = str(steam.user.vanity_url(sid))
+                # May want a real option for this later
+                memcached.set(vanitykey, vanity, time = (config.ini.getint("cache", "profile-expiry") * 4))
+            except steam.user.VanityError:
+                pass
+        if vanity:
+            sid = vanity
+
+        if not vanity and not sid.isdigit():
+            raise steam.user.ProfileError("Profile not found")
+
+        memkey = "profile-" + sid
         profile = memcached.get(memkey)
         if not profile:
             profile = steam.user.profile(sid)
+            profile._get()
             memcached.set(memkey, profile, time = config.ini.getint("cache", "profile-expiry"))
 
         return profile
@@ -123,6 +142,7 @@ class cache:
         pack = memcached.get(memkey)
         if not pack:
             pack = getattr(steam, modulename).backpack(user, schema = self._last_schema or self.get_schema())
+            pack._get()
             memcached.set(memkey, pack, time = config.ini.getint("cache", "backpack-expiry"))
 
         if len(pack) <= 0: return pack
