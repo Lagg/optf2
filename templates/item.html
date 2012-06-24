@@ -75,14 +75,9 @@ $def generate_class_icon_link(classes):
         $else:
             $pos
       </li>
-      <li class="attr-neutral">
-        $ equipped = item.get_equipped_classes()
-        Equipped: \
-        $if len(equipped) > 0:
-            $:generate_class_icon_link(equipped)
-        $else:
-            No
-      </li>
+      $ equipped = item.get_equipped_classes()
+      $if len(equipped) > 0:
+          <li class="attr-neutral">Equipped: $:generate_class_icon_link(equipped)</li>
       $if outdated:
           <li class="attr-negative" style="font-weight: normal">
             This item is out of date. It may have been deleted or customized.
@@ -91,14 +86,9 @@ $def generate_class_icon_link(classes):
       <li class="attr-neutral">
         ID: <span id="item_id">$item.get_schema_id()</span>
       </li>
-      <li class="attr-neutral">
-        $ equipable = item.get_equipable_classes()
-        Classes: \
-        $if len(equipable) <= 0 or not equipable[0]:
-            Not equipable
-        $else:
-            $:generate_class_icon_link(equipable)
-      </li>
+      $ equipable = item.get_equipable_classes()
+      $if len(equipable) > 0 and equipable[0]:
+          <li class="attr-neutral">Used by: $:generate_class_icon_link(equipable)</li>
       $ styles = item.get_styles()
       $if styles: <li class="attr-neutral">Styles: ${", ".join(styles)}</li>
       $ slot = item.get_slot()
