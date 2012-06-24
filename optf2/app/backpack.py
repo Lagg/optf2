@@ -164,8 +164,8 @@ class fetch:
             return templates.error("Failed to load backpack ({0})".format(E))
         except steam.user.ProfileError as E:
             return templates.error("Failed to load profile ({0})".format(E))
-        except (urllib2.URLError, steam.base.HttpError):
-            return templates.error("Couldn't connect to Steam")
+        except (urllib2.URLError, steam.base.HttpError) as E:
+            return templates.error("Couldn't connect to Steam (HTTP {0})".format(E))
 
         views = 0
         primary_group = user.get_primary_group()
