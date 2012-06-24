@@ -191,14 +191,6 @@ def generate_cell(item, invalid = False, show_equipped = True, user = None, pric
     equippedstr = ""
     quantity = item.get_quantity()
 
-    if equipped:
-        equippedstr = "Equipped "
-    if quantity > 1:
-        if not equipped:
-            equippedstr += "{0}".format(quantity)
-        else:
-            equippedstr += "({0})".format(quantity)
-
     cell_class = "item_cell"
     if not schema_item and item.get_position() <= -1: cell_class += " undropped"
 
@@ -231,8 +223,10 @@ def generate_cell(item, invalid = False, show_equipped = True, user = None, pric
         markup += '<img class="icon-particle" alt="Picon" src="' + generate_particle_icon_url(item.optf2["particle-id"], mode) + '"/>'
     if "custom texture" in item.optf2:
         markup += '<img class="icon-custom-texture"  src="' + item.optf2["custom texture"] + '" alt="texture"/>'
-    if equippedstr:
-        markup += '<span class="equipped">' + equippedstr + '</span>'
+    if equipped:
+        markup += '<span class="ui-icon ui-icon-check equipped-icon"></span>'
+    if quantity > 1:
+        markup += '<span class="cell-quantity">' + str(quantity) + '</span>'
 
     markup += '<div class="tooltip">' + item.optf2["cell_name"]
 

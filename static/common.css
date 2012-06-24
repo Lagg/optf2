@@ -126,16 +126,8 @@ body { background: #141515; color: white; font-family: Arial, Helvetica, sans-se
     border-radius: 10px;
 }
 
-.equipped {
-    background: #000000;
-    color: #ba4935;
-    position: absolute;
-    bottom: 5px;
-    right: 5px;
-    font-size: 9px;
-    padding: 2px;
-    border-radius: 8px;
-}
+.equipped-icon { position: absolute; bottom: 5px; right: 5px; }
+.cell-quantity { position: absolute; bottom: 5px; right: 24px; font-weight: bold; font-size: 12px; }
 .tooltip { display: none; cursor: default; overflow: hidden; word-wrap: break-word; }
 .tooltip div { padding: 4px; text-align: center; }
 .item_cell:hover {
