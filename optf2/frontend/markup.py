@@ -219,6 +219,8 @@ def generate_cell(item, invalid = False, show_equipped = True, user = None, pric
         markup += '<span class="paint_splotch secondary" style="background: ' + item.optf2['color_2'] + ';">&nbsp;</span>'
     if "series" in item.optf2:
         markup += '<span class="crate-series-icon">' + str(item.optf2["series"]) + '</span>'
+    if "craft_number" in item.optf2:
+        markup += '<div class="craft-number-icon">' + str(item.optf2["craft_number"]) + '</div>'
     if "particle-id" in item.optf2:
         markup += '<img class="icon-particle" alt="Picon" src="' + generate_particle_icon_url(item.optf2["particle-id"], mode) + '"/>'
     if "custom texture" in item.optf2:

@@ -125,7 +125,7 @@ body { background: #141515; color: white; font-family: Arial, Helvetica, sans-se
     padding: 3px;
     border-radius: 10px;
 }
-
+.craft-number-icon { font-size: 12px; opacity: 0.60; position: relative; margin: 76px auto 0 auto; }
 .equipped-icon { position: absolute; bottom: 5px; right: 5px; }
 .cell-quantity { position: absolute; bottom: 5px; right: 24px; font-weight: bold; font-size: 12px; }
 .tooltip { display: none; cursor: default; overflow: hidden; word-wrap: break-word; }

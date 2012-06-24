@@ -350,8 +350,10 @@ def process_attributes(items, gift = False):
                 item.optf2["gift"] = account_info
 
             if attrname == "unique craft index":
-                newattr["description_string"] = "Craft number: " + str(int(theattr.get_value()))
+                value = int(theattr.get_value())
+                newattr["description_string"] = "Craft number: " + str(value)
                 newattr["hidden"] = False
+                item.optf2["craft_number"] = value
 
             if attrname == "tradable after date":
                 newattr["hidden"] = False
