@@ -129,10 +129,13 @@ class cache:
         if sid.isdigit():
             try:
                 return self._load_profile(sid)
-            except ProfileError:
+            except steam.user.ProfileError:
                 pass
 
-        return self._load_profile(self.get_vanity(sid))
+        try:
+            return self._load_profile(self.get_vanity(sid))
+        except steam.user.VanityError as E:
+            raise steam.user.ProfileError(str(E))
 
     def get_backpack(self, user):
         modulename = self._mod_id
