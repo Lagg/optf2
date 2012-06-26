@@ -77,38 +77,6 @@ $(document).ready(function(){
     var searchField = new Field("search-field");
     searchField.bindDefaultText("User, URL, or ID search...");
 
-    function autocomplete_magic(req, resp) {
-	var finalcomp = new Array ();
-	$.getJSON (virtual_root + "comp/" + req.term, function (data, status) {
-	    for (var i = 0; i < data.length; i++) {
-		itemdata = data[i];
-		itemlabel = "";
-
-		if (itemdata.avatar != undefined) { itemlabel += '<img width="16" height="16" src="' + itemdata.avatar + '"/> '; }
-
-		itemlabel += itemdata.persona;
-		if (itemdata.id_type == "id") {
-		    itemlabel += " (" + itemdata.id + ')';
-		}
-		finalcomp.push({label: itemlabel, value: itemdata.id});
-	    }
-
-	    resp (finalcomp.slice (0, 20));
-	});
-    }
-
-    searchField.baseField.autocomplete({
-        minLength: 2,
-        source: autocomplete_magic,
-        open: function() { $(".ui-autocomplete").css("z-index", "100"); },
-        select: function(e, ui) { this.value = ui.item.value; $("#search-form").submit(); }
-    }).data("autocomplete")._renderItem = function(ul, item) {
-	return $("<li></li>")
-	    .data("item.autocomplete", item)
-	    .append("<a>" + item.label + "</a>")
-	    .appendTo(ul);
-    };
-
     var sideBox = $(".side-box");
     if (sideBox.length > 0) {
 	var sideBoxWidth = parseInt(sideBox.css("width"));

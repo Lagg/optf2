@@ -12,7 +12,6 @@ valid_modes = [op[0] for op in config.ini.items("modes")]
 
 urls = (
     virtual_root + "persona/(.+)", app.api.persona,
-    virtual_root + "comp/(.+)", app.api.search_profile,
     virtual_root + "about", app.static.about,
     virtual_root, app.index.game_root
     )
