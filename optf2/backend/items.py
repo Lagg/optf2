@@ -19,7 +19,7 @@ import re
 import time
 import operator
 import steam
-from optf2.frontend.markup import absolute_url
+from optf2.frontend.markup import absolute_url, get_page_sizes
 from optf2.backend import config
 from optf2.backend import log
 
@@ -52,10 +52,17 @@ def hilo_to_ugcid64(hi, lo):
 def condensed_to_id64(value):
     return "7656" + str(int(value) + 1197960265728)
 
-def build_page_object_unpositioned(items, pagesize = 50):
+def build_page_object_unpositioned(items, pagesize = None, mode = None):
     """ Returns the same thing build_page_object does, but
     ignores positioning info and places cells in the order
     items are listed """
+
+    if not mode: mode = web.ctx.current_game or "tf2"
+
+    if not pagesize:
+        celldims = get_page_sizes()
+        dims = celldims.get(mode, celldims["default"])
+        pagesize = dims["width"] * dims["height"]
 
     fitems = filter(None, items)
     ilen = len(fitems)
@@ -74,11 +81,18 @@ def build_page_object_unpositioned(items, pagesize = 50):
 
     return imap
 
-def build_page_object(items, pagesize = 50, ignore_position = False):
+def build_page_object(items, pagesize = None, ignore_position = False, mode = None):
     """ Returns a dict of items mapped to their sections and positions, or a default integer
     map if not implemented. Pagesize is the default minimum number of cells to a page
     if ignoreposition is true ignore any positioning info and build pages as items are given
     in the list """
+
+    if not mode: mode = web.ctx.current_game or "tf2"
+
+    if not pagesize:
+        celldims = get_page_sizes()
+        dims = celldims.get(mode, celldims["default"])
+        pagesize = dims["width"] * dims["height"]
 
     imap = {}
     displaced = []

@@ -1,3 +1,4 @@
 .item_cell { width: 111px; height: 73px; }
 .item-image[class~=small] { max-width: 111px; max-height: 73px; }
 .crate-series-icon { left: 50px; top: 25px; }
+.ticker { left: 42px; top: 26px; }

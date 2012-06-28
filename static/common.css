@@ -80,6 +80,7 @@ body { background: #141515; color: white; font-family: Arial, Helvetica, sans-se
 }
 .item_cell[class~=undropped] { background: #302323; }
 .item_cell[class~=faded] { background: #1f1f1f; opacity: 0.1; }
+.ticker { z-index: 30; position: absolute; top: 40px; left: 40px; }
 
 .cell-unique { border-color: #ffd700; }
 .cell-community { border-color: #70b04a; }

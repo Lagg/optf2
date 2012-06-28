@@ -23,7 +23,8 @@ globals = {"virtual_root": config.get("resources", "virtual-root"),
            "iurl": web.input,
            "markup": markuptools,
            "game_modes": config.items("modes"),
-           "cssaliases": cssmap
+           "cssaliases": cssmap,
+           "pagesizes": markuptools.get_page_sizes()
            }
 
 template = web.template.render(config.get("resources", "template-dir"), base = "base",

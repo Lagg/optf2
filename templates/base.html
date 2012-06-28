@@ -21,6 +21,7 @@ $def with (content)
     virtual_root = "${virtual_root}";
     static_prefix = "${static_prefix}";
     current_game = "${instance.current_game}";
+    cellsPerRow = ${pagesizes.get(instance.current_game, pagesizes['default'])['width']};
     </script>
     <script type="text/javascript" src="${static_prefix}jquery-1.7.2.min.js"></script>
     <script type="text/javascript" src="${static_prefix}jquery-ui-1.8.19.custom.min.js"></script>

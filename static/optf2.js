@@ -352,7 +352,7 @@ function Cell(container) {
 
     cells = $(cellSelector);
 
-    this.cellsPerRow = 10;
+    this.cellsPerRow = cellsPerRow;
 
     this.bindHoverAction = function() {
 	cells.hover(function() {
@@ -756,14 +756,8 @@ function ItemDialog(baseLink) {
 	ticker.attr({
 	    "src": static_prefix + "loading.gif",
 	    "id": tickerID,
+	    "class": "ticker",
 	    "alt": "Loading..."
-	});
-
-	ticker.css({
-	    "z-index": 30,
-	    "position": "absolute",
-	    "top": "37.5px",
-	    "left": "37.5px"
 	});
 
 	if (this.isLoadTickerRunning(id)) {

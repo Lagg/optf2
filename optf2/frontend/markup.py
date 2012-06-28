@@ -24,6 +24,18 @@ static_prefix = config.ini.get("resources", "static-prefix")
 particles = config.ini.options("particle-modes")
 htmldesc = re.compile("<(?P<tag>.+) ?.*>.+</(?P=tag)>")
 
+celldims = {}
+for mode, dims in config.ini.items("page-dimensions"):
+    sep = dims.lower().find('x')
+    if sep == -1:
+        val = int(dims)
+        celldims[mode] = {"width": val, "height": val}
+    else:
+        celldims[mode] = {"width": int(dims[:sep]), "height": int(dims[sep + 1:])}
+
+def get_page_sizes():
+    return celldims
+
 def absolute_url(relative_url):
     return urljoin(web.ctx.homedomain, relative_url)
 
