@@ -10,7 +10,8 @@ $def with (content)
     <link rel="stylesheet" type="text/css" href="${static_prefix}juicss/jquery-ui-1.8.19.custom.css"/>
     <link rel="stylesheet" type="text/css" href="${static_prefix}common.css"/>
     $if instance.current_game:
-        <link rel="stylesheet" type="text/css" href="${static_prefix}${instance.current_game}.css"/>
+        $ realstyle = cssaliases.get(instance.current_game, instance.current_game)
+        <link rel="stylesheet" type="text/css" href="${static_prefix}${realstyle}.css"/>
     <link rel="shortcut icon" type="image/png" href="${static_prefix}optf2_icon.png"/>
     $ rss_url = instance.env.get("optf2_rss_url")
     $ rss_title = instance.env.get("optf2_rss_title")

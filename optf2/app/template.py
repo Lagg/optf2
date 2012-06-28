@@ -9,6 +9,8 @@ for wiki in config.items("wiki"):
     pair = (wiki[1][:sep], wiki[1][sep + 1:])
     wikimap[wiki[0]] = (pair[0].strip(), pair[1].strip())
 
+cssmap = dict(config.items("css-aliases"))
+
 # These should stay explicit
 globals = {"virtual_root": config.get("resources", "virtual-root"),
            "static_prefix": config.get("resources", "static-prefix"),
@@ -21,6 +23,7 @@ globals = {"virtual_root": config.get("resources", "virtual-root"),
            "iurl": web.input,
            "markup": markuptools,
            "game_modes": config.items("modes"),
+           "cssaliases": cssmap
            }
 
 template = web.template.render(config.get("resources", "template-dir"), base = "base",
