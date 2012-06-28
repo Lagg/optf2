@@ -238,7 +238,7 @@ def generate_cell(item, invalid = False, show_equipped = True, user = None, pric
     if "custom texture" in item.optf2:
         markup += '<img class="icon-custom-texture"  src="' + item.optf2["custom texture"] + '" alt="texture"/>'
     if equipped:
-        markup += '<span class="ui-icon ui-icon-check equipped-icon"></span>'
+        markup += '<span class="ui-icon ui-icon-suitcase equipped-icon"></span>'
     if quantity > 1:
         markup += '<span class="cell-quantity">' + str(quantity) + '</span>'
 

@@ -1,4 +1,4 @@
-body { background: #141515; color: white; font-family: Arial, Helvetica, sans-serif; font-size: 11px; margin: 0; }
+body { background: #0F0F0F; color: white; font-family: Arial, Helvetica, sans-serif; font-size: 11px; margin: 0; }
 
 .backpack-page, .box { zoom: 1; }
 .backpack-page:after, .box:after {
@@ -68,7 +68,7 @@ body { background: #141515; color: white; font-family: Arial, Helvetica, sans-se
 .item_cell {
     border: 2px solid black;
     margin: 3px;
-    background: #505050;
+    background: #303131;
     width: 96px;
     height: 96px;
     text-align: center;
@@ -167,7 +167,7 @@ body { background: #141515; color: white; font-family: Arial, Helvetica, sans-se
     border-radius: 8px;
     border-bottom-right-radius: 0;
     border-top-right-radius: 0;
-    background-color: #353535;
+    background-color: #505050;
     border: 1px solid black;
     color: white;
     font-style: italic;
@@ -181,7 +181,7 @@ body { background: #141515; color: white; font-family: Arial, Helvetica, sans-se
     border: 1px solid black;
     border-left: 0;
     color: white;
-    background-color: #282828;
+    background-color: #505050;
     cursor: pointer;
     margin: 0;
     font-weight: bold;
@@ -205,7 +205,7 @@ a:visited { text-decoration: none; }
 #status_offline { color: #808080; }
 #status_snooze, #status_away, #status_busy { color: #2fb3ff; }
 
-.navbar { background-color: #2a2a2a; text-align: left; height: 30px; width: 100%; padding: 0; margin: 0; position: relative; border-top: 1px solid black; list-style: none; }
+.navbar { background-color: #2a2a2a; text-align: left; height: 30px; width: 100%; padding: 0; margin: 0; position: relative; border-top: 1px solid black; border-bottom: 1px solid black; list-style: none; }
 .navbar > li { background-color: #505050; color: white; position: relative; float: left; height: 30px; margin: 0; padding: 0; border-right: 1px solid black; }
 .navbar .open-space, .navbar .open-space:hover { background: none; border: none; }
 .navbar a { display: block; height: 22px; padding: 8px 10px 0 10px; white-space: nowrap; text-decoration: none; }

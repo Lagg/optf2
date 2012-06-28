@@ -1,4 +1,4 @@
-.item_cell { width: 111px; height: 73px; }
-.item-image[class~=small] { max-width: 111px; max-height: 73px; }
-.crate-series-icon { left: 50px; top: 25px; }
+.item_cell { width: 100px; height: 68px; border-radius: 0; margin: 5px; }
+.item-image[class~=small] { max-width: 100px; max-height: 68px; border-radius: 0; }
+.crate-series-icon { left: 44.5px; top: 25.5px; }
 .ticker { left: 42px; top: 26px; }
