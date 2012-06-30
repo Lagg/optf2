@@ -325,11 +325,19 @@ def generate_class_sprite_img(c, styleextra = "", mode = None):
         "tf2b": "tf2",
         "d2b": "d2"
         }
+    sheetwidth = 512
+    spritesize = 16
 
     try:
         mode = aliasmap.get(mode, mode)
         spriteindex, name = get_class_for_id(c, mode = mode)
-        style = "background: url('{0}') -{1}px 0px;".format(static_prefix + mode + "_class_icons.png", spriteindex * 16)
+
+        spriteindex *= spritesize
+        row, x = divmod(spriteindex, sheetwidth)
+        row *= spritesize
+        column = x
+
+        style = "background: url('{0}') -{1}px -{2}px;".format(static_prefix + mode + "_class_icons.png", column, row)
     except (ValueError, KeyError):
         style = ""
 
