@@ -24,42 +24,46 @@ class loadout:
             schema = cache.get_schema()
             items = itemtools.process_attributes(cache.get_backpack(userp))
             equippeditems = {}
-            valid_classes = schema.get_classes().values()
+            classmap = {}
+            overrides, swappedoverrides = markup.get_class_overrides()
+            if overrides: classmap = overrides
             slotlist = ["Head", "Misc", "Primary", "Secondary", "Melee", "Pda", "Pda2", "Building", "Action"]
 
             normalitems = itemtools.process_attributes(itemtools.filter_by_quality(schema, "0"))
             for item in normalitems:
                 classes = item.get_equipable_classes()
                 for c in classes:
-                    if c not in valid_classes: valid_classes.append(c)
-                    if c not in equippeditems: equippeditems[c] = {}
+                    cid, name = markup.get_class_for_id(c)
+                    if cid not in equippeditems: equippeditems[cid] = {}
+                    if cid not in classmap: classmap[cid] = name
 
                     slot = item.get_slot() or ""
                     slot = slot.title()
                     if slot not in slotlist: slotlist.append(slot)
-                    if slot not in equippeditems[c]:
-                        equippeditems[c][slot] = []
+                    if slot not in equippeditems[cid]:
+                        equippeditems[cid][slot] = []
 
-                    equippeditems[c][slot].append(item)
+                    equippeditems[cid][slot].append(item)
 
             for item in items:
                 classes = item.get_equipped_classes()
                 for c in classes:
-                    if c not in valid_classes: valid_classes.append(c)
-                    if c not in equippeditems: equippeditems[c] = {}
+                    cid, name = markup.get_class_for_id(c)
+                    if cid not in equippeditems: equippeditems[cid] = {}
+                    if cid not in classmap: classmap[cid] = name
                     # WORKAROUND: There is one unique shotgun for all classes, and it's in the primary slot. This
                     # has obvious problems
-                    if item.get_schema_id() == 199 and c != "Engineer":
+                    if item.get_schema_id() == 199 and name != "Engineer":
                         slot = "Secondary"
                     else:
                         slot = item.get_slot() or ""
                         slot = slot.title()
                     if slot not in slotlist: slotlist.append(slot)
-                    if slot not in equippeditems[c] or equippeditems[c][slot][0].get_quality()["id"] == 0:
-                        equippeditems[c][slot] = []
-                    equippeditems[c][slot].append(item)
+                    if slot not in equippeditems[cid] or equippeditems[cid][slot][0].get_quality()["id"] == 0:
+                        equippeditems[cid][slot] = []
+                    equippeditems[cid][slot].append(item)
 
-            return templates.loadout(userp, equippeditems, valid_classes, slotlist)
+            return templates.loadout(userp, equippeditems, classmap, slotlist)
         except steam.items.Error as E:
             return templates.error("Backpack error: {0}".format(E))
         except steam.user.ProfileError as E:
@@ -146,7 +150,7 @@ class fetch:
             if not items and user.get_visibility() != 3:
                 raise steam.user.ProfileError("Backpack is private")
 
-            filter_classes = itemtools.get_equippable_classes(items, cache)
+            filter_classes = markup.sorted_class_list(itemtools.get_equippable_classes(items, cache))
             filter_qualities = itemtools.get_present_qualities(items)
             if sortclass:
                 items = itemtools.filter_by_class(items, sortclass)

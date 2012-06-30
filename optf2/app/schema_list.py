@@ -18,6 +18,7 @@ import web
 import template
 from optf2.backend import items as itemtools
 from optf2.backend import database
+from optf2.frontend import markup
 
 templates = template.template
 
@@ -41,7 +42,7 @@ class items:
         except KeyError: pass
 
         stats = itemtools.get_stats(items)
-        filter_classes = itemtools.get_equippable_classes(items, cache)
+        filter_classes = markup.sorted_class_list(itemtools.get_equippable_classes(items, cache))
         items = itemtools.process_attributes(items)
         price_stats = itemtools.get_price_stats(items, cache)
 

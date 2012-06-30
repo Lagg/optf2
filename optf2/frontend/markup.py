@@ -16,6 +16,8 @@ OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 import web
 import re
+try: from collections import OrderedDict as odict
+except ImportError: odict = dict
 from urlparse import urljoin
 from optf2.backend import config
 
@@ -32,6 +34,61 @@ for mode, dims in config.ini.items("page-dimensions"):
         celldims[mode] = {"width": val, "height": val}
     else:
         celldims[mode] = {"width": int(dims[:sep]), "height": int(dims[sep + 1:])}
+
+classoverrides = {
+    "tf2": odict([
+            (1, "Scout"),
+            (3, "Soldier"),
+            (7, "Pyro"),
+            (4, "Demoman"),
+            (6, "Heavy"),
+            (9, "Engineer"),
+            (5, "Medic"),
+            (2, "Sniper"),
+            (8, "Spy")
+            ]),
+    "p2": odict([
+            (1, "P-body"),
+            (2, "Atlas")
+            ])
+    }
+overridealiases = {
+    "tf2b": "tf2"
+}
+reverrides = {}
+for k, v in classoverrides.iteritems(): reverrides[k + "_swap"] = dict(zip(v.values(), v.keys()))
+classoverrides.update(reverrides)
+
+def get_class_for_id(cid, mode = None):
+    overrides, swapped_overrides = get_class_overrides(mode)
+    try: realcid = int(cid)
+    except ValueError: realcid = cid
+
+    if not overrides: return realcid, cid
+
+    if realcid in overrides:
+        return (realcid, overrides[realcid])
+    elif realcid in swapped_overrides:
+        return (swapped_overrides[realcid], cid)
+    else:
+        return (realcid, cid)
+
+def get_class_overrides(mode = None):
+    if not mode: mode = web.ctx.current_game or "tf2"
+    mode = overridealiases.get(mode, mode)
+
+    if mode not in classoverrides: return None, None
+
+    return (classoverrides.get(mode),
+            reverrides.get(mode + "_swap"))
+
+def sorted_class_list(classes, mode = None):
+    overrides, swappedoverrides = get_class_overrides(mode)
+    validclasses = [get_class_for_id(c, mode) for c in classes]
+
+    if not overrides or not validclasses: return validclasses
+
+    return filter(lambda x: x in validclasses, overrides.iteritems())
 
 def get_page_sizes():
     return celldims
@@ -264,18 +321,14 @@ def generate_cell(item, invalid = False, show_equipped = True, user = None, pric
 def generate_class_sprite_img(c, styleextra = "", mode = None):
     if not mode: mode = web.ctx.current_game or "tf2"
 
-    idmap = {
-        "tf2": ["medic", "demoman", "engineer", "heavy", "pyro", "scout", "sniper", "soldier", "spy"],
+    aliasmap = {
         "tf2b": "tf2",
-        "p2": ["atlas", "p-body"]
+        "d2b": "d2"
         }
 
     try:
-        rec = idmap[mode]
-        if isinstance(rec, str):
-            mode = rec
-            rec = idmap[rec]
-        spriteindex = rec.index(c.lower())
+        mode = aliasmap.get(mode, mode)
+        spriteindex, name = get_class_for_id(c, mode = mode)
         style = "background: url('{0}') -{1}px 0px;".format(static_prefix + mode + "_class_icons.png", spriteindex * 16)
     except (ValueError, KeyError):
         style = ""

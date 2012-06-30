@@ -28,26 +28,28 @@ $ onlinestates = {0: "offline", 1: "online", 2: "busy", 3: "away", 4: "snooze"}
           <li><a href="$qurl(sort = 'class')">Class</a></li>
         </ul>
       </div>
-      <div class="dropdown-menu">
-        <b>Class</b>
-        <ul>
-          <li><a href="$qurl(sortclass = None)"><img src="${static_prefix}tf_icon.png" alt="All" title="All"/> All</a></li>
-          $for k in filter_classes:
+      $if filter_classes:
+        <div class="dropdown-menu">
+          <b>Class</b>
+          <ul>
+            <li><a href="$qurl(sortclass = None)"><img src="${static_prefix}tf_icon.png" alt="All" title="All"/> All</a></li>
+            $for cid, name in filter_classes:
               <li>
-                <a href="$qurl(sortclass = k)">
-                  $:markup.generate_class_sprite_img(k) $k
+                <a href="$qurl(sortclass = cid)">
+                  $:markup.generate_class_sprite_img(cid) $name
                 </a>
               </li>
-        </ul>
-      </div>
-      <div class="dropdown-menu">
-        <b>Quality</b>
-        <ul>
-          <li><a href="$qurl(quality = None)">All</a></li>
-          $for q in filter_qualities:
+          </ul>
+	</div>
+      $if filter_qualities:
+        <div class="dropdown-menu">
+          <b>Quality</b>
+          <ul>
+            <li><a href="$qurl(quality = None)">All</a></li>
+            $for q in filter_qualities:
               <li><a href="$qurl(quality = q['id'])"><span class="prefix-${q['str']}">$q["prettystr"]</span></a></li>
-        </ul>
-      </div>
+          </ul>
+	</div>
       <div class="dropdown-menu">
         <b>Other games</b>
         <ul>

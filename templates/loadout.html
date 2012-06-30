@@ -1,4 +1,4 @@
-$def with (user, items, classlist, slotlist)
+$def with (user, items, classmap, slotlist)
 $var title: $project_name - $user.get_persona()'s Loadout List
 
 <div id="header">
@@ -7,20 +7,20 @@ $var title: $project_name - $user.get_persona()'s Loadout List
 <div id="content">
   $if items:
       <div id="loadout" style="margin: 0 auto 0 auto; width: 90%;">
-        $for lclass in classlist:
-            $if lclass not in items: $continue
-            <div class="autosize box" id="$lclass" style="margin: 30px auto 30px auto;">
-              <div class="titlebar">
-		$:markup.generate_class_sprite_img(lclass, styleextra = "position: absolute; left: 2px; top: 2px;")
-                <a href="#$lclass" style="margin-left: 30px;">$lclass</a>
-              </div>
-              $for slot in slotlist:
-	          $if slot not in items[lclass]: $continue
-                  <div class="slot-item">
-                    <div><b>$slot</b></div>
-                  $for item in items[lclass][slot]:
-                      $:markup.generate_cell(item, show_equipped = False, user = user)
-                  </div>
+	$for cid, lclass in classmap.iteritems():
+          <div class="autosize box" id="$lclass" style="margin: 30px auto 30px auto;">
+            <div class="titlebar">
+	      $:markup.generate_class_sprite_img(cid, styleextra = "position: absolute; left: 2px; top: 2px;")
+              <a href="#$lclass" style="margin-left: 30px;">$lclass</a>
             </div>
+	    $ citems = items[cid]
+            $for slot in slotlist:
+	      $if slot not in citems: $continue
+              <div class="slot-item">
+                <div><b>$slot</b></div>
+                  $for item in citems[slot]:
+                    $:markup.generate_cell(item, show_equipped = False, user = user)
+              </div>
+          </div>
       </div>
 </div>

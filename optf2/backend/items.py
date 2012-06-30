@@ -19,7 +19,7 @@ import re
 import time
 import operator
 import steam
-from optf2.frontend.markup import absolute_url, get_page_sizes
+from optf2.frontend.markup import absolute_url, get_page_sizes, get_class_for_id
 from optf2.backend import config
 from optf2.backend import log
 
@@ -201,25 +201,19 @@ def sort(items, sortby):
     return solid_items
 
 def filter_by_class(items, theclass):
-    filtered_items = []
+    theclass = get_class_for_id(theclass)[0]
 
-    for item in items:
-        if not item: continue
-        classes = item.get_equipable_classes()
-        for c in classes:
-            if c == theclass:
-                filtered_items.append(item)
-                break
-    return filtered_items
+    def func(item):
+        if not item: return False
+        classes = [get_class_for_id(c)[0] for c in item.get_equipable_classes()]
+        if theclass in classes: return True
+        else: return False
+
+    return filter(func, items)
 
 def filter_by_quality(items, thequality):
-    filtered_items = []
-
-    for item in items:
-        if not item: continue
-        if str(item.get_quality()["id"]) == thequality:
-            filtered_items.append(item)
-    return filtered_items
+    return filter(lambda item: item and (str(item.get_quality()["id"]) == str(thequality)),
+                  items)
 
 def get_stats(items):
     """ Returns a dict of various backpack stats """
@@ -468,15 +462,10 @@ def get_equippable_classes(items, cache):
 
     for item in items:
         if not item: continue
-        classes = item.get_equipable_classes()
+        classes = [get_class_for_id(c, mode = cache.get_mod_id())[0] for c in item.get_equipable_classes()]
         valid_classes |= set(classes)
 
-    ordered_classes = list(schema.get_classes().values())
-    for c in ordered_classes:
-        if c not in valid_classes:
-            del c
-
-    return ordered_classes
+    return valid_classes
 
 def get_present_qualities(items):
     """ Returns a sorted list of qualities that are in this set
