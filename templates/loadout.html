@@ -8,6 +8,7 @@ $var title: $project_name - $user.get_persona()'s Loadout List
   $if items:
       <div id="loadout" style="margin: 0 auto 0 auto; width: 90%;">
 	$for cid, lclass in classmap.iteritems():
+          $if cid not in items: $continue
           <div class="autosize box" id="$lclass" style="margin: 30px auto 30px auto;">
             <div class="titlebar">
 	      $:markup.generate_class_sprite_img(cid, styleextra = "position: absolute; left: 2px; top: 2px;")
