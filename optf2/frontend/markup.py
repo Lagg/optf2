@@ -50,10 +50,14 @@ classoverrides = {
     "p2": odict([
             (1, "P-body"),
             (2, "Atlas")
-            ])
+            ]),
+    "d2": {
+        1000: "Multi-hero"
+        }
     }
 overridealiases = {
-    "tf2b": "tf2"
+    "tf2b": "tf2",
+    "d2b": "d2"
 }
 reverrides = {}
 for k, v in classoverrides.iteritems(): reverrides[k + "_swap"] = dict(zip(v.values(), v.keys()))
@@ -77,7 +81,7 @@ def get_class_overrides(mode = None):
     if not mode: mode = web.ctx.current_game or "tf2"
     mode = overridealiases.get(mode, mode)
 
-    if mode not in classoverrides: return None, None
+    if mode not in classoverrides: return {}, {}
 
     return (classoverrides.get(mode),
             reverrides.get(mode + "_swap"))
@@ -85,10 +89,15 @@ def get_class_overrides(mode = None):
 def sorted_class_list(classes, mode = None):
     overrides, swappedoverrides = get_class_overrides(mode)
     validclasses = [get_class_for_id(c, mode) for c in classes]
+    overridelist = list(overrides.iteritems())
 
-    if not overrides or not validclasses: return validclasses
+    def sort(tup):
+        if tup in overridelist: return overridelist.index(tup)
+        else: return tup[0]
 
-    return filter(lambda x: x in validclasses, overrides.iteritems())
+    validclasses.sort(key = sort)
+
+    return validclasses
 
 def get_page_sizes():
     return celldims
