@@ -51,10 +51,10 @@ class cache:
 
         result = None
         try:
-            timeout = config.ini.get("steam", "connect-timeout")
-            datatimeout = config.ini.get("steam", "download-timeout")
-            if not appid: result = baseclass(lang = language, lm = lm, timeout = timeout, data_timeout = datatimeout)
-            else: result = baseclass(appid, lang = language, lm = lm, timeout = timeout, data_timeout = datatimeout)
+            timeout = config.ini.getint("steam", "connect-timeout")
+            datatimeout = config.ini.getint("steam", "download-timeout")
+            if not appid: result = baseclass(lang = language, last_modified = lm, timeout = timeout, data_timeout = datatimeout)
+            else: result = baseclass(appid, lang = language, last_modified = lm, timeout = timeout, data_timeout = datatimeout)
             if freshcallback: freshcallback(result)
             result._get()
             memcached.set(memkey, result, min_compress_len = 1048576)
