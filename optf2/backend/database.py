@@ -43,15 +43,18 @@ class cache:
         memkey = "{0}-{1}-{2}".format(keyprefix, modulename, language)
 
         oldobj = memcached.get(memkey)
+        if stale: return oldobj
         if oldobj:
-            if stale or (ctime - last_server_checks.get(memkey, 0)) < config.ini.getint("cache", keyprefix + "-check-interval"):
+            if (ctime - last_server_checks.get(memkey, 0)) < config.ini.getint("cache", keyprefix + "-check-interval"):
                 return oldobj
             lm = oldobj.get_last_modified()
 
         result = None
         try:
-            if not appid: result = baseclass(lang = language, lm = lm)
-            else: result = baseclass(appid, lang = language, lm = lm)
+            timeout = config.ini.get("steam", "connect-timeout")
+            datatimeout = config.ini.get("steam", "download-timeout")
+            if not appid: result = baseclass(lang = language, lm = lm, timeout = timeout, data_timeout = datatimeout)
+            else: result = baseclass(appid, lang = language, lm = lm, timeout = timeout, data_timeout = datatimeout)
             if freshcallback: freshcallback(result)
             result._get()
             memcached.set(memkey, result, min_compress_len = 1048576)

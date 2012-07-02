@@ -16,7 +16,6 @@ ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
 OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 """
 import os
-import socket
 import web
 import steam
 from optf2.backend import config
@@ -38,9 +37,6 @@ web.config.debug = config.ini.getboolean("cgi", "web-debug-mode")
 if config.ini.getboolean("cgi", "redirect-workaround"):
     os.environ["SCRIPT_NAME"] = ''
     os.environ["REAL_SCRIPT_NAME"] = ''
-
-# Set default socket timeout, this config var is also used for urllib calls
-socket.setdefaulttimeout(config.ini.getint("steam", "fetch-timeout"))
 
 # HTTP specific
 web.config.session_parameters["timeout"] = config.ini.getint("http", "session-timeout")

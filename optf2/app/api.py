@@ -1,5 +1,4 @@
 import web
-import urllib2
 import json
 import os
 import steam
@@ -51,7 +50,10 @@ class search_page_parser(HTMLParser):
 
         HTMLParser.__init__(self)
 
-        self.feed(urllib2.urlopen(search_url, timeout = config.ini.getint("steam", "fetch-timeout")).read())
+        req = steam.json_request(search_url, timeout = config.ini.getint("steam", "connect-timeout"),
+                                 data_timeout = config.ini.getint("steam", "download-timeout"))
+
+        self.feed(req._download())
 
 class search_profile:
     """ Searches for an account matching the username given in the query
