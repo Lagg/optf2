@@ -138,16 +138,14 @@ def build_page_object(items, pagesize = None, ignore_position = False, mode = No
 
     mkeys = sorted(imap.keys())
     mapkeys = set(mkeys)
-    def ded(x): del imap[x][0]
-    map(ded, mapkeys)
+    for key in mapkeys: del imap[key][0]
 
     try:
         if imap:
             lastpage = mkeys[-1]
             secrange = set(range(1, lastpage + 1))
             diff = secrange - mapkeys
-            def pagefill(x): imap[x] = [None] * pagesize
-            map(pagefill, diff)
+            for key in diff: imap[key] = [None] * pagesize
     except TypeError:
         pass
 
@@ -202,18 +200,17 @@ def sort(items, sortby):
 
 def filter_by_class(items, theclass):
     theclass = get_class_for_id(theclass)[0]
+    filtered = []
 
-    def func(item):
-        if not item: return False
+    for item in items:
+        if not item: continue
         classes = [get_class_for_id(c)[0] for c in item.get_equipable_classes()]
-        if theclass in classes: return True
-        else: return False
+        if theclass in classes: filtered.append(item)
 
-    return filter(func, items)
+    return filtered
 
 def filter_by_quality(items, thequality):
-    return filter(lambda item: item and (str(item.get_quality()["id"]) == str(thequality)),
-                  items)
+    return [item for item in items if item and (str(item.get_quality()["id"]) == str(thequality))]
 
 def get_stats(items):
     """ Returns a dict of various backpack stats """
@@ -289,10 +286,8 @@ def process_attributes(items, gift = False):
 
         # Ordered kill eater attribute lines
         rank = item.get_rank()
-        item.optf2["eaters"] = []
-        if rank:
-            for line in item.get_kill_eaters():
-                item.optf2["eaters"].append("{0}: {1}".format(line[1], line[2]))
+        linefmt = "{0[1]}: {0[2]}"
+        item.optf2["eaters"] = map(linefmt.format, item.get_kill_eaters())
 
         for theattr in attrs:
             newattr = {}
@@ -499,16 +494,7 @@ def get_present_capabilities(items):
     return caplist
 
 def filter_by_capability(items, capability):
-
-    if not items: return []
-
-    filtered = []
-    for item in items:
-        if not item: continue
-        if capability in item.get_capabilities():
-            filtered.append(item)
-
-    return filtered
+    return [item for item in items if item and capability in item.get_capabilities()]
 
 def get_price_stats(items, cache):
     assets = cache.get_assets()

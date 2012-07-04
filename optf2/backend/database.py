@@ -66,7 +66,7 @@ class cache:
 
         last_server_checks[memkey] = ctime
 
-        return result
+        return result or oldobj
 
     def get_schema(self, stale = False):
         modulename = self._mod_id
@@ -75,7 +75,7 @@ class cache:
         def freshfunc(result):
             result.optf2_paints = {}
             for item in result:
-                if item._schema_item.get("name", "").startswith("Paint Can"):
+                if item._schema_item.get("name", "").find("Paint") != -1:
                     for attr in item:
                         if attr.get_name().startswith("set item tint RGB"):
                             result.optf2_paints[int(attr.get_value())] = item.get_schema_id()
