@@ -30,14 +30,13 @@ $def with (content)
   <body>
     <ul class="navbar">
       <li><a href="$virtual_root">$project_name</a></li>
-      $for mode in game_modes:
-          $ mid = mode[0]
+      $for mid, label in game_modes.iteritems():
           $ mhome = virtual_root + mid
           $ extra = None
           $if mid == instance.current_game: $ extra = ' class="focused"'
           <li$:extra>
 	    <div class="dropdown-menu">
-	      <a href="$mhome">${mode[1]}</a>
+	      <a href="$mhome">$label</a>
               <ul>
 		<li><a href="$mhome">Home</a></li>
 		<li><a href="$mhome/items">Item list</a></li>

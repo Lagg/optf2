@@ -22,7 +22,7 @@ globals = {"virtual_root": config.get("resources", "virtual-root"),
            "qurl": web.http.changequery,
            "iurl": web.input,
            "markup": markuptools,
-           "game_modes": config.items("modes"),
+           "game_modes": markuptools.odict(config.items("modes")),
            "cssaliases": cssmap,
            "pagesizes": markuptools.get_page_sizes()
            }

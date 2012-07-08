@@ -53,8 +53,8 @@ $ onlinestates = {0: "offline", 1: "online", 2: "busy", 3: "away", 4: "snooze"}
       <div class="dropdown-menu">
         <b>Other games</b>
         <ul>
-          $for mode in game_modes:
-              <li><a href="${virtual_root}${mode[0]}/user/${user.get_id64()}">$mode[1]</a></li>
+          $for mid, label in game_modes.iteritems():
+              <li><a href="${virtual_root}${mid}/user/${user.get_id64()}">$label</a></li>
         </ul>
       </div>
       <a class="button" id="loadout-button" href="$markup.generate_mode_url('loadout/{0}'.format(user.get_id64()))">Loadout</a>
