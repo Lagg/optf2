@@ -12,6 +12,37 @@ templates = template.template
 class loadout:
     """ User loadout lists """
 
+    def build_loadout(self, items, loadout, slotlist, classmap):
+        sortedslots = self._slots_sorted
+
+        for item in items:
+            quality = item.get_quality()["id"]
+            classes = item.get_equipped_classes()
+            slots = item.get_equipped_slots()
+
+            if quality == 0:
+                classes = item.get_equipable_classes()
+            else:
+                classes = item.get_equipped_classes()
+
+            for c in classes:
+                cid, name = markup.get_class_for_id(c)
+                if cid not in loadout: loadout[cid] = {}
+                if cid not in classmap: classmap[cid] = name
+                # WORKAROUND: There is one unique shotgun for all classes in TF2,
+                # and it's in the primary slot. This has obvious problems
+                if item.get_schema_id() == 199 and name != "Engineer":
+                    slot = "Secondary"
+                else:
+                    slot = item.get_slot() or str(slots.get(cid, ''))
+                    slot = slot.title()
+                if slot not in sortedslots and slot not in slotlist: slotlist.append(slot)
+                if slot not in loadout[cid] or (quality != 0 and loadout[cid][slot][0].get_quality()["id"] == 0):
+                    loadout[cid][slot] = []
+                loadout[cid][slot].append(item)
+
+        return loadout, slotlist, classmap
+
     def GET(self, user):
         try:
             cache = database.cache()
@@ -23,49 +54,26 @@ class loadout:
             classmap = {}
             overrides, swappedoverrides = markup.get_class_overrides()
             if overrides: classmap = overrides
-            slotlist = ["Head", "Misc", "Primary", "Secondary", "Melee", "Pda", "Pda2", "Building", "Action"]
+            slotlist = []
 
+            # initial normal items
             normalitems = itemtools.process_attributes(itemtools.filter_by_quality(schema, "0"))
-            for item in normalitems:
-                classes = item.get_equipable_classes()
-                for c in classes:
-                    cid, name = markup.get_class_for_id(c)
-                    if cid not in equippeditems: equippeditems[cid] = {}
-                    if cid not in classmap: classmap[cid] = name
+            equippeditems, slotlist, classmap = self.build_loadout(normalitems, equippeditems, slotlist, classmap)
 
-                    slot = item.get_slot() or ""
-                    slot = slot.title()
-                    if slot not in slotlist: slotlist.append(slot)
-                    if slot not in equippeditems[cid]:
-                        equippeditems[cid][slot] = []
+            # Real equipped items
+            equippeditems, slotlist, classmap = self.build_loadout(items, equippeditems, slotlist, classmap)
 
-                    equippeditems[cid][slot].append(item)
-
-            for item in items:
-                classes = item.get_equipped_classes()
-                for c in classes:
-                    cid, name = markup.get_class_for_id(c)
-                    if cid not in equippeditems: equippeditems[cid] = {}
-                    if cid not in classmap: classmap[cid] = name
-                    # WORKAROUND: There is one unique shotgun for all classes, and it's in the primary slot. This
-                    # has obvious problems
-                    if item.get_schema_id() == 199 and name != "Engineer":
-                        slot = "Secondary"
-                    else:
-                        slot = item.get_slot() or ""
-                        slot = slot.title()
-                    if slot not in slotlist: slotlist.append(slot)
-                    if slot not in equippeditems[cid] or equippeditems[cid][slot][0].get_quality()["id"] == 0:
-                        equippeditems[cid][slot] = []
-                    equippeditems[cid][slot].append(item)
-
-            return templates.loadout(userp, equippeditems, classmap, slotlist)
+            return templates.loadout(userp, equippeditems, classmap, self._slots_sorted + sorted(slotlist))
         except steam.items.Error as E:
             return templates.error("Backpack error: {0}".format(E))
         except steam.user.ProfileError as E:
             return templates.error("Profile error: {0}".format(E))
         except steam.base.HttpError:
             return templates.error("Couldn't connect to Steam")
+
+    def __init__(self):
+        # Slots that should be arranged in this order
+        self._slots_sorted = ["Head", "Misc", "Primary", "Secondary", "Melee", "Pda", "Pda2", "Building", "Action"]
 
 class item:
     def GET(self, iid):
