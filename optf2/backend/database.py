@@ -148,7 +148,7 @@ class cache:
 
         pack = memcached.get(memkey)
         if not pack:
-            pack = getattr(steam, modulename).backpack(user, schema = self._last_schema or self.get_schema())
+            pack = getattr(steam, modulename).backpack(user, schema = self.get_schema())
             pack._get()
             memcached.set(memkey, pack, time = config.ini.getint("cache", "backpack-expiry"))
 
@@ -190,5 +190,4 @@ class cache:
         self._language = langpair[0]
         self._language_name = langpair[1]
         self._mod_id = modid or web.ctx.current_game
-        self._last_schema = None
         self._recent_packs_key = "lastpacks-" + str(self._mod_id)

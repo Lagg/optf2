@@ -77,12 +77,6 @@ $(document).ready(function(){
     var searchField = new Field("search-field");
     searchField.bindDefaultText("User, URL, or ID search...");
 
-    var sideBox = $(".side-box");
-    if (sideBox.length > 0) {
-	var sideBoxWidth = parseInt(sideBox.css("width"));
-	sideBox.parent().css("padding-right", sideBoxWidth + 100 + "px");
-    }
-
     /* May want to encapsulate stuff below later after testing. */
     var packdiv = $("#backpack");
     if (packdiv.length > 0) {

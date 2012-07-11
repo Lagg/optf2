@@ -161,31 +161,36 @@ body { background: #0F0F0F; color: white; font-family: Arial, Helvetica, sans-se
 
 #content { height: 100%; text-align: center; }
 
-#search-form-container { float: left; height: 100%; margin-top: 2px; }
+#search-form-container { position: absolute; right: 30px; top: 0; width: 219px; border-radius: 10px; height: 30px; }
+.motd { position: absolute; right: 270px; padding: 8px; top: 0; border-radius: 10px; border-top-left-radius: 0; border-top-right-radius: 0; background: #1a1a1a; border: 1px solid #454545; }
+.motd *, .motd { color: white; }
 #search-form-container fieldset { border: 0; }
-#search-field {
+#search-field, #search-button {
+    top: 0px;
+    position: absolute;
+    left: 0px;
     border-radius: 8px;
     border-bottom-right-radius: 0;
     border-top-right-radius: 0;
+    border-top-left-radius: 0;
     background-color: #505050;
-    border: 1px solid black;
+    border: 1px solid black; border-top: 0;
     color: white;
     font-style: italic;
     width: 180px;
     margin: 0;
+    padding: 6px;
     font-size: 14px;
 }
 #search-button {
+    left: 194px;
+    border-radius: 0;
     border-bottom-right-radius: 8px;
-    border-top-right-radius: 8px;
-    border: 1px solid black;
+    border-top-right-radius: 0;
     border-left: 0;
-    color: white;
-    background-color: #505050;
+    padding-left: 4px;
     cursor: pointer;
-    margin: 0;
-    font-weight: bold;
-    font-size: 14px;
+    width: 25px;
 }
 
 #filterbar {
@@ -205,9 +210,9 @@ a:visited { text-decoration: none; }
 #status_offline { color: #808080; }
 #status_snooze, #status_away, #status_busy { color: #2fb3ff; }
 
-.navbar { background-color: #2a2a2a; text-align: left; height: 30px; width: 100%; padding: 0; margin: 0; position: relative; border-top: 1px solid black; border-bottom: 1px solid black; list-style: none; }
+.navbar { text-align: left; height: 30px; padding: 0; margin: 0 0 50px 30px; position: relative; list-style: none; }
 .navbar > li { background-color: #505050; color: white; position: relative; float: left; height: 30px; margin: 0; padding: 0; border-right: 1px solid black; }
-.navbar .open-space, .navbar .open-space:hover { background: none; border: none; }
+.navbar > li:first-child { border-bottom-left-radius: 6px; } .navbar > li:last-child { border-bottom-right-radius: 6px; }
 .navbar a { display: block; height: 22px; padding: 8px 10px 0 10px; white-space: nowrap; text-decoration: none; }
 .navbar li:hover, .navbar li.focused .dropdown-menu, .navbar li:hover .dropdown-menu { background-color: #060910; }
 .navbar li:hover a, .navbar li.focused a { color: white; }
@@ -254,7 +259,7 @@ img { border: 0; }
 .stat_vertrule { float: left; }
 .class-icon { width: 16px; height: 16px; }
 
-#backpack { width: 90%; margin: 0 auto 0 auto; clear: both; position: relative; }
+#backpack { width: 90%; margin: 0 auto 0 auto; clear: both; position: relative; padding-right: 200px; }
 
 .row_odd { background: #353535; }
 .row_even { background: #555555; }
@@ -330,9 +335,9 @@ a.button { text-decoration: none; }
 .item-tools { padding: 5px; width: 1040px; text-align: left; margin: 0 auto 0 auto; }
 .item-tools .dropdown-menu, .item-tools .button { float: left; padding: 3px; margin: 3px; }
 
-.side-box { position: absolute; right: 10px; background: #1a1a1a; border: 1px solid #454545; min-width: 150px; padding-bottom: 5px; word-wrap: break-word; }
+.side-box { position: absolute; right: 0; top: 10px; background: #1a1a1a; border: 1px solid #454545; border-radius: 10px; width: 150px; padding-bottom: 5px; word-wrap: break-word; }
 .side-box .header { background: #454545; width: 100%; padding: 5px 0 5px 0; margin: 10px 0 10px 0; font-weight: bold; font-size: 1.1em; }
-.side-box .header:first-of-type { margin-top: 0; }
+.side-box .header:first-of-type { margin-top: 0; border-top-left-radius: 10px; border-top-right-radius: 10px; }
 .side-box .player-badge { min-height: 70px; padding: 4px; }
 .side-box .item_cell { float: none; margin: 0 auto 0 auto; }
 

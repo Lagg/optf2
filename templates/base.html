@@ -46,19 +46,18 @@ $def with (content)
 	    </div>
 	  </li>
       <li><a href="${virtual_root}about">Credits</a></li>
-      <li class="open-space">
-	<div id="search-form-container">
-	  <form method="get" id="search-form" action="$markup.generate_mode_url()">
-	    <fieldset>
-	      <input type="text" id="search-field" name="user"/><input type="submit" id="search-button" value="Go"/>
-	    </fieldset>
-	  </form>
-	</div>
-	$ motd = instance.get("motd")
-	$if motd:
-            <span class="motd">$:motd</span>
-      </li>
     </ul>
+    $ motd = instance.get("motd")
+    $if motd: <div class="motd">$:motd</div>
+
+    <div id="search-form-container">
+      <form method="get" id="search-form" action="$markup.generate_mode_url()">
+	<fieldset>
+	  <input type="text" id="search-field" name="user"/><button type="submit" id="search-button"><span class="ui-icon ui-icon-search"></span></button>
+	</fieldset>
+      </form>
+    </div>
+
     $:content
   </body>
 </html>
