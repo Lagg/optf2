@@ -16,7 +16,9 @@ OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 import web
 import cPickle as pickle
-import memcache
+import pylibmc
+import operator
+from binascii import crc32
 from collections import deque
 from time import time
 
@@ -24,8 +26,10 @@ import steam
 from optf2.backend import config
 from optf2.backend import log
 
-memcached = memcache.Client([config.ini.get("cache", "memcached-address")],
-                            pickleProtocol = pickle.HIGHEST_PROTOCOL)
+memcached = pylibmc.Client([config.ini.get("cache", "memcached-address")], binary = True,
+                           behaviors = {"tcp_nodelay": True,
+                                        "hash": "crc"})
+memc = pylibmc.ThreadMappedPool(memcached)
 
 # Keeps track of connection times, until I think of a better way
 last_server_checks = {}
@@ -42,7 +46,7 @@ class cache:
         ctime = int(time())
         memkey = "{0}-{1}-{2}".format(keyprefix, modulename, language)
 
-        oldobj = memcached.get(memkey)
+        oldobj = self.get(memkey)
         if stale: return oldobj
         if oldobj:
             if (ctime - last_server_checks.get(memkey, 0)) < config.ini.getint("cache", keyprefix + "-check-interval"):
@@ -57,9 +61,11 @@ class cache:
             else: result = baseclass(appid, lang = language, last_modified = lm, timeout = timeout, data_timeout = datatimeout)
             if freshcallback: freshcallback(result)
             result._get()
-            memcached.set(memkey, result, min_compress_len = 1048576)
+            self.set(memkey, result)
         except steam.base.HttpStale:
             result = oldobj
+        except pylibmc.Error:
+            return result
         except Exception as E:
             log.main.error("Cached loading error: {0}".format(E))
             result = oldobj
@@ -68,17 +74,34 @@ class cache:
 
         return result or oldobj
 
+    def get(self, value, default = None):
+        with memc.reserve() as mc:
+            return mc.get(value) or default
+
+    def set(self, key, value, **kwargs):
+        try:
+            with memc.reserve() as mc:
+                mc.set(key, value, min_compress_len = 1000000, **kwargs)
+        except pylibmc.Error as E:
+            log.main.error(str(key) + ": " + str(E))
+
     def get_schema(self, stale = False):
         modulename = self._mod_id
         language = self._language
 
         def freshfunc(result):
-            result.optf2_paints = {}
+            pmap = {}
             for item in result:
                 if item._schema_item.get("name", "").find("Paint") != -1:
                     for attr in item:
                         if attr.get_name().startswith("set item tint RGB"):
-                            result.optf2_paints[int(attr.get_value())] = item.get_schema_id()
+                            pmap[int(attr.get_value())] = item.get_name()
+            self.set(str("paints-" + modulename + '-' + language), pmap)
+
+            particles = result.get_particle_systems()
+            pmap = dict(zip(particles.keys(),
+                            map(operator.itemgetter("name"), particles.values())))
+            self.set(str("particles-" + modulename + '-' + language), pmap)
 
         try:
             modclass = getattr(steam, modulename).item_schema
@@ -108,21 +131,21 @@ class cache:
         return self._get_generic_aco(modclass, "assets", stale = stale, appid = appid)
 
     def get_vanity(self, sid):
-        vanitykey = "vanity-" + str(memcache.cmemcache_hash(sid))
-        vanity = memcached.get(vanitykey)
+        vanitykey = "vanity-" + str(crc32(sid))
+        vanity = self.get(vanitykey)
         if not vanity:
             vanity = str(steam.user.vanity_url(sid))
             # May want a real option for this later
-            memcached.set(vanitykey, vanity, time = (config.ini.getint("cache", "profile-expiry") * 4))
+            self.set(vanitykey, vanity, time = (config.ini.getint("cache", "profile-expiry") * 4))
         return vanity
 
     def _load_profile(self, sid):
         memkey = "profile-" + sid
-        profile = memcached.get(memkey)
+        profile = self.get(memkey)
         if not profile:
             profile = steam.user.profile(sid)
             profile._get()
-            memcached.set(memkey, profile, time = config.ini.getint("cache", "profile-expiry"))
+            self.set(memkey, profile, time = config.ini.getint("cache", "profile-expiry"))
         return profile
 
     def get_profile(self, sid):
@@ -146,26 +169,28 @@ class cache:
 
         memkey = "backpack-{0}-{1}".format(modulename, user.get_id64())
 
-        pack = memcached.get(memkey)
+        pack = self.get(memkey)
         if not pack:
             pack = getattr(steam, modulename).backpack(user, schema = self.get_schema())
             pack._get()
-            memcached.set(memkey, pack, time = config.ini.getint("cache", "backpack-expiry"))
+            self.set(memkey, pack, time = config.ini.getint("cache", "backpack-expiry"))
 
         if len(pack) <= 0: return pack
 
         lastpackskey = self._recent_packs_key
-        lastpacks = memcached.get(lastpackskey)
+        lastpacks = self.get(lastpackskey)
         if not lastpacks:
             lastpacks = deque(maxlen = 10)
         else:
             for p in lastpacks:
-                if p.get_id64() == user.get_id64():
+                if p["id"] == user.get_id64():
                     lastpacks.remove(p)
                     break
 
-        lastpacks.appendleft(user)
-        memcached.set(lastpackskey, lastpacks)
+        lastpacks.appendleft({"id": user.get_id64(),
+                              "persona": user.get_persona(),
+                              "avatar": user.get_avatar_url(user.AVATAR_SMALL)})
+        self.set(lastpackskey, lastpacks)
 
         return pack
 
@@ -176,7 +201,7 @@ class cache:
         return self._language
 
     def get_recent_pack_list(self):
-        return memcached.get(self._recent_packs_key)
+        return self.get(self._recent_packs_key)
 
     def __init__(self, modid = None, language = None):
         """ modid and language will be set to their respective values in web.ctx if not given """
@@ -189,5 +214,5 @@ class cache:
 
         self._language = langpair[0]
         self._language_name = langpair[1]
-        self._mod_id = modid or web.ctx.current_game
-        self._recent_packs_key = "lastpacks-" + str(self._mod_id)
+        self._mod_id = str(modid or web.ctx.current_game)
+        self._recent_packs_key = "lastpacks-" + self._mod_id

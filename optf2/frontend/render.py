@@ -37,7 +37,7 @@ application = web.application(urls, globals())
 
 def mode_hook():
     """ If there's a better way to do this I'm all ears """
-    path = [part for part in web.ctx.path.split('/') if part]
+    path = filter(None, web.ctx.path.split('/'))
 
     try:
         gamecandidate = path[0]

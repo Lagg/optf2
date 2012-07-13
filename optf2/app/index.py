@@ -2,7 +2,7 @@ import web
 import json
 from optf2.backend import database
 from optf2.backend import items as itemtools
-from optf2.frontend.markup import generate_mode_url
+from optf2.frontend.markup import generate_mode_url, generate_cell
 import api
 import template
 import random
@@ -50,16 +50,19 @@ class game_root:
 
         cache = database.cache(modid = mod)
 
-        items = cache.get_schema(stale = usestale)
+        ckey = str("scrender-" + mod + "-" + cache.get_language()).encode("ascii")
+        showcase = cache.get(ckey)
+        if not showcase:
+            items = cache.get_schema(stale = usestale)
+            if items:
+                items = list(items)
+                if len(items) > 0:
+                    item = itemtools.process_attributes([random.choice(items)])[0]
+                    showcase = generate_cell(item, mode = mod)
+                    # May want to add an option for showcase expiration to config later
+                    cache.set(ckey, showcase, time = 300)
 
         # Last packs
         packs = cache.get_recent_pack_list()
 
-        randitem = None
-
-        if items:
-            itemlist = list(items)
-            if itemlist:
-                randitem = itemtools.process_attributes([random.choice(itemlist)])[0]
-
-        return template.template.game_root(randitem, mod.upper(), (packs or []))
+        return template.template.game_root(mod.upper(), (packs or []), showcase)

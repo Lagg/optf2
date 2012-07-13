@@ -22,6 +22,7 @@ import steam
 from optf2.frontend.markup import absolute_url, get_page_sizes, get_class_for_id
 from optf2.backend import config
 from optf2.backend import log
+from optf2.backend import database
 
 qualitydict = {"unique": "The",
                "normal": ""}
@@ -248,17 +249,21 @@ def get_stats(items):
 
     return stats
 
-def process_attributes(items, gift = False):
+def process_attributes(items, gift = False, mode = None):
     """ Filters attributes for the item list,
     optf2-specific data is stored in item.optf2 """
 
     default_item_image = config.ini.get("resources", "static-prefix") + "item_icons/Invalid_icon.png";
     newitems = []
+    appid = None
+    cache = database.cache(modid = mode)
+    language = cache.get_language()
+    try: appid = getattr(steam, cache.get_mod_id())._APP_ID
+    except AttributeError: pass
 
     for item in items:
         if not item: continue
 
-        schema = item._schema
         custom_texture_lo = None
         custom_texture_hi = None
 
@@ -297,9 +302,13 @@ def process_attributes(items, gift = False):
             item.optf2[str(theattr.get_id()) + "_account"] = account_info
 
             if attrname == "referenced item def":
+                desc = "Contains: "
                 if not giftcontents:
-                    giftcontents = schema[int(theattr.get_value())]
-                newattr["description_string"] = 'Contains ' + web.websafe(giftcontents.get_full_item_name(prefixes = qualitydict))
+                    giftcontents = int(theattr.get_value())
+                    desc += "Schema item " + str(giftcontents)
+                else:
+                    desc += web.websafe(giftcontents.get_full_item_name(prefixes = qualitydict))
+                newattr["description_string"] = desc
                 newattr["hidden"] = False
 
             if (attrname == "set item tint RGB" or
@@ -316,10 +325,10 @@ def process_attributes(items, gift = False):
                                                              (raw_rgb >> 8) & 0xFF,
                                                              (raw_rgb) & 0xFF)
 
-                try: paint_can = schema[schema.optf2_paints.get(raw_rgb)]
-                except KeyError: paint_can = None
-                if paint_can: item.optf2["paint_name"] = paint_can.get_name()
-                elif "paint_name" not in item.optf2: item.optf2["paint_name"] = "unknown paint"
+                default = "unknown paint ({0})".format(item_color)
+                pname = cache.get(str("paints-" + cache.get_mod_id() + '-' + language), {}).get(raw_rgb, default)
+
+                item.optf2["paint_name"] = pname
 
                 # Workaround until the icons for colored paint cans are correct
                 if (not secondary_color and
@@ -337,12 +346,11 @@ def process_attributes(items, gift = False):
                 continue
 
             if attrname.startswith("attach particle effect"):
-                particles = schema.get_particle_systems()
                 particleid = int(theattr.get_value())
-                particlename = particles.get(particleid)
-                if particlename: particlename = particlename["name"]
-                else: particlename = str(particleid)
-                newattr["description_string"] = ("Effect: " + particlename)
+                default = "unknown particle ({0})".format(particleid)
+                pname = cache.get(str("particles-" + cache.get_mod_id() + '-' + language), {}).get(particleid, default)
+
+                newattr["description_string"] = "Effect: " + pname
                 item.optf2["particle-id"] = particleid
 
             if attrvaluetype == "account_id" and account_info:
@@ -398,8 +406,9 @@ def process_attributes(items, gift = False):
         if custom_texture_hi != None and custom_texture_lo != None:
             ugcid = hilo_to_ugcid64(custom_texture_hi, custom_texture_lo)
             try:
-                test = steam.remote_storage.user_ugc(item._schema._app_id, ugcid)
-                item.optf2["custom texture"] = test.get_url()
+                if appid:
+                    ugc = steam.remote_storage.user_ugc(appid, ugcid)
+                    item.optf2["custom texture"] = ugc.get_url()
             except steam.remote_storage.UGCError:
                 pass
 
