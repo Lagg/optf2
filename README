@@ -1,9 +1,9 @@
-OPTF2 is an online backpack viewer that uses Steamodd, for more
-information see the About page.
+OPTF2 is an online Steam data viewer and explorer.
 
 = INSTALLATION =
 
-As of 2010/11/15 optf2 has switched to assuming the default encoding
-of the Python interpreter is unicode to ease the future migration to
-Python 3. You will need to change your default encoding to utf-8 in
-your site.py file if it has not been changed already.
+OPTF2 depends on a few third-party modules:
+
+* steamodd
+* pylibmc
+* web.py
