@@ -91,12 +91,13 @@ class search_profile:
             return "[]"
 
 class persona:
-    def GET(self, id):
-        theobject = {"persona": "", "realname": ""}
+    def GET(self, uid):
+        theobject = {}
         callback = web.input().get("jsonp")
+        cache = database.cache()
 
         try:
-            user = steam.user.profile(id)
+            user = cache.get_profile(uid)
             persona = user.get_persona()
             realname = user.get_real_name()
             theobject["persona"] = persona
@@ -106,10 +107,11 @@ class persona:
         except: pass
 
         web.header("Content-Type", "text/javascript")
+        jsonobj = json.dumps(theobject)
         if not callback:
-            return json.dumps(theobject)
+            return jsonobj
         else:
-            return callback + '(' + json.dumps(theobject) + ');'
+            return callback + '(' + jsonobj + ');'
 
 
 class wiki_attributes:
