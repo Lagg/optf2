@@ -263,7 +263,7 @@ def process_attributes(items, gift = False, mode = None):
     paint_map = cache.get(str("paints-" + cache.get_mod_id() + '-' + language), {})
     particle_map = cache.get(str("particles-" + cache.get_mod_id() + '-' + language), {})
     ugc_key = "ugc-{0}"
-    ugc_cache_expiry = config.ini.getint("cache", "profile-expiry") * 2
+    ugc_cache_expiry = config.ini.getint("cache", "backpack-expiry") * 2
 
     for item in items:
         if not item: continue

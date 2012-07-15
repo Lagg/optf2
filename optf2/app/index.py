@@ -60,7 +60,7 @@ class game_root:
                     item = itemtools.process_attributes([random.choice(items)])[0]
                     showcase = generate_cell(item, mode = mod)
                     # May want to add an option for showcase expiration to config later
-                    cache.set(ckey, showcase, time = 300)
+                    cache.set(ckey, showcase, time = 600)
 
         # Last packs
         packs = cache.get_recent_pack_list()

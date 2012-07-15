@@ -15,12 +15,11 @@ OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 """
 
 import web
-import cPickle as pickle
 import pylibmc
 import operator
-from binascii import crc32
 from collections import deque
 from time import time
+from hashlib import md5
 
 import steam
 from optf2.backend import config
@@ -28,7 +27,7 @@ from optf2.backend import log
 
 memcached = pylibmc.Client([config.ini.get("cache", "memcached-address")], binary = True,
                            behaviors = {"tcp_nodelay": True,
-                                        "hash": "crc"})
+                                        "ketama": True})
 memc = pylibmc.ThreadMappedPool(memcached)
 
 # Keeps track of connection times, until I think of a better way
@@ -76,7 +75,11 @@ class cache:
 
     def get(self, value, default = None):
         with memc.reserve() as mc:
-            return mc.get(value) or default
+            try:
+                return mc.get(value) or default
+            except pylibmc.Error as E:
+                log.main.error(str(value) + ": " + str(E))
+                return default
 
     def set(self, key, value, **kwargs):
         try:
@@ -131,7 +134,7 @@ class cache:
         return self._get_generic_aco(modclass, "assets", stale = stale, appid = appid)
 
     def get_vanity(self, sid):
-        vanitykey = "vanity-" + str(crc32(sid))
+        vanitykey = "vanity-" + md5(sid).hexdigest()
         vanity = self.get(vanitykey)
         if not vanity:
             vanity = str(steam.user.vanity_url(sid))
