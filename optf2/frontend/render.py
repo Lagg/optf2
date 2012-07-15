@@ -2,6 +2,7 @@ import traceback
 import web
 import os
 import random
+import sys
 
 from optf2.backend import log
 from optf2.backend import config
@@ -62,13 +63,15 @@ def motd_hook():
         web.ctx["motd"] = random.choice(motdlines)
 
 def internalerror():
-    log.main.error(traceback.format_exc())
-    return web.internalerror(app.template.template.error("Go on then, doc. (unhandled error logged)"))
+    # Compact traceback line
+    etype, evalue, etb = sys.exc_info()
+    fmt = "{0[0]}:{0[1]} ({0[2]}) -> {0[3]}"
+    logstr = " | ".join(map(fmt.format, traceback.extract_tb(etb))) + " - " + etype.__name__ + ': "' + str(evalue) + '"'
+    log.main.error(logstr)
+    return web.internalerror(app.template.template.error("A problem related to a '" + etype.__name__ + "' error has been logged. Nudge Lagg to fix it."))
 
 def notfound():
-    return web.notfound(app.template.template.error("I couldn't find the page you're after, but we do " +
-                                                    "have a fine selection of automatically generated " +
-                                                    "content found in the links above. Why don't you give those a shot?"))
+    return web.notfound(app.template.template.error("I couldn't find the page you were looking for but it sure was fun trying! (404)"))
 
 application.add_processor(web.loadhook(mode_hook))
 application.add_processor(web.loadhook(lang_hook))
