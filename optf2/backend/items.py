@@ -260,6 +260,10 @@ def process_attributes(items, gift = False, mode = None):
     language = cache.get_language()
     try: appid = getattr(steam, cache.get_mod_id())._APP_ID
     except AttributeError: pass
+    paint_map = cache.get(str("paints-" + cache.get_mod_id() + '-' + language), {})
+    particle_map = cache.get(str("particles-" + cache.get_mod_id() + '-' + language), {})
+    ugc_key = "ugc-{0}"
+    ugc_cache_expiry = config.ini.getint("cache", "profile-expiry") * 2
 
     for item in items:
         if not item: continue
@@ -326,7 +330,7 @@ def process_attributes(items, gift = False, mode = None):
                                                              (raw_rgb) & 0xFF)
 
                 default = "unknown paint ({0})".format(item_color)
-                pname = cache.get(str("paints-" + cache.get_mod_id() + '-' + language), {}).get(raw_rgb, default)
+                pname = paint_map.get(raw_rgb, default)
 
                 item.optf2["paint_name"] = pname
 
@@ -348,7 +352,7 @@ def process_attributes(items, gift = False, mode = None):
             if attrname.startswith("attach particle effect"):
                 particleid = int(theattr.get_value())
                 default = "unknown particle ({0})".format(particleid)
-                pname = cache.get(str("particles-" + cache.get_mod_id() + '-' + language), {}).get(particleid, default)
+                pname = particle_map.get(particleid, default)
 
                 newattr["description_string"] = "Effect: " + pname
                 item.optf2["particle-id"] = particleid
@@ -407,8 +411,12 @@ def process_attributes(items, gift = False, mode = None):
             ugcid = hilo_to_ugcid64(custom_texture_hi, custom_texture_lo)
             try:
                 if appid:
-                    ugc = steam.remote_storage.user_ugc(appid, ugcid)
-                    item.optf2["custom texture"] = ugc.get_url()
+                    memkey = ugc_key.format(str(ugcid))
+                    url = cache.get(memkey)
+                    if not url:
+                        url = steam.remote_storage.user_ugc(appid, ugcid).get_url()
+                        cache.set(memkey, url, time = ugc_cache_expiry)
+                    item.optf2["custom texture"] = url
             except steam.remote_storage.UGCError:
                 pass
 
