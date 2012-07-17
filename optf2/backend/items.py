@@ -389,7 +389,7 @@ def process_attributes(items, gift = False, mode = None):
             else:
                 continue
 
-            finalattr = type(theattr)(dict(theattr._attribute.items() + newattr.items()))
+            finalattr = theattr.__class__(dict(theattr._attribute.items() + newattr.items()))
             finalattr.optf2 = {}
             try:
                 color = finalattr.get_description_color()
