@@ -118,6 +118,14 @@ $(document).ready(function(){
 	    $("#loadout-result").toggle();
 	}
     });
+
+    $("img.item-image").one("error", function() {
+        this.src = invalidIconURL;
+    });
+
+    $('img[class~="icon-particle"]').one("error", function() {
+        $(this).remove();
+    });
 });
 
 function autosizeBoxes() {
@@ -383,15 +391,6 @@ function Cell(container) {
 
 	$(document).scroll(function() {
             cells.find(".tooltip").hide();
-	});
-
-	cells.find(".item-image").one("error", function() {
-            this.src = invalidIconURL;
-            $(this).addClass("invalid");
-	});
-
-	cells.find(".icon-particle").one("error", function() {
-            $(this).remove();
 	});
     };
 
@@ -676,9 +675,12 @@ function ItemDialog(baseLink) {
             resize: self.resizeEvent,
             open: function(event, ui) {
 		var cellImage = $("#s" + itemID + " .item-image");
-		if (cellImage.hasClass("invalid")) {
-		    $(event.target).find(".item-image").attr("src", invalidIconURL);
-		}
+		$(event.target).find("img.item-image").one("error", function() {
+		    $(this).attr("src", invalidIconURL);
+		});
+		$(event.target).find('img[class~="icon-particle"]').one("error", function() {
+		    $(this).remove();
+		});
 		self.resizeEvent(event, ui);
             },
             title: title,

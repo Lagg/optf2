@@ -128,7 +128,6 @@ class cache:
                 modclass = steam.items.assets
                 appid = mod._APP_ID
             except:
-                print("Failed load for " + modulename)
                 return None
 
         return self._get_generic_aco(modclass, "assets", stale = stale, appid = appid)
