@@ -19,7 +19,7 @@ import pylibmc
 import operator
 from collections import deque
 from time import time
-from hashlib import md5
+from binascii import crc32
 
 import steam
 from optf2.backend import config
@@ -133,25 +133,33 @@ class cache:
         return self._get_generic_aco(modclass, "assets", stale = stale, appid = appid)
 
     def get_vanity(self, sid):
-        vanitykey = "vanity-" + md5(sid).hexdigest()
+        # Use hash to avoid weird character problems
+        vanitykey = "vanity-" + str(crc32(sid))
         vanity = self.get(vanitykey)
         if not vanity:
-            vanity = str(steam.user.vanity_url(sid))
-            # May want a real option for this later
-            self.set(vanitykey, vanity, time = (config.ini.getint("cache", "profile-expiry") * 4))
+            vanity = steam.user.vanity_url(sid)
+            self.set(vanitykey, vanity.get_id64(), time = config.ini.getint("cache", "vanity-expiry"))
         return vanity
 
     def _load_profile(self, sid):
-        memkey = "profile-" + sid
+        memkey = "profile-" + str(sid)
         profile = self.get(memkey)
         if not profile:
-            profile = steam.user.profile(sid)
-            profile._get()
+            pobj = steam.user.profile(sid)
+            game = pobj.get_current_game()
+            profile = {"id64": pobj.get_id64(),
+                       "realname": pobj.get_real_name(),
+                       "persona": pobj.get_persona(),
+                       "avatarurl": pobj.get_avatar_url(pobj.AVATAR_MEDIUM),
+                       "status": pobj.get_status()}
+            if str(pobj.get_primary_group()) == config.ini.get("steam", "valve-group-id"):
+                profile["valve"] = True
+            if pobj.get_visibility() != 3: profile["private"] = True
+            if game: profile["game"] = (game.get("id"), game.get("extra"), game.get("server"))
             self.set(memkey, profile, time = config.ini.getint("cache", "profile-expiry"))
         return profile
 
     def get_profile(self, sid):
-        # Use memcache's hashing function to avoid weird character problems
         sid = str(sid)
 
         if sid.isdigit():
@@ -168,12 +176,15 @@ class cache:
     def get_backpack(self, user):
         modulename = self._mod_id
         language = self._language
+        id64 = user["id64"]
+        avatar = user["avatarurl"]
+        persona = user["persona"]
 
-        memkey = "backpack-{0}-{1}".format(modulename, user.get_id64())
+        memkey = "backpack-{0}-{1}".format(modulename, id64)
 
         pack = self.get(memkey)
         if not pack:
-            pack = getattr(steam, modulename).backpack(user, schema = self.get_schema())
+            pack = getattr(steam, modulename).backpack(id64, schema = self.get_schema())
             pack._get()
             self.set(memkey, pack, time = config.ini.getint("cache", "backpack-expiry"))
 
@@ -185,13 +196,11 @@ class cache:
             lastpacks = deque(maxlen = 10)
         else:
             for p in lastpacks:
-                if p["id"] == user.get_id64():
+                if p["id"] == id64:
                     lastpacks.remove(p)
                     break
 
-        lastpacks.appendleft({"id": user.get_id64(),
-                              "persona": user.get_persona(),
-                              "avatar": user.get_avatar_url(user.AVATAR_SMALL)})
+        lastpacks.appendleft(dict(id = id64, persona = persona, avatar = avatar))
         self.set(lastpackskey, lastpacks)
 
         return pack

@@ -177,8 +177,8 @@ def generate_item_url(item, user = None, mode = None):
     if not mode: mode = web.ctx.current_game
 
     if itemid and user:
-        try: pathuser = str(user.get_id64())
-        except AttributeError: pathuser = str(user)
+        try: pathuser = str(user["id64"])
+        except: pathuser = str(user)
 
     if pathuser: pathuser += "/"
 

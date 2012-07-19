@@ -1,8 +1,10 @@
 $def with (user, items, classmap, slotlist)
-$var title: $project_name - $user.get_persona()'s Loadout List
+$ persona = user["persona"]
+$ id = user["id64"]
+$var title: $project_name - $persona's Loadout List
 
 <div id="header">
-  <h2 class="loadout-header"><a href="$markup.generate_mode_url('user/{0}'.format(user.get_id64()))">${user.get_persona()}'s</a> Loadouts</h2>
+  <h2 class="loadout-header"><a href="$markup.generate_mode_url('user/{0}'.format(id))">$persona's</a> Loadouts</h2>
 </div>
 <div id="content">
   $if items:

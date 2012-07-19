@@ -92,22 +92,18 @@ class search_profile:
 
 class persona:
     def GET(self, uid):
-        theobject = {}
+        user = {}
         callback = web.input().get("jsonp")
         cache = database.cache()
 
         try:
             user = cache.get_profile(uid)
-            persona = user.get_persona()
-            realname = user.get_real_name()
-            theobject["persona"] = persona
-            theobject["realname"] = realname
-            theobject["id64"] = str(user.get_id64())
-            theobject["avatarurl"] = user.get_avatar_url(user.AVATAR_SMALL)
+            # JS is bad at numbers
+            user["id64"] = str(user["id64"])
         except: pass
 
         web.header("Content-Type", "text/javascript")
-        jsonobj = json.dumps(theobject)
+        jsonobj = json.dumps(user)
         if not callback:
             return jsonobj
         else:

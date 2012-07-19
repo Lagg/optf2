@@ -4,7 +4,7 @@ $def with (user, items, erritem = None)
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
     $ persona = ""
-    $if user: $ persona = user.get_persona() + "'s "
+    $if user: $ persona = user["persona"] + "'s "
     $ channel_title = persona + "Backpack"
     <title>$channel_title</title>
     <description>Backpack feed provided by $project_name</description>

@@ -17,7 +17,7 @@ def handle_searchbar_input():
     except: prof = None
 
     if prof:
-        raise web.seeother(generate_mode_url("user/" + str(prof.get_id64())))
+        raise web.seeother(generate_mode_url("user/" + str(prof["id64"])))
 
     search = json.loads(api.search_profile().GET(user))
     nuser = user

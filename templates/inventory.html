@@ -1,19 +1,12 @@
-$def with (user, isvalve, items, views, filter_classes, baditems, stats, filter_qualities, appid, price_stats, cell_count)
-$ usern = user.get_persona()
-$ profileurl = user.get_profile_url()
-$ realn = user.get_real_name()
+$def with (user, items, views, filter_classes, baditems, stats, filter_qualities, appid, price_stats, cell_count)
+$ usern = user["persona"]
+$ id64 = user["id64"]
+$ profileurl = "http://steamcommunity.com/profiles/{0}".format(id64)
+$ avatarurl = user["avatarurl"]
+$ realn = user.get("realname")
 $var title: $project_name - $usern's Backpack
-$ rss = markup.generate_mode_url("feed/{0}".format(user.get_id64()))
+$ rss = markup.generate_mode_url("feed/{0}".format(id64))
 $ onlinestates = {0: "offline", 1: "online", 2: "busy", 3: "away", 4: "snooze"}
-<div id="header" style="position: relative; margin-bottom: 30px;">
-  $ cgame = user.get_current_game()
-  $ cstatus = onlinestates.get(user.get_status(), "offline")
-  $ name_suffix = ""
-  $if isvalve:
-      $ name_suffix = '<img src="{0}valve.png" alt="Valve" title="Valve Employee"/>'.format(static_prefix)
-  $if user.get_visibility() != 3:
-      $ name_suffix += '<span class="attr-negative" style="font-weight: normal;"> (private)</span>'
-</div>
 <div id="content">
   <div class="item-tools">
       <div class="dropdown-menu">
@@ -54,39 +47,37 @@ $ onlinestates = {0: "offline", 1: "online", 2: "busy", 3: "away", 4: "snooze"}
         <b>Other games</b>
         <ul>
           $for mid, label in game_modes.iteritems():
-              <li><a href="${virtual_root}${mid}/user/${user.get_id64()}">$label</a></li>
+              <li><a href="${virtual_root}${mid}/user/${id64}">$label</a></li>
         </ul>
       </div>
-      <a class="button" id="loadout-button" href="$markup.generate_mode_url('loadout/{0}'.format(user.get_id64()))">Loadout</a>
+      <a class="button" id="loadout-button" href="$markup.generate_mode_url('loadout/{0}'.format(id64))">Loadout</a>
       <a class="button" href="$rss">RSS</a>
   </div>
-  <div id="backpack" style="width: 1040px;" class="bp-${appid}-${user.get_id64()}">
+  <div id="backpack" style="width: 1040px;" class="bp-${appid}-${id64}">
     <div class="side-box">
       <div class="header">Player</div>
       <div class="player-badge">
         <div>
 	  <a href="$profileurl">
-            <img src="$user.get_avatar_url(user.AVATAR_MEDIUM)" alt="$realn" title="$realn"/>
+            <img src="$avatarurl" alt="$realn" title="$realn"/>
 	  </a>
         </div>
         <div>
+	  $ status = onlinestates.get(user.get("status"), "offline")
+	  $ name_suffix = ""
+	  $ isvalve = user.get("valve")
+	  $if isvalve:
+              $ name_suffix = '<img src="{0}valve.png" alt="Valve" title="Valve Employee"/>'.format(static_prefix)
+	  $if user.get("private"):
+	      $ name_suffix += '<span class="attr-negative" style="font-weight: normal;"> (private)</span>'
 	  <b><a href="$profileurl">$usern</a> $:name_suffix</b><br/>
-	  <span id="status_$cstatus">
-            $if cgame:
-                Playing \
-                $ game_extra = cgame.get("extra", "Unknown")
-                $ game_extra_title = game_extra
-                $if len(game_extra) >= 20:
-                    $ game_extra = game_extra[:17] + "..."
-                $ game_server = cgame.get("server", "0.0.0.0:0")
-                $if cgame.has_key("id"):
-                    <a href="http://store.steampowered.com/app/$cgame['id']" title="$game_extra_title">$game_extra</a>
-                $else:
-                    $game_extra
-                $if game_server != "0.0.0.0:0":
-                    <a href="steam://connect/$game_server">(Connect)</a>
+	  <span id="status_$status">
+            $if "game" in user:
+                $ gid, gname, gserver = user["game"]
+                Playing <a href="http://store.steampowered.com/app/${gid or 0}" title="$gname">${gname or "Unknown"}</a>
+                $if gserver: <a href="steam://connect/$gserver">(Connect)</a>
             $else:
-                $cstatus
+                $status
 	  </span>
         </div>
       </div>

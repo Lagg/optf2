@@ -5,13 +5,14 @@ $ current_wiki = wiki_map.get(instance.current_game)
 $if not user:
     $ usern = "Schema"
 $else:
-    $ usern = user.get_persona() + "'s"
+    $ usern = user["persona"] + "'s"
+    $ id64 = user["id64"]
 $var title: $project_name - $usern $extra["title_name"]
 $def generate_class_icon_link(classes):
     $ classlink = '#'
     $for ec in classes:
         $if user:
-            $ classlink = markup.generate_mode_url("loadout/{0}#{1}".format(user.get_id64(), ec))
+            $ classlink = markup.generate_mode_url("loadout/{0}#{1}".format(id64, ec))
         $else:
             $if current_wiki:
                 $ classlink = current_wiki[1] + ec
@@ -24,7 +25,7 @@ $def generate_class_icon_link(classes):
         $ plink_user = "from_schema"
         $ urlpart = "items"
     $else:
-        $ plink_user = user.get_id64()
+        $ plink_user = id64
         $ urlpart = "user/{0}".format(plink_user)
     <a href="$markup.generate_mode_url(urlpart)">$usern</a> $:extra["dedicated_name"]
   </h1>
@@ -57,10 +58,10 @@ $def generate_class_icon_link(classes):
       $ serial = item.get_id()
       $if "container_id" in extra and not serial:
           <li class="attr-positive">
-            Unopened <a href="$markup.generate_mode_url('item/{0}/{1}'.format(user.get_id64(), extra['container_id']))">Gift</a> from
+            Unopened <a href="$markup.generate_mode_url('item/{0}/{1}'.format(id64, extra['container_id']))">Gift</a> from
 	    $ giftgiver = extra.get("gift")
 	    $if giftgiver:
-                <a href="$markup.generate_mode_url('user/{0}'.format(giftgiver["id64"]))">$giftgiver["persona"]</a>
+                <a href="$markup.generate_mode_url('user/{0}'.format(giftgiver['id64']))">$giftgiver["persona"]</a>
           </li>
       $elif serial:
 	  $ oserial = item.get_original_id()

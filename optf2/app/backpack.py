@@ -151,8 +151,6 @@ class fetch:
             user = cache.get_profile(sid)
             items = cache.get_backpack(user)
             cell_count = items.get_total_cells()
-            if not items and user.get_visibility() != 3:
-                raise steam.user.ProfileError("Backpack is private")
 
             filter_classes = markup.sorted_class_list(itemtools.get_equippable_classes(items, cache))
             filter_qualities = itemtools.get_present_qualities(items)
@@ -176,17 +174,12 @@ class fetch:
             return templates.error("Couldn't connect to Steam (HTTP {0})".format(E))
 
         views = 0
-        primary_group = user.get_primary_group()
-        isvalve = False
 
-        if primary_group:
-            isvalve = int(primary_group) == config.ini.getint("steam", "valve-group-id")
-
-        web.ctx.env["optf2_rss_url"] = markup.generate_mode_url("feed/" + str(user.get_id64()))
-        web.ctx.env["optf2_rss_title"] = "{0}'s Backpack".format(user.get_persona().encode("utf-8"))
+        web.ctx.env["optf2_rss_url"] = markup.generate_mode_url("feed/" + str(user["id64"]))
+        web.ctx.env["optf2_rss_title"] = "{0}'s Backpack".format(user["persona"].encode("utf-8"))
 
         price_stats = itemtools.get_price_stats(sorted_items, cache)
-        return templates.inventory(user, isvalve, items, views,
+        return templates.inventory(user, items, views,
                                    filter_classes, baditems,
                                    stats, filter_qualities,
                                    schema._app_id,
@@ -206,7 +199,7 @@ class feed:
             items = itemtools.process_attributes(items)
             items = itemtools.sort(items, web.input().get("sort", "time"))
 
-            return renderer.inventory_feed(user, items)
+            return renderer.inventory_feed(user, items[:config.ini.getint("rss", "inventory-max-items")])
 
         except (steam.user.ProfileError, steam.items.Error, steam.base.HttpError) as E:
             return renderer.inventory_feed(None, [], erritem = E)
