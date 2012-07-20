@@ -71,9 +71,9 @@ $var title: $project_name - All Items
 	  </table>
       $if price_stats["most-expensive"]:
 	  <div class="header">Most expensive</div>
-          $for item in price_stats["most-expensive"]:
-              <div class="header">$$$item[1]["USD"]</div>
-              <div class="ungrouped">$:markup.generate_cell(item[0])</div>
+          $for item, price in price_stats["most-expensive"]:
+              <div class="header">$$$price["USD"]</div>
+              <div class="ungrouped">$:markup.generate_cell(item)</div>
 
     </div>
   $for item in items:

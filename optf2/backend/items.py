@@ -529,7 +529,7 @@ def get_price_stats(items, cache):
         if item.get_id() and item.get_origin_id() != 2:
             continue # Not explicit purchase
         try:
-            asset = assets[item].get_price()
+            asset = assets[item.get_schema_id()]
             count += 1
         except KeyError: continue
         costs[item] = asset

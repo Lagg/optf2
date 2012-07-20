@@ -198,10 +198,10 @@ def generate_item_price_string(item, stats):
 
     if not stats: return None
 
-    if isinstance(stats, dict): assets = stats["assets"]
+    if "assets" in stats: assets = stats["assets"]
     else: assets = stats
 
-    try: return "Store price: ${0}".format(assets[item].get_price()["USD"])
+    try: return "Store price: ${0}".format(assets[item.get_schema_id()]["USD"])
     except: return None
 
 def generate_attribute_list(item, showlinks = False):

@@ -36,7 +36,7 @@ last_server_checks = {}
 class cache:
     """ Cache retrieval/setting functions """
 
-    def _get_generic_aco(self, baseclass, keyprefix, freshcallback = None, stale = False, appid = None):
+    def _get_generic_aco(self, baseclass, keyprefix, cachefilter = None, stale = False, appid = None, getlm = None):
         """ Initializes and caches Aggresively Cached Objects from steamodd """
 
         modulename = self._mod_id
@@ -50,7 +50,8 @@ class cache:
         if oldobj:
             if (ctime - last_server_checks.get(memkey, 0)) < config.ini.getint("cache", keyprefix + "-check-interval"):
                 return oldobj
-            lm = oldobj.get_last_modified()
+
+            if getlm: lm = getlm(oldobj)
 
         result = None
         try:
@@ -58,8 +59,7 @@ class cache:
             datatimeout = config.ini.getint("steam", "download-timeout")
             if not appid: result = baseclass(lang = language, last_modified = lm, timeout = timeout, data_timeout = datatimeout)
             else: result = baseclass(appid, lang = language, last_modified = lm, timeout = timeout, data_timeout = datatimeout)
-            if freshcallback: freshcallback(result)
-            result._get()
+            if cachefilter: result = cachefilter(result)
             self.set(memkey, result)
         except steam.base.HttpStale:
             result = oldobj
@@ -92,7 +92,7 @@ class cache:
         modulename = self._mod_id
         language = self._language
 
-        def freshfunc(result):
+        def cb(result):
             pmap = {}
             for item in result:
                 if item._schema_item.get("name", "").find("Paint") != -1:
@@ -106,6 +106,8 @@ class cache:
                             map(operator.itemgetter("name"), particles.values())))
             self.set(str("particles-" + modulename + '-' + language), pmap)
 
+            return result
+
         try:
             modclass = getattr(steam, modulename).item_schema
             # there's no real schema yet, TODO
@@ -113,12 +115,19 @@ class cache:
         except AttributeError:
             raise steam.items.SchemaError("steamodd hasn't implemented a schema for {0}".format(modulename))
 
-        return self._get_generic_aco(modclass, "schema", freshcallback = freshfunc, stale = stale)
+        return self._get_generic_aco(modclass, "schema", cachefilter = cb, stale = stale, getlm = operator.methodcaller("get_last_modified"))
 
     def get_assets(self, stale = False):
         modulename = self._mod_id
         language = self._language
         appid = None
+
+        def cb(result):
+            amap = dict([(int(asset.get_name()), asset.get_price())
+                         for asset in result])
+            amap["serverts"] = result.get_last_modified()
+
+            return amap
 
         try:
             mod = getattr(steam, modulename)
@@ -130,7 +139,7 @@ class cache:
             except:
                 return None
 
-        return self._get_generic_aco(modclass, "assets", stale = stale, appid = appid)
+        return self._get_generic_aco(modclass, "assets", cachefilter = cb, stale = stale, appid = appid, getlm = operator.itemgetter("serverts"))
 
     def get_vanity(self, sid):
         # Use hash to avoid weird character problems
