@@ -1,0 +1,3 @@
+[submodule "steamodd"]
+	path = steamodd
+	url = git://git.optf2.com/steamodd.git
