@@ -187,6 +187,8 @@ def sort(items, sortby):
         itemcmp = lambda obj: classcmp(obj)
     elif sortby == "schemaid":
         itemcmp = operator.methodcaller("get_schema_id")
+    else:
+        return items
 
     solid_items = items
 
@@ -315,7 +317,7 @@ def process_attributes(items, gift = False, mode = None):
                 newattr["description_string"] = desc
                 newattr["hidden"] = False
 
-            if (attrname == "set item tint RGB" or
+            elif (attrname == "set item tint RGB" or
                 attrname == "set item tint RGB 2"):
                 raw_rgb = int(theattr.get_value())
                 secondary_color = attrname.endswith("2")
@@ -349,7 +351,7 @@ def process_attributes(items, gift = False, mode = None):
                     item.optf2["color"] = item_color
                 continue
 
-            if attrname.startswith("attach particle effect"):
+            elif attrname.startswith("attach particle effect"):
                 particleid = int(theattr.get_value())
                 default = "unknown particle ({0})".format(particleid)
                 pname = particle_map.get(particleid, default)
@@ -357,32 +359,33 @@ def process_attributes(items, gift = False, mode = None):
                 newattr["description_string"] = "Effect: " + pname
                 item.optf2["particle-id"] = particleid
 
-            if attrvaluetype == "account_id" and account_info:
-                newattr["hidden"] = False
-                newattr["description_string"] = _(theattr.get_description().replace("%s1", account_info["persona"]))
-
-            if attrname == "gifter account id":
+            elif attrname == "gifter account id":
                 item.optf2["gift"] = account_info
 
-            if attrname == "unique craft index":
+            elif attrname == "unique craft index":
                 value = int(theattr.get_value())
                 newattr["description_string"] = "Craft number: " + str(value)
                 newattr["hidden"] = False
                 item.optf2["craft_number"] = value
 
-            if attrname == "tradable after date":
+            elif attrname == "tradable after date":
                 newattr["hidden"] = False
 
-            if attrname == "set supply crate series":
+            elif attrname == "set supply crate series":
                 item.optf2["series"] = int(theattr.get_value())
 
-            if attrname == "unlimited quantity":
+            elif attrname == "unlimited quantity":
                 item._item["quantity"] = 1
 
-            if attrname == "custom texture lo":
+            elif attrname == "custom texture lo":
                 custom_texture_lo = theattr.get_value()
+
             elif attrname == "custom texture hi":
                 custom_texture_hi = theattr.get_value()
+
+            if attrvaluetype == "account_id" and account_info:
+                newattr["hidden"] = False
+                newattr["description_string"] = _(theattr.get_description().replace("%s1", account_info["persona"]))
 
             if not newattr.get("hidden", theattr.is_hidden()):
                 newattr["description_string"] = newattr.get("description_string", theattr.get_description())
