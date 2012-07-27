@@ -206,9 +206,9 @@ a { font-weight: bold; color: white; text-decoration: none; }
 a:hover { text-decoration: underline; }
 a:visited { text-decoration: none; }
 
-#status_online { color: #00ff00; }
-#status_offline { color: #808080; }
-#status_snooze, #status_away, #status_busy { color: #2fb3ff; }
+#status-online, #status-lookingtoplay, #status-lookingtotrade { color: #00ff00; }
+#status-offline { color: #808080; }
+#status-snooze, #status-away, #status-busy { color: #2fb3ff; }
 
 .navbar { text-align: left; height: 30px; padding: 0; margin: 0 0 50px 30px; position: relative; list-style: none; }
 .navbar > li { background-color: #505050; color: white; position: relative; float: left; height: 30px; margin: 0; padding: 0; border-right: 1px solid black; }

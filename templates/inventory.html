@@ -6,7 +6,7 @@ $ avatarurl = user["avatarurl"]
 $ realn = user.get("realname")
 $var title: $project_name - $usern's Backpack
 $ rss = markup.generate_mode_url("feed/{0}".format(id64))
-$ onlinestates = {0: "offline", 1: "online", 2: "busy", 3: "away", 4: "snooze"}
+$ onlinestates = {0: "offline", 1: "online", 2: "busy", 3: "away", 4: "snooze", 5: "looking to trade", 6: "looking to play"}
 <div id="content">
   <div class="item-tools">
       <div class="dropdown-menu">
@@ -63,7 +63,6 @@ $ onlinestates = {0: "offline", 1: "online", 2: "busy", 3: "away", 4: "snooze"}
 	  </a>
         </div>
         <div>
-	  $ status = onlinestates.get(user.get("status"), "offline")
 	  $ name_suffix = ""
 	  $ isvalve = user.get("valve")
 	  $if isvalve:
@@ -71,7 +70,14 @@ $ onlinestates = {0: "offline", 1: "online", 2: "busy", 3: "away", 4: "snooze"}
 	  $if user.get("private"):
 	      $ name_suffix += '<span class="attr-negative" style="font-weight: normal;"> (private)</span>'
 	  <b><a href="$profileurl">$usern</a> $:name_suffix</b><br/>
-	  <span id="status_$status">
+	  $ scode = user.get("status")
+	  $ statclass = onlinestates.get(scode, '')
+	  $ status = "status: {0}".format(scode)
+	  $if not statclass: $ statclass = "online"
+	  $else:
+	      $ status = statclass
+	      $ statclass = statclass.replace(' ', '')
+	  <span id="status-$statclass">
             $if "game" in user:
                 $ gid, gname, gserver = user["game"]
                 Playing <a href="http://store.steampowered.com/app/${gid or 0}" title="$gname">${gname or "Unknown"}</a>
