@@ -11,11 +11,26 @@ for wiki in config.items("wiki"):
 
 cssmap = dict(config.items("css-aliases"))
 
+# Using this from web.template, don't want to import entire __builtin__
+# module (i.e. eval) so this will do
+TEMPLATE_BUILTIN_NAMES = [
+    "dict", "enumerate", "float", "int", "bool", "list", "long", "reversed",
+    "set", "slice", "tuple", "xrange",
+    "abs", "all", "any", "callable", "chr", "cmp", "divmod", "filter", "hex",
+    "id", "isinstance", "iter", "len", "max", "min", "oct", "ord", "pow", "range",
+    "True", "False",
+    "None",
+    "len", "map", "str",
+    "__import__", # some c-libraries like datetime requires __import__ to present in the namespace
+]
+
+import __builtin__
+TEMPLATE_BUILTINS = dict([(name, getattr(__builtin__, name)) for name in TEMPLATE_BUILTIN_NAMES if name in __builtin__.__dict__])
+
 # These should stay explicit
 globals = {"virtual_root": config.get("resources", "virtual-root"),
            "static_prefix": config.get("resources", "static-prefix"),
            "encode_url": web.urlquote,
-           "len": len,
            "instance": web.ctx,
            "project_name": config.get("misc", "project-name"),
            "wiki_map": wikimap,
@@ -28,4 +43,4 @@ globals = {"virtual_root": config.get("resources", "virtual-root"),
            }
 
 template = web.template.render(config.get("resources", "template-dir"), base = "base",
-                               globals = globals)
+                               globals = globals, builtins = TEMPLATE_BUILTINS)

@@ -26,12 +26,14 @@ $def with (user, items, erritem = None)
           $continue
       <item>
         $ permalink = markup.absolute_url(markup.generate_item_url(item, user))
-        $ name = item.get_custom_name()
-        $ image = item.optf2["image_url"]
-        $if not name:
-            $ name = item.get_name()
+        $ image = item["image"]
         <description><![CDATA[$:markup.generate_item_type_line(item) <img alt="item-image" src="$image"/>]]></description>
-        <title>$:item.optf2["feed_name"]</title>
+	$ series = item.get("series")
+        <title>
+	  $:item["mainname"]
+	  $if series: - Series $series
+	  $if "colors" in item: (Painted)
+        </title>
         <link>$permalink</link>
         <guid isPermaLink="true">$permalink</guid>
       </item>

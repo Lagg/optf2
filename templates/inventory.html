@@ -39,8 +39,8 @@ $ onlinestates = {0: "offline", 1: "online", 2: "busy", 3: "away", 4: "snooze", 
           <b>Quality</b>
           <ul>
             <li><a href="$qurl(quality = None)">All</a></li>
-            $for q in filter_qualities:
-              <li><a href="$qurl(quality = q['id'])"><span class="prefix-${q['str']}">$q["prettystr"]</span></a></li>
+            $for label, id in filter_qualities:
+              <li><a href="$qurl(quality = id)"><span class="prefix-$id">$label</span></a></li>
           </ul>
 	</div>
       <div class="dropdown-menu">
@@ -88,7 +88,7 @@ $ onlinestates = {0: "offline", 1: "online", 2: "busy", 3: "away", 4: "snooze", 
         </div>
       </div>
       $if price_stats["worth"]:
-          <div class="header">Item store worth</div>
+          <div class="header">User's expenses</div>
           <table>
 	    <tr><th>&nbsp;</th><th>Total</th><th>Avg.</th></tr>
             $ worth = price_stats["worth"]

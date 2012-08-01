@@ -57,7 +57,7 @@ class game_root:
             if items:
                 items = list(items)
                 if len(items) > 0:
-                    item = itemtools.process_attributes([random.choice(items)])[0]
+                    item = cache._build_processed_item(random.choice(items))
                     showcase = generate_cell(item, mode = mod)
                     # May want to add an option for showcase expiration to config later
                     cache.set(ckey, showcase, time = 600)

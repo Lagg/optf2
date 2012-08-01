@@ -17,10 +17,11 @@ $var title: $project_name - All Item Attributes
       $ maxfval = attr.get_value_formatted(maxval)
       $ name = attr.get_name()
       $ desc = attr.get_description()
+      $ aid = attr.get_id()
       <tr>
-        <td>$attr.get_id()</td>
+        <td>$aid</td>
         <td>
-          <a id="$name.replace(' ', '_')" class="attr-${type}" href="${qurl(att = name)}">$name</a>
+          <a id="att-$aid" class="attr-${type}" href="${qurl(att = aid)}">$name</a>
         </td>
         <td>
           $if desc:

@@ -34,16 +34,16 @@ $var title: $project_name - All Items
 	<b>Quality</b>
 	<ul>
           <li><a href="$qurl(quality = None)">All</a></li>
-          $for q in filter_qualities:
-            <li><a href="$qurl(quality = q['id'])"><span class="prefix-${q['str']}">$q["prettystr"]</span></a></li>
+          $for label, id in filter_qualities:
+            <li><a href="$qurl(quality = id)"><span class="prefix-$id">$label</span></a></li>
 	</ul>
       </div>
     <div class="dropdown-menu">
       <b>Capability</b>
       <ul>
         <li><a href="$qurl(capability = None)">Any</a></li>
-        $for c in filter_capabilities:
-            <li><a href="$qurl(capability = c['flag'])">$c["name"]</a></li>
+        $for name, id in filter_capabilities:
+            <li><a href="$qurl(capability = id)">$name</a></li>
       </ul>
     </div>
   </div>
@@ -59,7 +59,7 @@ $var title: $project_name - All Items
         <tr><th>Total</th><td>$stats["total"]</td></tr>
       </table>
       $if price_stats["worth"]:
-          <div class="header">Store worth</div>
+          <div class="header">Store costs</div>
           <table>
             <tr><th>&nbsp;</th><th>Total</th><th>Avg.</th></tr>
             $ worth = price_stats["worth"]

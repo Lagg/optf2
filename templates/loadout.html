@@ -9,7 +9,7 @@ $var title: $project_name - $persona's Loadout List
 <div id="content">
   $if items:
       <div id="loadout" style="margin: 0 auto 0 auto; width: 90%;">
-	$for cid, lclass in classmap.iteritems():
+	$for cid, lclass in classmap:
           $if cid not in items: $continue
           <div class="autosize box" id="$lclass" style="margin: 30px auto 30px auto;">
             <div class="titlebar">

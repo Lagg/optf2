@@ -254,6 +254,7 @@ img { border: 0; }
     padding: 8px 0 8px 0;
     margin-left: 30px;
     overflow: auto;
+    word-wrap: break-word;
 }
 .item-attrs div { padding: 4px 0 4px 0; }
 .stat_vertrule { float: left; }
@@ -323,6 +324,7 @@ a.button { text-decoration: none; }
     z-index: 30;
     min-width: 100px;
     width: 100%;
+    word-wrap: break-word;
 }
 .dropdown-menu ul li { text-align: left; border-bottom: 1px solid white; }
 .dropdown-menu ul li:hover { background: #404040; }

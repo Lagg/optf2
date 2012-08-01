@@ -16,28 +16,28 @@ class loadout:
         sortedslots = self._slots_sorted
 
         for item in items:
-            quality = item.get_quality()["id"]
-            classes = item.get_equipped_classes()
-            slots = item.get_equipped_slots()
+            quality = item.get("quality", "normal")
+            equipped = item.get("equipped", {})
+            slots = equipped
 
-            if quality == 0:
-                classes = item.get_equipable_classes()
+            if quality == "normal":
+                classes = item.get("equipable", [])
             else:
-                classes = item.get_equipped_classes()
+                classes = equipped.keys()
 
             for c in classes:
                 cid, name = markup.get_class_for_id(c)
-                if cid not in loadout: loadout[cid] = {}
-                if cid not in classmap: classmap[cid] = name
+                loadout.setdefault(cid, {})
+                classmap.add((cid, name))
                 # WORKAROUND: There is one unique shotgun for all classes in TF2,
                 # and it's in the primary slot. This has obvious problems
-                if item.get_schema_id() == 199 and name != "Engineer":
+                if item["sid"] == 199 and name != "Engineer":
                     slot = "Secondary"
                 else:
-                    slot = item.get_slot() or str(slots.get(cid, ''))
+                    slot = item.get("slot") or str(slots.get(cid, ''))
                     slot = slot.title()
                 if slot not in sortedslots and slot not in slotlist: slotlist.append(slot)
-                if slot not in loadout[cid] or (quality != 0 and loadout[cid][slot][0].get_quality()["id"] == 0):
+                if slot not in loadout[cid] or (quality != 0 and loadout[cid][slot][0]["quality"] == "normal"):
                     loadout[cid][slot] = []
                 loadout[cid][slot].append(item)
 
@@ -49,21 +49,19 @@ class loadout:
 
             userp = cache.get_profile(user)
             schema = cache.get_schema()
-            items = itemtools.process_attributes(cache.get_backpack(userp))
+            items = cache.get_backpack(userp)["items"].values()
             equippeditems = {}
-            classmap = {}
-            overrides, swappedoverrides = markup.get_class_overrides()
-            if overrides: classmap = overrides
+            classmap = set()
             slotlist = []
 
             # initial normal items
-            normalitems = itemtools.process_attributes(itemtools.filter_by_quality(schema, "0"))
+            normalitems = itemtools.filter_by_quality([cache._build_processed_item(item) for item in schema], "normal")
             equippeditems, slotlist, classmap = self.build_loadout(normalitems, equippeditems, slotlist, classmap)
 
             # Real equipped items
             equippeditems, slotlist, classmap = self.build_loadout(items, equippeditems, slotlist, classmap)
 
-            return templates.loadout(userp, equippeditems, classmap, self._slots_sorted + sorted(slotlist))
+            return templates.loadout(userp, equippeditems, sorted(classmap), self._slots_sorted + sorted(slotlist))
         except steam.items.Error as E:
             return templates.error("Backpack error: {0}".format(E))
         except steam.user.ProfileError as E:
@@ -83,24 +81,21 @@ class item:
         user = None
         item_outdated = False
         try:
-            theitem = schema[long(iid)]
+            item = cache._build_processed_item(schema[long(iid)])
 
-            item = itemtools.process_attributes([theitem])[0]
             if web.input().get("contents"):
-                itemcontents = item.optf2.get("contents")
-                if itemcontents:
-                    newitem = itemtools.process_attributes([itemcontents], gift = True)[0]
-                    newitem.optf2 = dict(item.optf2, **newitem.optf2)
-                    newitem.optf2["container_id"] = item.get_id()
-                    item = newitem
+                contents = item.get("contents")
+                if contents:
+                    item = contents
         except steam.base.HttpError:
             return templates.error("Couldn't connect to Steam")
-        except:
+        except KeyError:
             return templates.item_error_notfound(iid)
 
+        caps = markup.get_capability_strings(itemtools.get_present_capabilities([item]))
         price = markup.generate_item_price_string(item, assets)
 
-        return templates.item(user, item, item_outdated, price = price)
+        return templates.item(user, item, item_outdated, price = price, caps = caps)
 
 class live_item:
     """ More or less temporary until database stuff is sorted """
@@ -110,25 +105,18 @@ class live_item:
         try:
             user = cache.get_profile(user)
             items = cache.get_backpack(user)
-            theitem = None
-            for item in items:
-                if item.get_id() == long(iid):
-                    theitem = item
-                    break
-            if not theitem:
-                return templates.item_error_notfound(iid)
 
-            item = itemtools.process_attributes([theitem])[0]
+            item = items["items"][long(iid)]
+
             if web.input().get("contents"):
-                itemcontents = item.optf2.get("contents")
-                if itemcontents:
-                    newitem = itemtools.process_attributes([itemcontents], gift = True)[0]
-                    newitem.optf2 = dict(item.optf2, **newitem.optf2)
-                    newitem.optf2["container_id"] = item.get_id()
-                    item = newitem
+                contents = item.get("contents")
+                if contents:
+                    item = contents
         except steam.base.HttpError:
             return templates.error("Couldn't connect to Steam")
-        except:
+        except steam.user.ProfileError as E:
+            return templates.error("Can't retrieve user profile data: {0}".format(E))
+        except KeyError:
             return templates.item_error_notfound(iid)
         return templates.item(user, item, item_outdated)
 
@@ -149,22 +137,24 @@ class fetch:
 
         try:
             user = cache.get_profile(sid)
-            items = cache.get_backpack(user)
-            cell_count = items.get_total_cells()
+            pack = cache.get_backpack(user)
+            cell_count = pack["cells"]
+            items = pack["items"].values()
 
             filter_classes = markup.sorted_class_list(itemtools.get_equippable_classes(items, cache))
-            filter_qualities = itemtools.get_present_qualities(items)
+            filter_qualities = markup.get_quality_strings(itemtools.get_present_qualities(items), cache)
             if sortclass:
                 items = itemtools.filter_by_class(items, sortclass)
             if filter_quality:
                 items = itemtools.filter_by_quality(items, filter_quality)
 
-            items = itemtools.process_attributes(items)
             stats = itemtools.get_stats(items)
 
             sorted_items = itemtools.sort(items, sortby)
             baditems = []
             (items, baditems) = itemtools.build_page_object(sorted_items, ignore_position = (sortby != "cell"))
+
+            price_stats = itemtools.get_price_stats(sorted_items, cache)
 
         except steam.items.Error as E:
             return templates.error("Failed to load backpack ({0})".format(E))
@@ -178,7 +168,6 @@ class fetch:
         web.ctx.env["optf2_rss_url"] = markup.generate_mode_url("feed/" + str(user["id64"]))
         web.ctx.env["optf2_rss_title"] = "{0}'s Backpack".format(user["persona"].encode("utf-8"))
 
-        price_stats = itemtools.get_price_stats(sorted_items, cache)
         return templates.inventory(user, items, views,
                                    filter_classes, baditems,
                                    stats, filter_qualities,
@@ -195,8 +184,7 @@ class feed:
         try:
             cache = database.cache()
             user = cache.get_profile(sid)
-            items = cache.get_backpack(user)
-            items = itemtools.process_attributes(items)
+            items = cache.get_backpack(user)["items"].values()
             items = itemtools.sort(items, web.input().get("sort", "time"))
 
             return renderer.inventory_feed(user, items[:config.ini.getint("rss", "inventory-max-items")])

@@ -28,9 +28,9 @@ class items:
     def GET(self):
         query = web.input()
         cache = database.cache()
-        items = cache.get_schema()
-        filter_qualities = itemtools.get_present_qualities(items)
-        filter_capabilities = itemtools.get_present_capabilities(items)
+        items = [cache._build_processed_item(item) for item in cache.get_schema()]
+        filter_qualities = markup.get_quality_strings(itemtools.get_present_qualities(items), cache)
+        filter_capabilities = markup.get_capability_strings(itemtools.get_present_capabilities(items))
 
         try: items = itemtools.filter_by_class(items, query["sortclass"])
         except KeyError: pass
@@ -43,7 +43,6 @@ class items:
 
         stats = itemtools.get_stats(items)
         filter_classes = markup.sorted_class_list(itemtools.get_equippable_classes(items, cache))
-        items = itemtools.process_attributes(items)
         price_stats = itemtools.get_price_stats(items, cache)
 
         return templates.schema_dump(items,
@@ -70,7 +69,7 @@ class attributes:
             attached_items = []
 
             for attr in attribs:
-                if attr.get_name() == attachment_check:
+                if str(attr.get_id()) == str(attachment_check):
                     attribute = attr
                     break
             if not attribute:
@@ -79,13 +78,12 @@ class attributes:
             for item in items:
                 attrs = item.get_attributes()
                 for attr in attrs:
-                    attr_name = attr.get_name()
-                    if attachment_check == attr_name:
+                    if str(attr.get_id()) == str(attachment_check):
                         if not attribute: attribute = attr
                         attached_items.append(item)
                         break
 
-            return templates.attribute_attachments(itemtools.process_attributes(attached_items), attribute)
+            return templates.attribute_attachments([cache._build_processed_item(item) for item in attached_items], attribute)
         else:
             return templates.attrib_dump(attribs)
 

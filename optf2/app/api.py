@@ -72,7 +72,7 @@ class search_profile:
             umax = ulen - 1
             ul = user.lower()
 
-            for i in range(umax):
+            for i in xrange(umax):
                 elem = userlist[i]
                 pl = elem["persona"].lower()
                 uid = elem["id"].lower()

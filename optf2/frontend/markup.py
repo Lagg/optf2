@@ -16,6 +16,7 @@ OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 import web
 import re
+import operator
 try: from collections import OrderedDict as odict
 except ImportError: odict = dict
 from urlparse import urljoin
@@ -24,6 +25,7 @@ from optf2.backend import config
 virtual_root = config.ini.get("resources", "virtual-root")
 static_prefix = config.ini.get("resources", "static-prefix")
 particles = config.ini.options("particle-modes")
+# TODO: Add exp for single tags like br
 htmldesc = re.compile("<(?P<tag>.+) ?.*>.+</(?P=tag)>")
 
 celldims = {}
@@ -34,6 +36,21 @@ for mode, dims in config.ini.items("page-dimensions"):
         celldims[mode] = {"width": val, "height": val}
     else:
         celldims[mode] = {"width": int(dims[:sep]), "height": int(dims[sep + 1:])}
+
+# Capability string mapping, this will probably need localizing too
+capabilitydict = {"can_gift_wrap": "Gift wrappable",
+                  "can_craft_count": "Can be a numbered craft",
+                  "decodable": "Opened via key",
+                  "usable": "Action item",
+                  "usable_gc": "Usable outside Action slot",
+                  "usable_out_of_game": "Usable out of game",
+                  "can_craft_mark": "Holds crafter name",
+                  "nameable": "Nameable",
+                  "paintable": "Paintable",
+                  "can_be_restored": "Restorable",
+                  "can_customize_texture": "Allows custom texture",
+                  "strange_parts": "Allows Strange parts",
+                  "paintable_unusual": "Allows Unusual paints"}
 
 classoverrides = {
     "tf2": odict([
@@ -66,7 +83,7 @@ classoverrides.update(reverrides)
 def get_class_for_id(cid, mode = None):
     overrides, swapped_overrides = get_class_overrides(mode)
     try: realcid = int(cid)
-    except ValueError: realcid = cid
+    except ValueError: realcid = str(cid)
 
     if not overrides: return realcid, cid
 
@@ -87,20 +104,24 @@ def get_class_overrides(mode = None):
             reverrides.get(mode + "_swap"))
 
 def sorted_class_list(classes, mode = None):
-    overrides, swappedoverrides = get_class_overrides(mode)
     validclasses = [get_class_for_id(c, mode) for c in classes]
-    overridelist = list(overrides.iteritems())
 
-    def sort(tup):
-        if tup in overridelist: return overridelist.index(tup)
-        else: return tup[0]
-
-    validclasses.sort(key = sort)
-
-    return validclasses
+    return sorted(validclasses, key = operator.itemgetter(1))
 
 def get_page_sizes():
     return celldims
+
+def get_capability_strings(caps):
+    """ Returns a list of tuples containing
+    (capname, capid) where capname
+    is the pretty version in the capabilitydict
+    if available """
+
+    return sorted([(capabilitydict.get(cap, cap), cap) for cap in caps])
+
+def get_quality_strings(q, cache):
+    qmap = cache.get(cache._quality_key, {})
+    return sorted([(qmap.get(k, k), k) for k in q])
 
 def absolute_url(relative_url):
     return urljoin(web.ctx.homedomain, relative_url)
@@ -127,16 +148,17 @@ def generate_particle_icon_url(pid, mode = None):
     return static_prefix + mode + "_particle_icons/" + str(pid) + ".png"
 
 def generate_item_description(item):
-    desc = web.websafe(item.get_custom_description())
+    desc = item.get("desc", '')
+    custom = item.get("cdesc")
+    output = web.websafe(desc)
 
-    if not desc:
-        desc = item.get_description()
-        if desc and not htmldesc.search(desc):
-            desc = web.websafe(desc)
+    if custom or not htmldesc.search(desc):
+        output = web.websafe(desc)
+    else:
+        output = desc
 
-    if desc: return '<div class="item-description">' + desc.replace('\n', '<br/>') + '</div>'
-
-    return ''
+    if output: return '<div class="item-description">' + output.replace('\n', '<br/>') + '</div>'
+    else: return ''
 
 def generate_item_type_line(item, classic = True):
     """ If classic is true the full Level X Y
@@ -145,24 +167,21 @@ def generate_item_type_line(item, classic = True):
 
     origin_name = ""
     levelprefix = ""
-    rank = item.get_rank()
-    itemorigin = item.get_origin_name()
+    rank = item.get("rank", "")
+    itemorigin = item.get("origin")
+    level = item.get("level")
+    itype = item.get("type", "")
 
-    if classic and "level" in item.optf2:
-        levelprefix = "Level " + str(item.optf2["level"])
+    if classic and level:
+        levelprefix = "Level {0}".format(level)
 
     if itemorigin:
         origin_name = " - " + itemorigin
 
-    itype = item.get_type()
-    if itype.startswith("TF_"): itype = ""
-
-    rankname = ""
-    if rank: rankname = rank["name"]
-    if rankname: levelprefix = ""
+    if rank: levelprefix = ""
 
     return '<div class="item-level">{0}{1} {2}{3}</div>'.format(levelprefix,
-                                                                web.websafe(rankname),
+                                                                web.websafe(rank),
                                                                 web.websafe(itype),
                                                                 web.websafe(origin_name))
 
@@ -171,7 +190,7 @@ def generate_item_url(item, user = None, mode = None):
     """ Intelligently generates a URL linking to
     the given item """
 
-    itemid = item.get_id()
+    itemid = item.get("id")
     pathuser = ""
 
     if not mode: mode = web.ctx.current_game
@@ -182,14 +201,23 @@ def generate_item_url(item, user = None, mode = None):
 
     if pathuser: pathuser += "/"
 
-    return generate_mode_url("item/" + pathuser + str(itemid or item.get_schema_id()), mode = mode)
+    return generate_mode_url("item/" + pathuser + str(itemid or item["sid"]), mode = mode)
 
 def generate_item_paint_line(item):
     """ Returns a "Painted with X" line if available """
 
-    if "paint_name" in item.optf2:
-        paintcan = item.optf2["paint_name"]
-        return '<div class="attr-positive">{0} with {1}</div>'.format(item.optf2["painted_text"], web.websafe(paintcan))
+    colors = item.get("colors", [])
+    colorslen = len(colors)
+    painted = "Painted"
+
+    if colorslen > 1:
+        painted = '<span><b style="color: {0[0][1]};">Pain</b><b style="color: {0[1][1]};">ted</b></span>'.format(colors)
+    elif colorslen > 0:
+        painted = '<span style="color: {0[0][1]}; font-weight: bold;">Painted</span>'.format(colors)
+
+    paintcan = item.get("paint_name")
+    if paintcan:
+        return '<div class="attr-positive">{0} with {1}</div>'.format(painted, web.websafe(paintcan))
     else:
         return ''
 
@@ -201,48 +229,54 @@ def generate_item_price_string(item, stats):
     if "assets" in stats: assets = stats["assets"]
     else: assets = stats
 
-    try: return "Store price: ${0}".format(assets[item.get_schema_id()]["USD"])
+    try: return "Store price: ${0}".format(assets[item["sid"]]["USD"])
     except: return None
 
 def generate_attribute_list(item, showlinks = False):
+    contents = item.get("contents")
     markup = ''
     list_open = '<ul class="attribute-list">'
     list_close = '</ul>'
-    extra = item.optf2
+    eater_fmt = '<li class="attr-positive">{0}</li>'
 
     morestr = ""
     if showlinks: morestr = ' <a href="{0}">(more)</a>'
 
-    for attr in extra["attrs"]:
-        desc = attr.get_description_formatted()
+    for attr in item.get("attrs", []):
+        desc = attr.get("desc", attr.get("val", '')).strip('\n')
         style = ""
-        acct = extra.get("{0}_account".format(attr.get_id()))
-        contents = extra.get("contents")
+        acct = item.get("accounts", {}).get(attr["id"])
+        color = attr.get("color")
+        atype = attr.get("type", "neutral")
 
-        if "color" in attr.optf2: style = ' style="color: #{0};"'.format(attr.optf2["color"])
-        markup += '<li class="attr-{0}"{1}>'.format(attr.get_type(), style)
+        if color: style = ' style="color: #{0};"'.format(color)
+        markup += '<li class="attr-{0}"{1}>'.format(atype, style)
 
-        if contents and attr.get_name() == "referenced item def":
-            markup += extra["content_string"]
-            markup += morestr.format(web.http.changequery(contents = 1))
+        if contents and desc.startswith("Contains: "):
+            markup += desc + morestr.format(web.http.changequery(contents = 1))
         else:
-            if attr.get_value_type() != "html": desc = web.websafe(desc).replace('\n', "<br/>")
+            if atype != "html": desc = web.websafe(desc).replace('\n', "<br/>")
             markup += desc
 
         if acct: markup += morestr.format(generate_mode_url("user/"  + str(acct["id64"])))
 
         markup += '</li>'
 
-    for eater in extra["eaters"]: markup += '<li class="attr-positive">{0}</li>'.format(eater)
+    markup += ''.join(map(eater_fmt.format, item.get("eaters", [])))
 
-    style = item.get_current_style_name()
+    # current style
+    style = item.get("style")
     if style: markup += '<li class="attr-neutral">Style: {0}</li>'.format(style)
 
-    quantity = item.get_quantity()
-    if quantity > 1: markup += '<li class="attr-neutral">Quantity: {0}</li>'.format(quantity)
+    # available styles
+    styles = item.get("styles")
+    if styles: markup += '<li class="attr-neutral">Styles: {0}</li>'.format(', '.join(styles))
 
-    if item.is_untradable(): markup += '<li class="attr-negative">Untradable</li>'
-    if item.is_uncraftable(): markup += '<li class="attr-negative">Uncraftable</li>'
+    quantity = item.get("qty")
+    if quantity: markup += '<li class="attr-neutral">Quantity: {0}</li>'.format(quantity)
+
+    if not item.get("tradable"): markup += '<li class="attr-negative">Untradable</li>'
+    if not item.get("craftable"): markup += '<li class="attr-negative">Uncraftable</li>'
 
     if not markup:
         # XHTML compliance
@@ -254,63 +288,67 @@ def generate_attribute_list(item, showlinks = False):
 def generate_cell(item, invalid = False, show_equipped = True, user = None, pricestats = None, mode = None):
     if not item: return '<div class="item_cell"></div>'
 
-    item_id = item.get_id()
+    itemid = item.get("id")
     schema_item = False
-    equipped = (len(item.get_equipped_classes()) > 0)
+    equipped = show_equipped and (len(item.get("equipped", {})) > 0)
     if not mode: mode = web.ctx.current_game or "tf2"
 
-    if not show_equipped: equipped = False
-    if not item_id:
+    if not itemid:
         schema_item = True
-        item_id = item.get_schema_id()
+        itemid = item["sid"]
 
     item_link = generate_item_url(item, user, mode = mode)
-    quality = item.get_quality()["str"]
+    quality = item.get("quality", "normal")
     equippedstr = ""
-    quantity = item.get_quantity()
+    quantity = item.get("qty")
 
     cell_class = "item_cell"
-    if not schema_item and item.get_position() <= -1: cell_class += " undropped"
+    if not schema_item and item.get("pos", -1) <= -1: cell_class += " undropped"
 
     style = ""
-    if "namecolor" in item.optf2:
-        style = ' style="border-color: #{0};"'.format(item.optf2["namecolor"])
+    coloroverride = item.get("namergb")
+    if coloroverride:
+        style = ' style="border-color: #{0};"'.format(coloroverride)
 
     markup = ('<div class="{0} cell-{1}"{6} id="s{2}">' +
               '<a class="item-link" href="{3}">' +
               '<img class="item-image small" src="{4}" alt="{5}"/>' +
               '</a>'
-              ).format(cell_class, quality, item_id, item_link, item.optf2["image_url"], item_id, style)
+              ).format(cell_class, quality, itemid, item_link, item["image"], itemid, style)
 
-    contents = item.optf2.get("contents")
+    contents = item.get("contents")
+    series = item.get("series")
+    craftno = item.get("craftno")
+    pid = item.get("pid")
+    texture = item.get("texture")
     if contents:
-        markup += '<img src="' + contents.get_image(item.ITEM_IMAGE_SMALL) + '" alt="0" class="item-image gift-preview"/>'
-    if item.get_custom_name():
+        markup += '<img src="' + contents["image"] + '" alt="0" class="item-image gift-preview"/>'
+    if item.get("cname"):
         markup += '<img src="' + static_prefix + 'name_tag.png" class="icon-name" alt="Named"/>'
-    if item.get_custom_description():
+    if item.get("cdesc"):
         markup += '<img src="' + static_prefix + 'desc_tag.png" class="icon-desc"  alt="Described"/>'
-    if item.optf2.get("gift"):
+    if "gifter" in item:
         markup += '<img src="' + static_prefix + 'gift_icon.png" class="icon-gift"  alt="Gift"/>'
-    if "color" in item.optf2:
-        markup += '<span class="paint_splotch" style="background: ' + item.optf2['color'] + ';">&nbsp;</span>'
-    if "color_2" in item.optf2:
-        markup += '<span class="paint_splotch secondary" style="background: ' + item.optf2['color_2'] + ';">&nbsp;</span>'
-    if "series" in item.optf2:
-        markup += '<span class="crate-series-icon">' + str(item.optf2["series"]) + '</span>'
-    if "craft_number" in item.optf2:
-        markup += '<div class="craft-number-icon">' + str(item.optf2["craft_number"]) + '</div>'
-    if "particle-id" in item.optf2:
-        markup += '<img class="icon-particle" alt="Picon" src="' + generate_particle_icon_url(item.optf2["particle-id"], mode) + '"/>'
-    if "custom texture" in item.optf2:
-        markup += '<img class="icon-custom-texture"  src="' + item.optf2["custom texture"] + '" alt="texture"/>'
+    for cid, color in item.get("colors", []):
+        sec = ''
+        if cid != 0: sec = " secondary"
+        markup += '<span class="paint_splotch{0}" style="background: {1};">&nbsp;</span>'.format(sec, color)
+    if series:
+        markup += '<span class="crate-series-icon">{0}</span>'.format(series)
+    if craftno:
+        markup += '<div class="craft-number-icon">{0}</div>'.format(craftno)
+    if pid:
+        markup += '<img class="icon-particle" alt="Picon" src="' + generate_particle_icon_url(pid, mode) + '"/>'
+    if texture:
+        markup += '<img class="icon-custom-texture"  src="' + texture + '" alt="texture"/>'
     if equipped:
         markup += '<span class="ui-icon ui-icon-suitcase equipped-icon"></span>'
-    if quantity > 1:
+    if quantity:
         markup += '<span class="cell-quantity">' + str(quantity) + '</span>'
 
-    markup += '<div class="tooltip">' + item.optf2["cell_name"]
-
-    painty = item.optf2.get("painted_text", "")
+    if coloroverride: style = ' style="color: #{0};"'.format(coloroverride)
+    quality = item.get("quality", "normal")
+    markup += '<div class="tooltip"><div class="prefix-{0} item-name"{1}>{2[mainname]}</div>'.format(quality, style, item)
 
     markup += generate_item_type_line(item)
 
@@ -324,6 +362,25 @@ def generate_cell(item, invalid = False, show_equipped = True, user = None, pric
     if pricestr: markup += '<div class="attr-neutral">{0}</div>'.format(pricestr)
 
     markup += '</div></div>\n'
+
+    return markup
+
+def generate_class_icon_links(classes, user = None, wiki_url = None):
+    classlink = '#'
+    markup = ''
+    classi = classes
+
+    try: classi = classes.keys()
+    except AttributeError: pass
+
+    for ec in classi:
+        cid, label = get_class_for_id(ec)
+        if user:
+            classlink = generate_mode_url("loadout/{0}#{1}".format(user["id64"], label))
+        else:
+            if wiki_url:
+                classlink = wiki_url + label
+        markup += '<a href="' + classlink + '">' + generate_class_sprite_img(ec) + '</a>&nbsp;'
 
     return markup
 
