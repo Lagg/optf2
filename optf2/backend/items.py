@@ -262,8 +262,8 @@ def get_price_stats(items, cache):
     for item in items:
         if not item: continue
         # TODO? Checking origin string directly may cause problems for non-english origins
-        origin = item.get("origin")
-        if "id" in item and origin and origin.lower() != "purchased":
+        origin = item.get("origin", '')
+        if "id" in item and origin.lower() != "purchased":
             continue # Not explicit purchase
         try:
             asset = assets[item.get("sid")]

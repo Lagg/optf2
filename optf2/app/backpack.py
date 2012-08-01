@@ -116,6 +116,8 @@ class live_item:
             return templates.error("Couldn't connect to Steam")
         except steam.user.ProfileError as E:
             return templates.error("Can't retrieve user profile data: {0}".format(E))
+        except steam.items.BackpackError as E:
+            return templates.error("Couldn't open backpack: {0}".format(E))
         except KeyError:
             return templates.item_error_notfound(iid)
         return templates.item(user, item, item_outdated)

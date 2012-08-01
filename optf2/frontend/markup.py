@@ -243,11 +243,13 @@ def generate_attribute_list(item, showlinks = False):
     if showlinks: morestr = ' <a href="{0}">(more)</a>'
 
     for attr in item.get("attrs", []):
-        desc = attr.get("desc", attr.get("val", '')).strip('\n')
+        desc = attr.get("desc", '').strip('\n')
         style = ""
         acct = item.get("accounts", {}).get(attr["id"])
         color = attr.get("color")
         atype = attr.get("type", "neutral")
+
+        if not desc: continue
 
         if color: style = ' style="color: #{0};"'.format(color)
         markup += '<li class="attr-{0}"{1}>'.format(atype, style)

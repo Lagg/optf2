@@ -444,7 +444,7 @@ class cache:
                 filtered = False
 
             if not filtered:
-                newattr["desc"] = attrdesc
+                if attrdesc: newattr["desc"] = attrdesc
             else:
                 continue
 
