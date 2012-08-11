@@ -113,7 +113,12 @@ def build_page_object(items, pagesize = None, ignore_position = False, mode = No
         if imap[section][itempos] == None:
             imap[section][itempos] = item
         else:
-            displaced.append(item)
+            overlapped = imap[section][itempos]
+            if overlapped.get("id") > item.get("id"):
+                imap[section][itempos] = item
+                displaced.append(overlapped)
+            else:
+                displaced.append(item)
 
     mkeys = sorted(imap.keys())
     mapkeys = set(mkeys)
