@@ -1,10 +1,12 @@
 var invalidIconURL = static_prefix + "item_icons/Invalid_icon.png";
 
 $(document).ready(function(){
-    var cells = new Cell("#backpack");
+    var cells = new ItemCells(), dialogs = new ItemDialog();
 
-    cells.fitToContainer();
-    cells.bindHoverAction();
+    cells.fitToContainer("#backpack");
+    cells.bindTooltipHandlers();
+
+    dialogs.bindOpenOnClick();
 
     var hashpage = URL.getHashStore("page");
 
@@ -35,9 +37,6 @@ $(document).ready(function(){
 	    paginationButton.setClickState(true);
 	}
     }
-
-    var dialogs = new ItemDialog(".item-link");
-    dialogs.bindOpenOnClick();
 
     /* Still somewhat experimental, aim to replace most
        of toolbar */
@@ -98,18 +97,10 @@ $(document).ready(function(){
 
 	    $("#loadout-result").load(this.href + " #loadout",
 				      function(data) {
-					  var cells = new Cell(data);
-					  var dialogs = new ItemDialog(".item-link");
-
 					  $("#backpack").toggle();
 					  $("#loadout-result").toggle();
 
 					  $("#loadout-button").html(lastText);
-
-					  dialogs.bindOpenOnClick();
-
-					  cells.fitToContainer();
-					  cells.bindHoverAction();
 
 					  autosizeBoxes();
 				      });
@@ -126,6 +117,8 @@ $(document).ready(function(){
     $('img[class~="icon-particle"]').one("error", function() {
         $(this).remove();
     });
+
+    $(document).on("mousedown", ".button", function() { return false; });
 });
 
 function autosizeBoxes() {
@@ -339,81 +332,74 @@ function Button(defaultText) {
     if (defaultText) {
 	this.setText(defaultText);
     }
-
-    $(document).on("mousedown", ".button", function() { return false; });
 }
 
-function Cell(container) {
+function ItemCells() {
     var cellSelector = ".item_cell";
-    var cells = [];
-    var self = this;
 
-    if ($(container).length == 0) {
-	container = document;
-    }
+    this.hoverHandler = function() {
+	var cell = $(this);
+	var win = $(window);
+	var windowWidth = win.width();
+	var windowHeight = win.height();
+	var attribs = cell.find(".tooltip");
+	var currentOffset = cell.offset();
 
-    cells = $(cellSelector);
+        attribs.show();
+        currentOffset.top += cell.height() + 5;
+        currentOffset.left -= (attribs.width() - cell.width()) / 2;
 
-    this.cellsPerRow = cellsPerRow;
+        /* Check if attribs go off the document */
+        if (currentOffset.left < 0) { currentOffset.left = 0; }
+        if((currentOffset.left + attribs.width()) > windowWidth) {
+	    currentOffset.left = windowWidth - attribs.width();
+        }
 
-    this.bindHoverAction = function() {
-	cells.hover(function() {
-            var attribs = $(this).find(".tooltip");
-            var currentOffset = $(this).offset();
-	    var windowHeight = $(window).height();
-	    var windowWidth = $(window).width();
+        attribs.offset(currentOffset);
+        if (attribs.length > 0) {
+	    var scrollh = $(document).scrollTop();
+	    var offsety = attribs.offset().top;
+	    var threshold = (scrollh + windowHeight);
+	    var posbottom = (offsety + attribs.height());
 
-            attribs.show();
-            currentOffset.top += $(this).height() + 5;
-            currentOffset.left -= (attribs.width() - $(this).width()) / 2;
-
-            /* Check if attribs go off the document */
-            if (currentOffset.left < 0) { currentOffset.left = 0; }
-            if((currentOffset.left + attribs.width()) > windowWidth) {
-		currentOffset.left = windowWidth - attribs.width();
-            }
-
-            attribs.offset(currentOffset);
-            if (attribs.length > 0) {
-		var scrollh = $(document).scrollTop();
-		var offsety = attribs.offset().top;
-		var threshold = (scrollh + windowHeight);
-		var posbottom = (offsety + attribs.height());
-
-		if (posbottom > threshold) {
-                    attribs.offset({top: ($(this).offset().top - attribs.height() - 5)});
-		}
-            }
-	}, function() {
-            $(this).find(".tooltip").hide();
-	});
-	cells.find(".tooltip").hover(function() { $(this).hide(); });
-
-	$(document).scroll(function() {
-            cells.find(".tooltip").hide();
-	});
+	    if (posbottom > threshold) {
+                attribs.offset({top: (cell.offset().top - attribs.height() - 5)});
+	    }
+        }
     };
 
-    this.fitToContainer = function() {
+    this.hoverOutHandler = function () { $(".tooltip").hide(); };
+
+    this.bindTooltipHandlers = function() {
+	$("#content").on("mouseenter", cellSelector, this.hoverHandler);
+	$("#content").on("mouseleave", cellSelector, this.hoverOutHandler);
+	$("#content").on("mouseenter", ".tooltip", this.hoverOutHandler);
+
+	$(document).scroll(this.hoverOutHandler);
+    }
+
+    this.fitToContainer = function(container) {
 	var jContainer = $(container);
-	if (container && cells.length != 0) {
+	var containerCells = jContainer.find(cellSelector).not(".ungrouped > .item_cell");
+
+	if (container && containerCells.length != 0) {
 	    if(jContainer.length != 0) {
-		/* Ignore "detached" cells that happen to be in the same container */
-		jContainer.width(cells.not(".ungrouped > .item_cell").outerWidth(true) * this.cellsPerRow);
+		/* Ignore "detached" cells that happen to be in the same container, cellsPerRow is a generated global */
+		jContainer.width(containerCells.outerWidth(true) * cellsPerRow);
 	    }
 	}
     };
 }
 
 function rgb2hex(rgb) {
-    var rgb = rgb.match(/^rgb\((\d+),\s*(\d+),\s*(\d+)\)$/);
+    var match = rgb.match(/^rgb\((\d+),\s*(\d+),\s*(\d+)\)$/);
     function hex(x) {
         return ("0" + parseInt(x).toString(16)).slice(-2);
     }
 
     var vals = [];
-    for (var i = 1; i < rgb.length; i++) {
-	var v = rgb[i];
+    for (var i = 1; i < match.length; i++) {
+	var v = match[i];
 
 	if (v > 180) {
 	    v -= 100;
@@ -598,29 +584,19 @@ function Field(id) {
 
 }
 
-function ItemDialog(baseLink) {
+function ItemDialog() {
     var self = this;
-    this.itemURLMap = new Object();
     this.lastDialogSize = null;
 
-    if (!baseLink) {
-	throw new Error("Need a valid item link anchor selector");
-    }
-
-    $(baseLink).each(function() {
-        var id = String($(this).parent().attr("id").slice(1));
-        self.itemURLMap[id] = $(this).attr("href");
-    });
-
     this.bindOpenOnClick = function() {
-	$(".item_cell[id]").click(function(event) {
+	$("#content").on("click", ".item_cell[id]", function(event) {
+	    var cell = $(this);
             event.preventDefault();
-            self.open($(this).attr("id").slice(1));
+            self.open(cell.attr("id"), cell.find("a.item-link").attr("href"));
 	});
     };
 
-    this.open = function(id) {
-	var url = this.itemURLMap[id];
+    this.open = function(id, url) {
 	var existingDialog = null;
 
 	if (this.isLoadTickerRunning(id)) {
@@ -629,16 +605,11 @@ function ItemDialog(baseLink) {
 
 	this.toggleLoadTicker(id);
 
-	$(".dedicated_item").find("#item_id").each(function() {
-	    if (this.innerHTML == id) {
-		existingDialog = $(this).parentsUntil(".dedicated_item").parent().first();
-		return false;
-	    }
-	});
+	existingDialog = $(".dedicated_item." + id);
 
-	if (existingDialog) {
+	if (existingDialog.length > 0) {
 	    this.toggleLoadTicker(id);
-            $(existingDialog).dialog({open: this.resizeEvent});
+            existingDialog.dialog({open: this.resizeEvent});
 	} else {
             $.get(url, this.openSuccessEvent, {}, "html");
 	}
@@ -650,9 +621,11 @@ function ItemDialog(baseLink) {
 	var content = page.filter("#content").find("#item_stats");
 	var width = 850;
 	var height = 670;
-	var itemID = content.find("#item_id").text();
+	var cellID = 's' + content.find(".item_id").text();
 
-	self.toggleLoadTicker(itemID);
+	content.addClass(cellID);
+
+	self.toggleLoadTicker(cellID);
 
 	if (self.lastDialogSize != null) {
             width = self.lastDialogSize.width;
@@ -662,7 +635,8 @@ function ItemDialog(baseLink) {
 	title.css({"font-size": "1.6em", "margin": "0", "padding": "0"});
 
 	var buttons = content.find(".item-attrs .button-list");
-	buttons.append("<li><a class=\"button\" href=\"" + self.itemURLMap[itemID] + "\">Link to this item</a></li>");
+	var itemLink = $('#' + cellID + " .item-link").attr("href");
+	buttons.append("<li><a class=\"button\" href=\"" + itemLink + "\">Link to this item</a></li>");
 
 	if ($(window).height() < height) {
             height = $(window).height();
@@ -674,7 +648,7 @@ function ItemDialog(baseLink) {
 	$(content).dialog({
             resize: self.resizeEvent,
             open: function(event, ui) {
-		var cellImage = $("#s" + itemID + " .item-image");
+		var cellImage = $('#' + cellID + " .item-image");
 		$(event.target).find("img.item-image").one("error", function() {
 		    $(this).attr("src", invalidIconURL);
 		});
@@ -745,8 +719,7 @@ function ItemDialog(baseLink) {
     this.toggleLoadTicker = function (id) {
 	var tickerID = "loading-" + id;
 	var tickerSelector = "#" + tickerID;
-	var cellID = "s" + id;
-	var cellSelector = "#" + cellID;
+	var cellSelector = "#" + id;
 	var ticker = $(document.createElement("img"));
 
 	ticker.attr({

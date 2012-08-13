@@ -7,7 +7,7 @@ $var title: $project_name - All Particles
 <div id="content">
   <div id="backpack">
   $for k, particle in particles.iteritems():
-      <div class="item_cell" id="s${particle['id']}">
+      <div class="item_cell">
         <img class="item-image small" src="$markup.generate_particle_icon_url(particle['id'])" alt="${particle['id']}"/>
         <div class="tooltip">
           <div class="item-name">$particle["name"]</div>

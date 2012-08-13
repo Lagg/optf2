@@ -60,7 +60,7 @@ $var title: $project_name - $usern $:item["ownedname"]
                 <a href="$markup.generate_mode_url('user/{0}'.format(giftgiver['id64']))">$giftgiver["persona"]</a>
           </li>
       $elif serial:
-          <li class="attr-neutral">ID: <span id="item_id">$serial</span></li>
+          <li class="attr-neutral">ID: <span class="item_id">$serial</span></li>
           $ oid = item.get("oid")
 	  $if oid: <li class="attr-neutral">Last ID: $oid</li>
       <li class="attr-neutral">
@@ -76,7 +76,7 @@ $var title: $project_name - $usern $:item["ownedname"]
           </li>
   $else:
       <li class="attr-neutral">
-        ID: <span id="item_id">$item["sid"]</span>
+        ID: <span class="item_id">$item["sid"]</span>
       </li>
       $ equipable = item.get("equipable")
       $if equipable:
