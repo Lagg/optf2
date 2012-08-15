@@ -28,21 +28,36 @@ class items:
     def GET(self):
         query = web.input()
         cache = database.cache()
-        items = [cache._build_processed_item(item) for item in cache.get_schema()]
-        filter_qualities = markup.get_quality_strings(itemtools.get_present_qualities(items), cache)
-        filter_capabilities = markup.get_capability_strings(itemtools.get_present_capabilities(items))
 
-        try: items = itemtools.filter_by_class(items, query["sortclass"])
-        except KeyError: pass
-        try: items = itemtools.filter_by_quality(items, query["quality"])
-        except KeyError: pass
-        try: items = itemtools.sort(items, query["sort"])
-        except KeyError: pass
-        try: items = itemtools.filter_by_capability(items, query["capability"])
-        except KeyError: pass
+        try:
+            items = [cache._build_processed_item(item) for item in cache.get_schema()]
+        except database.CacheEmptyError as E:
+            return templates.error(E)
+
+        try:
+            filter_classes = markup.sorted_class_list(itemtools.get_equippable_classes(items, cache))
+            items = itemtools.filter_by_class(items, query["sortclass"])
+        except KeyError:
+            pass
+
+        try:
+            filter_qualities = markup.get_quality_strings(itemtools.get_present_qualities(items), cache)
+            items = itemtools.filter_by_quality(items, query["quality"])
+        except KeyError:
+            pass
+
+        try:
+            filter_capabilities = markup.get_capability_strings(itemtools.get_present_capabilities(items))
+            items = itemtools.filter_by_capability(items, query["capability"])
+        except KeyError:
+            pass
+
+        try:
+            items = itemtools.sort(items, query["sort"])
+        except KeyError:
+            pass
 
         stats = itemtools.get_stats(items)
-        filter_classes = markup.sorted_class_list(itemtools.get_equippable_classes(items, cache))
         price_stats = itemtools.get_price_stats(items, cache)
 
         return templates.schema_dump(items,
@@ -58,8 +73,12 @@ class attributes:
     def GET(self):
         query = web.input()
         cache = database.cache()
-        schema = cache.get_schema()
-        attribs = schema.get_attributes()
+
+        try:
+            schema = cache.get_schema()
+            attribs = schema.get_attributes()
+        except database.CacheEmptyError as E:
+            return templates.error(E)
 
         attachment_check = query.get("att")
         attribute = None
@@ -89,7 +108,10 @@ class attributes:
 
 class particles:
     def GET(self):
-        schema = database.cache().get_schema()
-        particles = schema.get_particle_systems()
+        try:
+            schema = database.cache().get_schema()
+            particles = schema.get_particle_systems()
 
-        return templates.particle_dump(particles)
+            return templates.particle_dump(particles)
+        except database.CacheEmptyError as E:
+            return templates.error(E)

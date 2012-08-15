@@ -48,15 +48,18 @@ class loadout:
             cache = database.cache()
 
             userp = cache.get_profile(user)
-            schema = cache.get_schema()
             items = cache.get_backpack(userp)["items"].values()
             equippeditems = {}
             classmap = set()
             slotlist = []
 
             # initial normal items
-            normalitems = itemtools.filter_by_quality([cache._build_processed_item(item) for item in schema], "normal")
-            equippeditems, slotlist, classmap = self.build_loadout(normalitems, equippeditems, slotlist, classmap)
+            try:
+                schema = cache.get_schema()
+                normalitems = itemtools.filter_by_quality([cache._build_processed_item(item) for item in schema], "normal")
+                equippeditems, slotlist, classmap = self.build_loadout(normalitems, equippeditems, slotlist, classmap)
+            except database.CacheEmptyError:
+                pass
 
             # Real equipped items
             equippeditems, slotlist, classmap = self.build_loadout(items, equippeditems, slotlist, classmap)
@@ -66,8 +69,8 @@ class loadout:
             return templates.error("Backpack error: {0}".format(E))
         except steam.user.ProfileError as E:
             return templates.error("Profile error: {0}".format(E))
-        except steam.base.HttpError:
-            return templates.error("Couldn't connect to Steam")
+        except steam.base.HttpError as E:
+            return templates.error("Couldn't connect to Steam (HTTP {0})".format(E))
 
     def __init__(self):
         # Slots that should be arranged in this order
@@ -76,26 +79,33 @@ class loadout:
 class item:
     def GET(self, iid):
         cache = database.cache()
-        schema = cache.get_schema()
-        assets = cache.get_assets()
         user = None
         item_outdated = False
+
         try:
+            schema = cache.get_schema()
             item = cache._build_processed_item(schema[long(iid)])
 
             if web.input().get("contents"):
                 contents = item.get("contents")
                 if contents:
                     item = contents
-        except steam.base.HttpError:
-            return templates.error("Couldn't connect to Steam")
+        except steam.base.HttpError as E:
+            return templates.error("Couldn't connect to Steam (HTTP {0})".format(E))
         except steam.items.Error as E:
             return templates.error("Couldn't open schema: {0}".format(E))
         except KeyError:
             return templates.item_error_notfound(iid)
+        except database.CacheEmptyError as E:
+            return templates.error(E)
 
         caps = markup.get_capability_strings(itemtools.get_present_capabilities([item]))
-        price = markup.generate_item_price_string(item, assets)
+
+        try:
+            assets = cache.get_assets()
+            price = markup.generate_item_price_string(item, assets)
+        except database.CacheEmptyError:
+            price = None
 
         return templates.item(user, item, item_outdated, price = price, caps = caps)
 
@@ -114,8 +124,8 @@ class live_item:
                 contents = item.get("contents")
                 if contents:
                     item = contents
-        except steam.base.HttpError:
-            return templates.error("Couldn't connect to Steam")
+        except steam.base.HttpError as E:
+            return templates.error("Couldn't connect to Steam (HTTP {0})".format(E))
         except steam.user.ProfileError as E:
             return templates.error("Can't retrieve user profile data: {0}".format(E))
         except steam.items.Error as E:
@@ -136,10 +146,10 @@ class fetch:
         sortby = query.get("sort", "cell")
         sortclass = query.get("sortclass")
         filter_quality = query.get("quality")
-        cache = database.cache()
-        schema = cache.get_schema()
 
         try:
+            cache = database.cache()
+            schema = cache.get_schema()
             user = cache.get_profile(sid)
             pack = cache.get_backpack(user)
             cell_count = pack["cells"]
@@ -166,6 +176,8 @@ class fetch:
             return templates.error("Failed to load profile ({0})".format(E))
         except steam.base.HttpError as E:
             return templates.error("Couldn't connect to Steam (HTTP {0})".format(E))
+        except database.CacheEmptyError as E:
+            return templates.error(E)
 
         views = 0
 

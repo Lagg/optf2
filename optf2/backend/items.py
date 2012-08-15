@@ -254,7 +254,11 @@ def filter_by_capability(items, capability):
     return [item for item in items if item and capability in item.get("caps", [])]
 
 def get_price_stats(items, cache):
-    assets = cache.get_assets()
+    try:
+        assets = cache.get_assets()
+    except database.CacheEmptyError:
+        assets = {}
+
     stats = {"assets": assets, "sym": currencysymbols, "worth": {}, "most-expensive": [], "avg": {}}
 
     if not assets:

@@ -53,14 +53,16 @@ class game_root:
         ckey = str("scrender-" + mod + "-" + cache.get_language()).encode("ascii")
         showcase = cache.get(ckey)
         if not showcase:
-            items = cache.get_schema(stale = usestale)
-            if items:
-                items = list(items)
+            try:
+                schema = cache.get_schema(stale = usestale)
+                items = list(schema)
                 if len(items) > 0:
                     item = cache._build_processed_item(random.choice(items))
                     showcase = generate_cell(item, mode = mod)
                     # May want to add an option for showcase expiration to config later
                     cache.set(ckey, showcase, time = 600)
+            except:
+                pass
 
         # Last packs
         packs = cache.get_recent_pack_list()

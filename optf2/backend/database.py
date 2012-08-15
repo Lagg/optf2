@@ -44,6 +44,18 @@ memc = pylibmc.ThreadMappedPool(memcached)
 # Keeps track of connection times, until I think of a better way
 last_server_checks = {}
 
+class CacheError(Exception):
+    def __init__(self, msg):
+        Exception.__init__(self)
+        self.msg = msg
+
+    def __str__(self):
+        return str(self.msg)
+
+class CacheEmptyError(CacheError):
+    def __init__(self, msg):
+        CacheError.__init__(self, msg)
+
 class cache:
     """ Cache retrieval/setting functions """
 
@@ -66,21 +78,31 @@ class cache:
 
             if getlm: lm = getlm(oldobj)
 
-        result = None
+        aco = oldobj
         try:
+            result = None
             if not appid: result = baseclass(lang = language, last_modified = lm, timeout = timeout, data_timeout = datatimeout)
             else: result = baseclass(appid, lang = language, last_modified = lm, timeout = timeout, data_timeout = datatimeout)
-            if cachefilter: result = cachefilter(result)
-            self.set(memkey, result)
-        except steam.base.HttpStale, pylibmc.Error:
-            result = (oldobj or result)
-        except Exception as E:
-            log.main.error("Cached loading error: {0}".format(E))
-            result = (oldobj or result)
-        finally:
-            if result: last_server_checks[memkey] = ctime
 
-            return result
+            if cachefilter:
+                aco = cachefilter(result)
+            else:
+                aco = result
+
+            self.set(memkey, aco)
+        except steam.base.HttpStale, pylibmc.Error:
+            pass
+        except Exception as E:
+            log.main.error("Cache refresh error: {0}".format(E))
+        finally:
+            if aco:
+                last_server_checks[memkey] = ctime
+            else:
+                errstr = "Cache record missing: {0}".format(memkey)
+                log.main.error(errstr)
+                raise CacheEmptyError(errstr)
+
+            return aco
 
     def get(self, value, default = None):
         with memc.reserve() as mc:
@@ -214,7 +236,12 @@ class cache:
         processedpack = {"items": {}}
         pack = self.get(memkey)
         if not pack:
-            pack = getattr(steam, modulename).backpack(id64, schema = self.get_schema())
+            try:
+                schema = self.get_schema()
+            except CacheEmptyError:
+                schema = None
+
+            pack = getattr(steam, modulename).backpack(id64, schema = schema)
 
             processedpack["cells"] = pack.get_total_cells()
             for item in pack:
