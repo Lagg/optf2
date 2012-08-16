@@ -11,20 +11,7 @@ class webFilter(logging.Filter):
         except AttributeError:
             record.path = "/"
 
-        fullmsg = (record.msg % record.args)
-        path = record.path
-
-        lastmsg = self._last
-        self._last = fullmsg
-
-        if fullmsg == lastmsg:
-            return False
-        else:
-            return True
-
-    def __init__(self, **kwargs):
-        self._last = ''
-        super(webFilter, self).__init__(kwargs)
+        return True
 
 main_handler = logging.FileHandler(os.path.join(config.ini.get("resources", "cache-dir"), "op.log"))
 path_formatter = logging.Formatter("%(asctime)-15s %(name)-5s %(levelname)-8s %(path)s - %(message)s",
