@@ -92,11 +92,11 @@ $var title: $project_name - $usern $:item["ownedname"]
         $ capfmt = '<li style="padding: 2px 0 2px 0;">{0[0]}</li>'
 	$:''.join(map(capfmt.format, caps))
       </ul>
-  <ul class="button-list">
+  <ul class="link-list">
     $if item_wiki_url:
-        <li><a class="button" href="$item_wiki_url">$wikiname article</a></li>
+        <li><a href="$item_wiki_url">$wikiname article</a></li>
     $if user:
-        <li><a class="button" href="$markup.generate_mode_url('item/{0}'.format(item['sid']))">Schema version</a></li>
+        <li><a href="$markup.generate_mode_url('item/{0}'.format(item['sid']))">Schema version</a></li>
   </ul>
   </div>
   </div>

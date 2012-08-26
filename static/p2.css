@@ -40,18 +40,6 @@ a { color: #555555; }
 #header h1[class|=prefix] { background: #919191; border: 1px solid black; }
 #header h1 a { color: white; }
 
-.button {
-    background-color: #828282;
-    color: black;
-    -moz-border-radius: 0;
-    -webkit-border-radius: 0;
-    border-radius: 0;
-}
-
-.button[class~=clicked] { background-color: #505050; }
-.button:active { background-color: #999999; }
-.button:hover { background-color: #979797; }
-
 .dropdown-menu {
     background-color: #828282;
     color: black;
@@ -69,4 +57,5 @@ a { color: #555555; }
 .ui-dialog { border: 1px solid #474747; background: #d8d8d8; }
 .ui-dialog-titlebar { border: 1px solid #4d4d4d; background: #919191; color: #ffffff; font-weight: bold; }
 .ui-dialog-titlebar a { color: white; }
+.ui-dialog-content a { color: #555555; }
 .ui-widget-content { color: black; }

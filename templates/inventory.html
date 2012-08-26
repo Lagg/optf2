@@ -50,8 +50,8 @@ $ onlinestates = {0: "offline", 1: "online", 2: "busy", 3: "away", 4: "snooze", 
               <li><a href="${virtual_root}${mid}/user/${id64}">$label</a></li>
         </ul>
       </div>
-      <a class="button" id="loadout-button" href="$markup.generate_mode_url('loadout/{0}'.format(id64))">Loadout</a>
-      <a class="button" href="$rss">RSS</a>
+      <a id="loadout-button" href="$markup.generate_mode_url('loadout/{0}'.format(id64))">Loadout</a>
+      <a id="feed-button" href="$rss">RSS</a>
   </div>
   <div id="backpack" style="width: 1040px;" class="bp-${appid}-${id64}">
     <div class="side-box">
@@ -124,7 +124,7 @@ $ onlinestates = {0: "offline", 1: "online", 2: "busy", 3: "away", 4: "snooze", 
     $ pagekeys.sort()
     $for k in pagekeys:
         <div id="page-${k}" class="backpack-page">
-	  <a class="page-label button" href="#page-$k">$k</a>
+	  <a class="page-label" href="#page-$k">$k</a>
           $for item in items[k]:
               $:markup.generate_cell(item, user = user)
         </div>

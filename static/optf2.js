@@ -1,6 +1,24 @@
 var invalidIconURL = static_prefix + "item_icons/Invalid_icon.png";
 
+function makeToggleButton(label, id, callback, append) {
+    var b = $('<input type="checkbox" id="' + id + '"/><label for="' + id + '">' + label + '</label>');
+    if (append) { b.appendTo(append); }
+    $("#" + id).button().click(callback);
+}
+
 $(document).ready(function(){
+    $("img.item-image").one("error", function() {
+        this.src = invalidIconURL;
+    });
+
+    $('img[class~="icon-particle"]').one("error", function() {
+        $(this).remove();
+    });
+
+    $(document).on("mousedown", ".button, .ui-button", function() { return false; });
+    $(".page-label").button();
+    $("#feed-button").button({icons: {primary: "ui-icon-signal-diag"}});
+
     var cells = new ItemCells(), dialogs = new ItemDialog();
 
     cells.fitToContainer("#backpack");
@@ -16,26 +34,24 @@ $(document).ready(function(){
 
     if ($("#backpack").has(".backpack-page").length) {
 	var pager = new BackpackPager("#backpack", hashpage);
-	var paginationButton = new Button("Show pages");
-
-	paginationButton.attachTo(".item-tools");
-	paginationButton.bindClickStateHandler(function(clicked) {
-	    if (clicked) {
-		if (!hashpage) {
-		    Cookie.set("pagination", true);
-		}
-		pager.modePaged();
-	    } else {
-		if (!hashpage) {
-		    Cookie.remove("pagination");
-		}
-		pager.modeFull();
-	    }
-	});
+	var paginationButton = $('<input type="checkbox" id="show-pages"/><label for="show-pages">Show Pages</label>');
 
 	if (Cookie.get("pagination") || hashpage) {
-	    paginationButton.setClickState(true);
+	    paginationButton.attr("checked", "checked");
+	    pager.modePaged();
 	}
+
+	paginationButton.appendTo(".item-tools");
+	$("#show-pages").button().click(function() {
+	    if (this.checked) {
+		Cookie.set("pagination", true);
+		pager.modePaged();
+	    } else {
+		Cookie.remove("pagination");
+		pager.modeFull();
+	    }
+
+	});
     }
 
     /* Still somewhat experimental, aim to replace most
@@ -47,29 +63,26 @@ $(document).ready(function(){
     filterField.bindDefaultText("Search...");
     cellFilter.bindFilterToField(cellFilter.byRawAttribute, filterField);
 
-    var untradableButton = new Button("Hide untradable");
-    untradableButton.attachTo(".item-tools");
-    untradableButton.bindClickStateHandler(function() { cellFilter.byUntradable(); });
+    makeToggleButton("Hide untradable", "hide-untradable",
+		     function () { unfade = !this.checked; cellFilter.fadeByAttrText("untradable", unfade); }, ".item-tools");
 
-    var uncraftableButton = new Button("Hide uncraftable");
-    uncraftableButton.attachTo(".item-tools");
-    uncraftableButton.bindClickStateHandler(function() { cellFilter.byUncraftable(); });
+    makeToggleButton("Hide uncraftable", "hide-uncraftable",
+		     function () { unfade = !this.checked; cellFilter.fadeByAttrText("uncraftable", unfade); }, ".item-tools");
 
-    var cellExportButton = new Button("bbCode");
-    cellExportButton.attachTo(".item-tools");
-    cellExportButton.bindClickStateHandler(function() {
-	var textArea = $("#exportData");
-	if (textArea.length) {
-	    textArea.text('');
-	    textArea.remove();
-	} else {
-	    var data = CellDataExport();
-	    textArea = $('<textarea rows="30" cols="100" id="exportData"></textarea>');
-	    textArea.text(data);
-	    textArea.insertBefore(".backpack-page:first");
-	    textArea.select();
-	}
-    });
+    makeToggleButton("bbCode", "export-bbcode",
+		     function() {
+			 var textArea = $("#exportData");
+			 if (textArea.length) {
+			     textArea.text('');
+			     textArea.remove();
+			 } else {
+			     var data = CellDataExport();
+			     textArea = $('<textarea rows="30" cols="100" id="exportData"></textarea>');
+			     textArea.text(data);
+			     textArea.insertBefore(".backpack-page:first");
+			     textArea.select();
+			 }
+		     }, ".item-tools");
 
     autosizeBoxes();
 
@@ -84,23 +97,23 @@ $(document).ready(function(){
 	$('<div id="loadout-result" style="display: none;"></div>').insertBefore(packdiv);
     }
 
-    $("#loadout-button").click(function(e) {
+    $("#loadout-button").button({icons: {primary: "ui-icon-suitcase"}}).click(function(e) {
 	var existingLoadout = $("#loadout");
+	var theButton = $(this);
 
 	e.preventDefault();
 
-	$(this).toggleClass("clicked");
+	theButton.toggleClass("clicked");
 
 	if (existingLoadout.length == 0) {
-	    var lastText = this.innerHTML;
-	    this.innerHTML = "Loading...";
+	    var lastText = theButton.button("option", "label");
+	    theButton.button("option", "label",  "Loading...");
 
 	    $("#loadout-result").load(this.href + " #loadout",
 				      function(data) {
 					  $("#backpack").toggle();
 					  $("#loadout-result").toggle();
-
-					  $("#loadout-button").html(lastText);
+					  theButton.button("option", "label", lastText);
 
 					  autosizeBoxes();
 				      });
@@ -109,16 +122,6 @@ $(document).ready(function(){
 	    $("#loadout-result").toggle();
 	}
     });
-
-    $("img.item-image").one("error", function() {
-        this.src = invalidIconURL;
-    });
-
-    $('img[class~="icon-particle"]').one("error", function() {
-        $(this).remove();
-    });
-
-    $(document).on("mousedown", ".button", function() { return false; });
 });
 
 function autosizeBoxes() {
@@ -175,6 +178,32 @@ function BackpackPager (container, initialpage) {
 	return this.activePages.index(this.currentPage);
     };
 
+    this.switchPage = function() {
+	var newpage = 0;
+	var pages = self.activePages;
+	var current = self.currentPage;
+	var cIndex = self.getCurrentPageIndex();
+
+	if (this.id == "item-page-forward") {
+            newpage = cIndex + 1;
+	} else if (this.id == "item-page-back") {
+            newpage = cIndex - 1;
+	}
+
+	if (!pages[newpage]) {
+	    return;
+	}
+
+	self.currentPage = $(pages[newpage]);
+	$(pages).hide();
+	self.currentPage.show();
+
+	URL.setHashStore("page", self.getCurrentPageId());
+	self.pageCounter.innerHTML = self.getCurrentPageId() + '/' + pages.length;
+
+	self.setSwitcherButtonActivity();
+    };
+
     var pagei = this.getPage(initialpage);
     if (pagei) {
 	this.currentPage = pagei;
@@ -191,15 +220,17 @@ function BackpackPager (container, initialpage) {
 
     jSwitcher = $(this.pageSwitcher);
 
-    this.pageBackButton = new Button("< Previous");
-    this.pageBackButton.attachTo(this.pageSwitcher);
+    this.pageBackButton = $('<button id="item-page-back">Previous</button>');
+    this.pageBackButton.appendTo(this.pageSwitcher);
+    this.pageBackButton.button({icons: {primary: "ui-icon-triangle-1-w"}}).click(this.switchPage);
 
     this.pageCounter = document.createElement("span");
     this.pageCounter.id = "page-counter";
     jSwitcher.append(this.pageCounter);
 
-    this.pageForwardButton = new Button("Next >");
-    this.pageForwardButton.attachTo(this.pageSwitcher);
+    this.pageForwardButton = $('<button id="item-page-forward">Next</button>');
+    this.pageForwardButton.appendTo(this.pageSwitcher);
+    this.pageForwardButton.button({icons: {secondary: "ui-icon-triangle-1-e"}}).click(this.switchPage);
 
     this.modeFull = function() {
 	this.activePages.show();
@@ -226,112 +257,22 @@ function BackpackPager (container, initialpage) {
     }
 
     this.setSwitcherButtonActivity = function() {
-	var bButton = $(this.pageBackButton.buttonElement);
-	var fButton = $(this.pageForwardButton.buttonElement);
-
 	var cIndex = this.getCurrentPageIndex();
+	pageForward = $("#item-page-forward");
+	pageBack = $("#item-page-back");
+
 	if (cIndex <= 0) {
-            bButton.addClass("inactive");
+            pageBack.button("disable");
 	} else {
-            bButton.removeClass("inactive");
+            pageBack.button("enable");
 	}
 
 	if (cIndex >= this.activePages.length - 1) {
-            fButton.addClass("inactive");
+            pageForward.button("disable");
 	} else {
-            fButton.removeClass("inactive");
+            pageForward.button("enable");
 	}
     };
-
-    this.switchPage = function(direction) {
-	var newpage = 0;
-	var pages = this.activePages;
-	var current = this.currentPage;
-	var cIndex = this.getCurrentPageIndex();
-
-	if (direction == "forward") {
-            newpage = cIndex + 1;
-	} else if (direction == "back") {
-            newpage = cIndex - 1;
-	}
-
-	if (!pages[newpage]) {
-	    return;
-	}
-
-	this.currentPage = $(pages[newpage]);
-	$(pages).hide();
-	this.currentPage.show();
-
-	URL.setHashStore("page", this.getCurrentPageId());
-	this.pageCounter.innerHTML = this.getCurrentPageId() + '/' + pages.length;
-
-	this.setSwitcherButtonActivity();
-    };
-
-    this.switchPageForward = function() {
-	return self.switchPage("forward");
-    };
-
-    this.switchPageBack = function() {
-	return self.switchPage("back");
-    };
-
-    this.pageForwardButton.bindOneOffHandler(this.switchPageForward);
-    this.pageBackButton.bindOneOffHandler(this.switchPageBack);
-}
-
-function Button(defaultText) {
-    this.buttonElement = document.createElement("div");
-    this.buttonElement.className = "button";
-    this.isClicked = false;
-    var self = this;
-    var stateHandler = null;
-    var stateChangeFire = function() {
-	if (self.isClicked) {
-	    $(self.buttonElement).addClass("clicked");
-	} else {
-	    $(self.buttonElement).removeClass("clicked");
-	}
-	stateHandler.call(self.buttonElement, self.isClicked);
-    };
-
-    this.attachTo = function(element) {
-	$(element).append(this.buttonElement);
-    };
-
-    this.bindClickStateHandler = function(handler) {
-	stateHandler = handler;
-
-	$(self.buttonElement).click(function() {
-	    self.isClicked = !self.isClicked;
-	    stateChangeFire();
-	});
-    };
-
-    this.bindOneOffHandler = function(handler) {
-	$(self.buttonElement).click(function() {
-	    handler.call(this);
-	});
-    };
-
-    this.setClickState = function(boolState) {
-	this.isClicked = boolState;
-
-	stateChangeFire();
-    };
-
-    this.setID = function(id) {
-	this.buttonElement.id = id;
-    };
-
-    this.setText = function(text) {
-	this.buttonElement.innerHTML = text;
-    };
-
-    if (defaultText) {
-	this.setText(defaultText);
-    }
 }
 
 function ItemCells() {
@@ -344,6 +285,10 @@ function ItemCells() {
 	var windowHeight = win.height();
 	var attribs = cell.find(".tooltip");
 	var currentOffset = cell.offset();
+
+	if (attribs.hasClass("inactive")) {
+	    return;
+	}
 
         attribs.show();
         currentOffset.top += cell.height() + 5;
@@ -523,21 +468,38 @@ function CellFilter(data) {
 	});
     };
 
-    this.fadeByAttributeListContent = function(input) {
+    this.fadeByAttrText = function(text, unfade) {
 	var cells = $(data);
 
 	cells.each(function() {
 	    var cell = $(this);
+	    var tt = cell.find(".tooltip");
 	    var attribs = cell.find(".attribute-list");
 
 	    attribs.each(function() {
-		if (this.innerHTML.toLowerCase().search(input.toLowerCase()) != -1) { cell.toggleClass("faded"); }
+		if (this.innerHTML.toLowerCase().search(text.toLowerCase()) != -1) {
+		    if (!unfade) {
+			var fadeBox = $('<div class="fade-overlay ' + text + '">&nbsp;</div>');
+			var b = parseInt(cell.css("border-width"));
+			fadeBox.width(cell.width());
+			fadeBox.height(cell.height());
+			fadeBox.css("border-radius", cell.css("border-radius"));
+			fadeBox.css("border-width", b);
+			fadeBox.css("top", -b);
+			fadeBox.css("left", -b);
+			fadeBox.appendTo(cell);
+			tt.addClass("inactive");
+		    } else {
+			cell.find(".fade-overlay." + text).remove();
+			if (cell.find(".fade-overlay").length <= 0) {
+			    cell.find(".tooltip.inactive").removeClass("inactive");
+			}
+		    }
+		    return false;
+		}
 	    });
 	});
     };
-
-    this.byUntradable = function(input) { return this.fadeByAttributeListContent("untradable"); };
-    this.byUncraftable = function(input) { return this.fadeByAttributeListContent("uncraftable"); };
 }
 
 function Field(id) {
@@ -634,9 +596,11 @@ function ItemDialog() {
 
 	title.css({"font-size": "1.6em", "margin": "0", "padding": "0"});
 
-	var buttons = content.find(".item-attrs .button-list");
+	var buttons = content.find(".item-attrs .link-list");
 	var itemLink = $('#' + cellID + " .item-link").attr("href");
-	buttons.append("<li><a class=\"button\" href=\"" + itemLink + "\">Link to this item</a></li>");
+	var itemLinkButton = $('<a href="' + itemLink + '">Share</a>');
+	buttons.append($("<li></li>").append(itemLinkButton));
+	itemLinkButton.button({icons: {primary: "ui-icon-link"}});
 
 	if ($(window).height() < height) {
             height = $(window).height();

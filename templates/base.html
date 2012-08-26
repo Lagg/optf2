@@ -7,7 +7,7 @@ $def with (content)
     <title>$:content.title</title>
     <meta name="generator" content="$project_name"/>
     <meta name="keywords" content="p2, portal 2, tf2, team fortress 2, steam, steam api, backpack, backpack viewer"/>
-    <link rel="stylesheet" type="text/css" href="${static_prefix}juicss/jquery-ui-1.8.19.custom.css"/>
+    <link rel="stylesheet" type="text/css" href="${static_prefix}jquery/css/jquery-ui-1.8.23.custom.css"/>
     <link rel="stylesheet" type="text/css" href="${static_prefix}common.css"/>
     $if instance.current_game:
         $ realstyle = cssaliases.get(instance.current_game, instance.current_game)
@@ -23,8 +23,8 @@ $def with (content)
     current_game = "${instance.current_game}";
     cellsPerRow = ${pagesizes.get(instance.current_game, pagesizes['default'])['width']};
     </script>
-    <script type="text/javascript" src="${static_prefix}jquery-1.7.2.min.js"></script>
-    <script type="text/javascript" src="${static_prefix}jquery-ui-1.8.19.custom.min.js"></script>
+    <script type="text/javascript" src="${static_prefix}jquery/js/jquery-1.8.0.min.js"></script>
+    <script type="text/javascript" src="${static_prefix}jquery/js/jquery-ui-1.8.23.custom.min.js"></script>
     <script type="text/javascript" src="${static_prefix}optf2.js"></script>
   </head>
   <body>
