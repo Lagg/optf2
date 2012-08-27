@@ -178,7 +178,8 @@ def generate_item_type_line(item, classic = True):
     if itemorigin:
         origin_name = " - " + itemorigin
 
-    if rank: levelprefix = ""
+    # Add space to prefix for rank
+    if rank: levelprefix += ' '
 
     return '<div class="item-level">{0}{1} {2}{3}</div>'.format(levelprefix,
                                                                 web.websafe(rank),
