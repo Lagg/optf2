@@ -60,12 +60,12 @@ class items:
         stats = itemtools.get_stats(items)
         price_stats = itemtools.get_price_stats(items, cache)
 
-        return templates.schema_dump(items,
-                                     filter_classes,
-                                     filter_qualities,
-                                     filter_capabilities,
-                                     stats,
-                                     price_stats)
+        return templates.schema_items(items,
+                                      filter_classes,
+                                      filter_qualities,
+                                      filter_capabilities,
+                                      stats,
+                                      price_stats)
 
 class attributes:
     """ Dumps all schema attributes in a pretty way """
@@ -104,7 +104,7 @@ class attributes:
 
             return templates.attribute_attachments([cache._build_processed_item(item) for item in attached_items], attribute)
         else:
-            return templates.attrib_dump(attribs)
+            return templates.schema_attributes(attribs)
 
 class particles:
     def GET(self):
@@ -112,6 +112,6 @@ class particles:
             schema = database.cache().get_schema()
             particles = schema.get_particle_systems()
 
-            return templates.particle_dump(particles)
+            return templates.schema_particles(particles)
         except database.CacheEmptyError as E:
             return templates.error(E)
