@@ -29,6 +29,8 @@ class items:
         query = web.input()
         cache = database.cache()
 
+        markup.set_navlink()
+
         try:
             items = [cache._build_processed_item(item) for item in cache.get_schema()]
         except database.CacheEmptyError as E:
@@ -74,6 +76,8 @@ class attributes:
         query = web.input()
         cache = database.cache()
 
+        markup.set_navlink()
+
         try:
             schema = cache.get_schema()
             attribs = schema.get_attributes()
@@ -108,6 +112,7 @@ class attributes:
 
 class particles:
     def GET(self):
+        markup.set_navlink()
         try:
             schema = database.cache().get_schema()
             particles = schema.get_particle_systems()

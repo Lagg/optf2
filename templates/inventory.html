@@ -43,13 +43,6 @@ $ onlinestates = {0: "offline", 1: "online", 2: "busy", 3: "away", 4: "snooze", 
               <li><a href="$qurl(quality = id)"><span class="prefix-$id">$label</span></a></li>
           </ul>
 	</div>
-      <div class="dropdown-menu">
-        <b>Other games</b>
-        <ul>
-          $for mid, label in game_modes.iteritems():
-              <li><a href="${virtual_root}${mid}/user/${id64}">$label</a></li>
-        </ul>
-      </div>
       <a id="loadout-button" href="$markup.generate_mode_url('loadout/{0}'.format(id64))">Loadout</a>
       <a id="feed-button" href="$rss">RSS</a>
   </div>

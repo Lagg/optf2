@@ -44,6 +44,7 @@ class loadout:
         return loadout, slotlist, classmap
 
     def GET(self, user):
+        markup.set_navlink()
         try:
             cache = database.cache()
 
@@ -146,6 +147,8 @@ class fetch:
         sortby = query.get("sort", "cell")
         sortclass = query.get("sortclass")
         filter_quality = query.get("quality")
+
+        markup.set_navlink()
 
         try:
             cache = database.cache()

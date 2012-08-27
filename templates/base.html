@@ -30,15 +30,17 @@ $def with (content)
   <body>
     <ul class="navbar">
       <li><a href="$virtual_root">$project_name</a></li>
+      $ navlink = instance.get("navlink", '')
+      $if navlink: $ navlink = '/' + navlink
       $for mid, label in game_modes.iteritems():
           $ mhome = virtual_root + mid
           $ extra = None
           $if mid == instance.current_game: $ extra = ' class="focused"'
           <li$:extra>
 	    <div class="dropdown-menu">
-	      <a href="$mhome">$label</a>
+	      <a href="${mhome + navlink}">$label</a>
               <ul>
-		<li><a href="$mhome">Home</a></li>
+		<li><a href="$mhome"><b>Main</b></a></li>
 		<li><a href="$mhome/items">Item list</a></li>
 		<li><a href="$mhome/attributes">Attribute list</a></li>
 		<li><a href="$mhome/particles">Particle list</a></li>

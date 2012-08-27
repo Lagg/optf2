@@ -9,16 +9,16 @@ $var title: $project_name - $usern $:item["ownedname"]
 <div id="header">
   <h1>
     $if not user:
-        $ plink_user = "from_schema"
         $ urlpart = "items"
     $else:
-        $ plink_user = id64
-        $ urlpart = "user/{0}".format(plink_user)
+        $ urlpart = "user/{0}".format(id64)
+    $ mainseturl = markup.generate_mode_url(urlpart)
+    $markup.set_navlink(path = mainseturl)
     $ coloroverride = item.get("namergb")
     $ style = ''
     $ quality = item.get("quality", "normal")
     $if coloroverride: $ style = ' style="color: #{0};"'.format(coloroverride)
-    <a href="$markup.generate_mode_url(urlpart)">$usern</a>
+    <a href="$mainseturl">$usern</a>
     $if "container" in item: <span class="prefix-giftwrapped">Giftwrapped</span>
     <span class="prefix-$quality"$:style>$:item["ownedname"]</span>
   </h1>

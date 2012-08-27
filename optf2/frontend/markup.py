@@ -141,6 +141,20 @@ def generate_mode_url(path = "", mode = None):
 
     return virtual_root + cg + "/" + path
 
+def set_navlink(path = "", override = False):
+    """ Note: Assumes the first part of the URL is the mode """
+
+    try:
+        path = (path or web.ctx.path).lstrip('/')
+        slash = path.find('/')
+
+        if override:
+            web.ctx["navlink"] = path
+        elif slash != -1:
+            web.ctx["navlink"] = path[slash + 1:]
+    except:
+        pass
+
 def generate_particle_icon_url(pid, mode = None):
     if not mode: mode = web.ctx.current_game or "tf2"
     if mode in particles: mode = config.ini.get("particle-modes", mode)
