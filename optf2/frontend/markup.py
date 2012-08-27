@@ -326,12 +326,16 @@ def generate_cell(item, invalid = False, show_equipped = True, user = None, pric
     texture = item.get("texture")
     if contents:
         markup += '<img src="' + contents["image"] + '" alt="0" class="item-image gift-preview"/>'
+
+    markup += '<div class="cell-top">'
     if item.get("cname"):
-        markup += '<img src="' + static_prefix + 'name_tag.png" class="icon-name" alt="Named"/>'
+        markup += '<img src="' + static_prefix + 'name_tag.png" alt="Named"/>'
     if item.get("cdesc"):
-        markup += '<img src="' + static_prefix + 'desc_tag.png" class="icon-desc"  alt="Described"/>'
+        markup += '<img src="' + static_prefix + 'desc_tag.png" alt="Described"/>'
     if "gifter" in item:
-        markup += '<img src="' + static_prefix + 'gift_icon.png" class="icon-gift"  alt="Gift"/>'
+        markup += '<img src="' + static_prefix + 'gift_icon.png" alt="Gift"/>'
+    markup += '</div>'
+
     for cid, color in item.get("colors", []):
         sec = ''
         if cid != 0: sec = " secondary"
@@ -344,10 +348,13 @@ def generate_cell(item, invalid = False, show_equipped = True, user = None, pric
         markup += '<img class="icon-particle" alt="Picon" src="' + generate_particle_icon_url(pid, mode) + '"/>'
     if texture:
         markup += '<img class="icon-custom-texture"  src="' + texture + '" alt="texture"/>'
+
+    markup += '<div class="cell-bot">'
     if equipped:
-        markup += '<span class="ui-icon ui-icon-suitcase equipped-icon"></span>'
+        markup += '<span class="ui-icon ui-icon-suitcase"></span>'
     if quantity:
         markup += '<span class="cell-quantity">' + str(quantity) + '</span>'
+    markup += '</div>'
 
     if coloroverride: style = ' style="color: #{0};"'.format(coloroverride)
     quality = item.get("quality", "normal")
