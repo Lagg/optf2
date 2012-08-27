@@ -1,5 +1,9 @@
 body { background: #0F0F0F; color: white; font-family: Arial, Helvetica, sans-serif; font-size: 11px; margin: 0; }
 
+a { font-weight: bold; color: white; text-decoration: none; }
+a:hover { text-decoration: underline; }
+a:visited { text-decoration: none; }
+
 .backpack-page, .box { zoom: 1; }
 .backpack-page:after, .box:after {
     content: ".";
@@ -48,9 +52,9 @@ body { background: #0F0F0F; color: white; font-family: Arial, Helvetica, sans-se
 
 .attribute-list { list-style: none; margin: 0; padding: 0; }
 .attribute-list li { padding: 5px 0 5px 0; }
-.attr-negative, .attr-negative:visited { color: #ff0000; }
-.attr-positive, .attr-positive:visited { color: #1a82ff; }
-.attr-neutral, .attr-neutral:visited { color: #dbdbdb; }
+.attr-negative, .attr-negative:visited { color: #ff0000 !important; }
+.attr-positive, .attr-positive:visited { color: #1a82ff !important; }
+.attr-neutral, .attr-neutral:visited { color: #dbdbdb !important; }
 
 .prefix-unique { color: #ffd700; }
 .prefix-community { color: #70b04a; }
@@ -196,10 +200,6 @@ body { background: #0F0F0F; color: white; font-family: Arial, Helvetica, sans-se
     line-height: 1.4;
 }
 
-a { font-weight: bold; color: white; text-decoration: none; }
-a:hover { text-decoration: underline; }
-a:visited { text-decoration: none; }
-
 #status-online, #status-lookingtoplay, #status-lookingtotrade { color: #00ff00; }
 #status-offline { color: #808080; }
 #status-snooze, #status-away, #status-busy { color: #2fb3ff; }
@@ -258,9 +258,9 @@ img { border: 0; }
 
 .row_odd { background: #353535; }
 .row_even { background: #555555; }
-#attrib_table tr td { padding: 6px; background: black; }
-#attrib_table tr th { background: #555555; padding: 8px; }
-#attrib_table { margin: 0 auto 30px auto; text-align: left; }
+#attr-table { text-align: left; margin: 0 auto 30px auto; }
+#attr-table th { padding: 8px; }
+#attr-table td { padding: 6px; background-color: black; }
 
 #header { text-align: center; clear: both; }
 
@@ -326,9 +326,8 @@ img { border: 0; }
 .side-box table td, .side-box table th { padding: 3px; }
 
 .ui-autocomplete-loading { background: white url('juicss/images/ui-anim_basic_16x16.gif') right center no-repeat; }
-.ui-widget-header { border-bottom-left-radius: 0; border-bottom-right-radius: 0; }
-.ui-widget { padding: 0; margin: 0 5px 0 5px; }
-.ui-tabs, .ui-tabs-nav { border: 0; background: none; }
-.ui-tabs-nav li { border-bottom-left-radius: 8px; border-bottom-right-radius: 8px; }
+.ui-dialog-titlebar { border-bottom-left-radius: 0; border-bottom-right-radius: 0; }
+.ui-dialog { padding: 0; }
+.ui-button { margin: 0 3px 0 3px; }
 
 .page-label { position: absolute; display: block; right: 98.90%; top: 30px; font-weight: bold; border-radius: 5px 0 0 5px; }
