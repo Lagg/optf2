@@ -19,7 +19,7 @@ $var title: $project_name - All Item Attributes
         $ name = attr.get_name()
         $ desc = attr.get_description()
         $ aid = attr.get_id()
-        <tr>
+        <tr class="row-$loop.parity">
           <td>$aid</td>
           <td>
             <a id="att-$aid" class="attr-${type}" href="${qurl(att = aid)}">$name</a>
