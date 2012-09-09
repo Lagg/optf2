@@ -20,6 +20,9 @@ import operator
 from collections import deque
 from time import time
 from binascii import crc32
+# For temporary schema object store
+import cPickle as pickle
+import os
 
 import steam
 from optf2.backend import config
@@ -59,7 +62,7 @@ class CacheEmptyError(CacheError):
 class cache:
     """ Cache retrieval/setting functions """
 
-    def _get_generic_aco(self, baseclass, keyprefix, cachefilter = None, stale = False, appid = None, getlm = None):
+    def _get_generic_aco(self, baseclass, keyprefix, cachefilter = None, stale = False, appid = None, getlm = None, usepickle = False):
         """ Initializes and caches Aggresively Cached Objects from steamodd """
 
         modulename = self._mod_id
@@ -69,8 +72,17 @@ class cache:
         memkey = "{0}-{1}-{2}".format(keyprefix, modulename, language)
         timeout = config.ini.getint("steam", "connect-timeout")
         datatimeout = config.ini.getint("steam", "download-timeout")
+        cachepath = os.path.join(config.ini.get("resources", "cache-dir"), memkey)
+        oldobj = None
 
-        oldobj = self.get(memkey)
+        if usepickle:
+            try:
+                oldobj = pickle.load(open(cachepath))
+            except IOError:
+                pass
+        else:
+            oldobj = self.get(memkey)
+
         if stale: return oldobj
         if oldobj:
             if (ctime - last_server_checks.get(memkey, 0)) < config.ini.getint("cache", keyprefix + "-check-interval"):
@@ -89,7 +101,10 @@ class cache:
             else:
                 aco = result
 
-            self.set(memkey, aco)
+            if usepickle:
+                pickle.dump(aco, open(cachepath, "wb"), pickle.HIGHEST_PROTOCOL)
+            else:
+                self.set(memkey, aco)
         except steam.base.HttpStale, pylibmc.Error:
             pass
         except Exception as E:
@@ -157,7 +172,7 @@ class cache:
         except AttributeError:
             raise steam.items.SchemaError("steamodd hasn't implemented a schema for {0}".format(modulename))
 
-        return self._get_generic_aco(modclass, "schema", cachefilter = cb, stale = stale, getlm = operator.methodcaller("get_last_modified"))
+        return self._get_generic_aco(modclass, "schema", cachefilter = cb, stale = stale, getlm = operator.methodcaller("get_last_modified"), usepickle = True)
 
     def get_assets(self, stale = False):
         modulename = self._mod_id
