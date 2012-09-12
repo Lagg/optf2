@@ -1,4 +1,4 @@
-$def with (user, items, erritem = None)
+$def with (app, user, items, erritem = None)
 <?xml version="1.0" encoding="UTF-8"?>
 
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
@@ -25,7 +25,7 @@ $def with (user, items, erritem = None)
       $if not item:
           $continue
       <item>
-        $ permalink = markup.absolute_url(markup.generate_item_url(item, user))
+        $ permalink = markup.absolute_url(markup.generate_item_url(app, item, user))
         $ image = item["image"]
         <description><![CDATA[$:markup.generate_item_type_line(item) <img alt="item-image" src="$image"/>]]></description>
 	$ series = item.get("series")

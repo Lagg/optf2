@@ -17,6 +17,7 @@ OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 import web
 import re
 import operator
+from os.path import join as pathjoin
 try: from collections import OrderedDict as odict
 except ImportError: odict = dict
 from urlparse import urljoin
@@ -24,7 +25,8 @@ from optf2.backend import config
 
 virtual_root = config.ini.get("resources", "virtual-root")
 static_prefix = config.ini.get("resources", "static-prefix")
-particles = config.ini.options("particle-modes")
+particles = dict(config.ini.items("particle-modes"))
+cssaliases = dict(config.ini.items("css-aliases"))
 # TODO: Add exp for single tags like br
 htmldesc = re.compile("<(?P<tag>.+) ?.*>.+</(?P=tag)>")
 
@@ -80,8 +82,8 @@ reverrides = {}
 for k, v in classoverrides.iteritems(): reverrides[k + "_swap"] = dict(zip(v.values(), v.keys()))
 classoverrides.update(reverrides)
 
-def get_class_for_id(cid, mode = None):
-    overrides, swapped_overrides = get_class_overrides(mode)
+def get_class_for_id(cid, ident):
+    overrides, swapped_overrides = get_class_overrides(ident)
     try: realcid = int(cid)
     except ValueError: realcid = str(cid)
 
@@ -94,14 +96,13 @@ def get_class_for_id(cid, mode = None):
     else:
         return (realcid, cid)
 
-def get_class_overrides(mode = None):
-    if not mode: mode = web.ctx.current_game or "tf2"
-    mode = overridealiases.get(mode, mode)
+def get_class_overrides(ident):
+    ident = overridealiases.get(ident, ident)
 
-    if mode not in classoverrides: return {}, {}
+    if ident not in classoverrides: return {}, {}
 
-    return (classoverrides.get(mode),
-            reverrides.get(mode + "_swap"))
+    return (classoverrides.get(ident),
+            reverrides.get(ident + "_swap"))
 
 def sorted_class_list(classes, mode = None):
     validclasses = [get_class_for_id(c, mode) for c in classes]
@@ -126,20 +127,11 @@ def get_quality_strings(q, cache):
 def absolute_url(relative_url):
     return urljoin(web.ctx.homedomain, relative_url)
 
-def generate_mode_url(path = "", mode = None):
-    """ Generates a URL appropriate for the current mode
-    with path appended to it. """
+def generate_root_url(path = "", subroot = ""):
+    """ Generate a URL beginning with the virtual root value,
+    followed by an optional sub-root, then the path """
 
-    cg = mode
-    default = "tf2"
-    try:
-        if not mode:
-            cg = web.ctx.current_game or default
-    except AttributeError:
-        print("Couldn't get current game mode, falling back to tf2")
-        cg = default
-
-    return virtual_root + cg + "/" + path
+    return pathjoin(virtual_root + subroot, path)
 
 def set_navlink(path = "", override = False):
     """ Note: Assumes the first part of the URL is the mode """
@@ -155,11 +147,25 @@ def set_navlink(path = "", override = False):
     except:
         pass
 
-def generate_particle_icon_url(pid, mode = None):
-    if not mode: mode = web.ctx.current_game or "tf2"
-    if mode in particles: mode = config.ini.get("particle-modes", mode)
+def get_top_nav_node(path = ""):
+    """ Returns the top of a given path or web.ctx.path """
 
-    return static_prefix + mode + "_particle_icons/" + str(pid) + ".png"
+    path = (path or web.ctx.path)
+    nodes = path[path.find(virtual_root) + 1:].strip('/').split('/')
+
+    if nodes: return nodes[0]
+    else: return None
+
+def init_theme(theme):
+    web.ctx.setdefault("css_extra", [])
+    web.ctx.css_extra.append(pathjoin(static_prefix, cssaliases.get(theme, theme) + ".css"))
+    dims = get_page_sizes()
+    web.ctx._cvars["cellsPerRow"] = dims.get(theme, dims["default"])["width"]
+
+def generate_particle_icon_url(pid, ident):
+    ident = particles.get(ident, ident)
+
+    return static_prefix + ident + "_particle_icons/" + str(pid) + ".png"
 
 def generate_item_description(item):
     desc = item.get("desc", '')
@@ -201,14 +207,12 @@ def generate_item_type_line(item, classic = True):
                                                                 web.websafe(origin_name))
 
 
-def generate_item_url(item, user = None, mode = None):
+def generate_item_url(app, item, user = None):
     """ Intelligently generates a URL linking to
     the given item """
 
     itemid = item.get("id")
     pathuser = ""
-
-    if not mode: mode = web.ctx.current_game
 
     if itemid and user:
         try: pathuser = str(user["id64"])
@@ -216,7 +220,7 @@ def generate_item_url(item, user = None, mode = None):
 
     if pathuser: pathuser += "/"
 
-    return generate_mode_url("item/" + pathuser + str(itemid or item["sid"]), mode = mode)
+    return generate_root_url("item/" + pathuser + str(itemid or item["sid"]), app)
 
 def generate_item_paint_line(item):
     """ Returns a "Painted with X" line if available """
@@ -247,7 +251,7 @@ def generate_item_price_string(item, stats):
     try: return "Store price: ${0}".format(assets[item["sid"]]["USD"])
     except: return None
 
-def generate_attribute_list(item, showlinks = False):
+def generate_attribute_list(app, item, showlinks = False):
     contents = item.get("contents")
     markup = ''
     list_open = '<ul class="attribute-list">'
@@ -275,7 +279,7 @@ def generate_attribute_list(item, showlinks = False):
             if atype != "html": desc = web.websafe(desc)
             markup += desc.replace('\n', "<br/>")
 
-        if acct: markup += morestr.format(generate_mode_url("user/"  + str(acct["id64"])))
+        if acct: markup += morestr.format(generate_root_url("user/"  + str(acct["id64"]), app))
 
         markup += '</li>'
 
@@ -302,19 +306,18 @@ def generate_attribute_list(item, showlinks = False):
     return (list_open + markup + list_close)
 
 
-def generate_cell(item, invalid = False, show_equipped = True, user = None, pricestats = None, mode = None):
+def generate_item_cell(app, item, invalid = False, show_equipped = True, user = None, pricestats = None):
     if not item: return '<div class="item_cell"></div>'
 
     itemid = item.get("id")
     schema_item = False
     equipped = show_equipped and (len(item.get("equipped", {})) > 0)
-    if not mode: mode = web.ctx.current_game or "tf2"
 
     if not itemid:
         schema_item = True
         itemid = item["sid"]
 
-    item_link = generate_item_url(item, user, mode = mode)
+    item_link = generate_item_url(app, item, user)
     quality = item.get("quality", "normal")
     equippedstr = ""
     quantity = item.get("qty")
@@ -359,7 +362,7 @@ def generate_cell(item, invalid = False, show_equipped = True, user = None, pric
     if craftno:
         markup += '<div class="craft-number-icon">{0}</div>'.format(craftno)
     if pid:
-        markup += '<img class="icon-particle" alt="Picon" src="' + generate_particle_icon_url(pid, mode) + '"/>'
+        markup += '<img class="icon-particle" alt="Picon" src="' + generate_particle_icon_url(pid, app) + '"/>'
     if texture:
         markup += '<img class="icon-custom-texture"  src="' + texture + '" alt="texture"/>'
 
@@ -378,7 +381,7 @@ def generate_cell(item, invalid = False, show_equipped = True, user = None, pric
 
     markup += generate_item_description(item)
 
-    markup += generate_attribute_list(item, showlinks = False)
+    markup += generate_attribute_list(app, item, showlinks = False)
 
     markup += generate_item_paint_line(item)
 
@@ -389,7 +392,7 @@ def generate_cell(item, invalid = False, show_equipped = True, user = None, pric
 
     return markup
 
-def generate_class_icon_links(classes, user = None, wiki_url = None):
+def generate_class_icon_links(classes, ident, user = None, wiki_url = None):
     classlink = '#'
     markup = ''
     classi = classes
@@ -398,19 +401,17 @@ def generate_class_icon_links(classes, user = None, wiki_url = None):
     except AttributeError: pass
 
     for ec in classi:
-        cid, label = get_class_for_id(ec)
+        cid, label = get_class_for_id(ec, ident)
         if user:
-            classlink = generate_mode_url("loadout/{0}#{1}".format(user["id64"], label))
+            classlink = generate_root_url("loadout/{0}#{1}".format(user["id64"], label), ident)
         else:
             if wiki_url:
-                classlink = wiki_url + label
-        markup += '<a href="' + classlink + '">' + generate_class_sprite_img(ec) + '</a>&nbsp;'
+                classlink = wiki_url + str(label)
+        markup += '<a href="' + classlink + '">' + generate_class_sprite_img(ec, ident) + '</a>&nbsp;'
 
     return markup
 
-def generate_class_sprite_img(c, styleextra = "", mode = None):
-    if not mode: mode = web.ctx.current_game or "tf2"
-
+def generate_class_sprite_img(c, ident, styleextra = ""):
     aliasmap = {
         "tf2b": "tf2",
         "d2b": "d2"
@@ -419,15 +420,15 @@ def generate_class_sprite_img(c, styleextra = "", mode = None):
     spritesize = 16
 
     try:
-        mode = aliasmap.get(mode, mode)
-        spriteindex, name = get_class_for_id(c, mode = mode)
+        ident = aliasmap.get(ident, ident)
+        spriteindex, name = get_class_for_id(c, ident)
 
         spriteindex *= spritesize
         row, x = divmod(spriteindex, sheetwidth)
         row *= spritesize
         column = x
 
-        style = "background: url('{0}') -{1}px -{2}px;".format(static_prefix + mode + "_class_icons.png", column, row)
+        style = "background: url('{0}') -{1}px -{2}px;".format(static_prefix + ident + "_class_icons.png", column, row)
     except (ValueError, KeyError):
         style = ""
 

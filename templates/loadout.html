@@ -1,10 +1,10 @@
-$def with (user, items, classmap, slotlist)
+$def with (app, user, items, classmap, slotlist)
 $ persona = user["persona"]
 $ id = user["id64"]
 $var title: $project_name - $persona's Loadout List
 
 <div id="header">
-  <h2 class="loadout-header"><a href="$markup.generate_mode_url('user/{0}'.format(id))">$persona's</a> Loadouts</h2>
+  <h2 class="loadout-header"><a href="$markup.generate_root_url('user/{0}'.format(id), app)">$persona's</a> Loadouts</h2>
 </div>
 <div id="content">
   $if items:
@@ -13,16 +13,16 @@ $var title: $project_name - $persona's Loadout List
           $if cid not in items: $continue
           <div class="autosize box" id="$lclass" style="margin: 30px auto 30px auto;">
             <div class="titlebar">
-	      $:markup.generate_class_sprite_img(cid, styleextra = "position: absolute; left: 2px; top: 2px;")
-              <a href="#$lclass" style="margin-left: 30px;">$lclass</a>
+	      $:markup.generate_class_sprite_img(cid, app)
+              <a href="#$lclass" style="margin-left: 10px;">$lclass</a>
             </div>
 	    $ citems = items[cid]
             $for slot in slotlist:
 	      $if slot not in citems: $continue
               <div class="slot-item">
-                <div><b>$slot</b></div>
+                <div class="title">$slot</div>
                   $for item in citems[slot]:
-                    $:markup.generate_cell(item, show_equipped = False, user = user)
+                    $:markup.generate_item_cell(app, item, show_equipped = False, user = user)
               </div>
           </div>
       </div>

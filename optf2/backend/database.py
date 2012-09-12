@@ -120,6 +120,8 @@ class cache:
             return aco
 
     def get(self, value, default = None):
+        value = str(value).encode("ascii")
+
         with memc.reserve() as mc:
             try:
                 val = mc.get(value)
@@ -130,6 +132,8 @@ class cache:
                 return default
 
     def set(self, key, value, **kwargs):
+        key = str(key).encode("ascii")
+
         try:
             with memc.reserve() as mc:
                 mc.set(key, value, min_compress_len = self._compress_len, **kwargs)
@@ -243,8 +247,6 @@ class cache:
         modulename = self._mod_id
         language = self._language
         id64 = user["id64"]
-        avatar = user["avatarurl"]
-        persona = user["persona"]
 
         memkey = "backpack-{0}-{1}".format(modulename, id64)
 
@@ -268,18 +270,7 @@ class cache:
 
         if not processedpack["items"]: return pack
 
-        lastpackskey = self._recent_packs_key
-        lastpacks = self.get(lastpackskey)
-        if not lastpacks:
-            lastpacks = deque(maxlen = 10)
-        else:
-            for p in lastpacks:
-                if p["id"] == id64:
-                    lastpacks.remove(p)
-                    break
-
-        lastpacks.appendleft(dict(id = id64, persona = persona, avatar = avatar))
-        self.set(lastpackskey, lastpacks)
+        self.update_recent_pack_list(user)
 
         return pack
 
@@ -291,6 +282,24 @@ class cache:
 
     def get_recent_pack_list(self):
         return self.get(self._recent_packs_key)
+
+    def update_recent_pack_list(self, profilerecord):
+        lastpackskey = self._recent_packs_key
+        lastpacks = self.get(lastpackskey)
+        id64 = profilerecord["id64"]
+
+        if not lastpacks:
+            lastpacks = deque(maxlen = 10)
+        else:
+            for p in lastpacks:
+                if p["id"] == id64:
+                    lastpacks.remove(p)
+                    break
+
+        lastpacks.appendleft(dict(id = id64, persona = profilerecord["persona"],
+                                  avatar = profilerecord["avatarurl"]))
+        self.set(lastpackskey, lastpacks)
+
 
     def _build_processed_item(self, item):
         if not item: return None
@@ -346,7 +355,7 @@ class cache:
         if qty > 1: newitem["qty"] = qty
         if quality_str: newitem["quality"] = quality_str
         # May need string->ID swapper
-        if equipable: newitem["equipable"] = [get_class_for_id(c, mode = self._mod_id)[0] for c in equipable]
+        if equipable: newitem["equipable"] = [get_class_for_id(c, self._mod_id)[0] for c in equipable]
         # Certain items will be part of a category system, this is used for advanced paging
         if category: newitem["cat"] = category
         newitem["image"] = imgsmall or default_cell_image
@@ -375,12 +384,13 @@ class cache:
         pb_level = item.get_level()
         giftcontents = item.get_contents()
 
-        if min_level == max_level:
-            newitem["level"] = str(min_level)
-        else:
-            newitem["level"] = str(min_level) + "-" + str(max_level)
-
-        if pb_level != None: newitem["level"] = str(pb_level)
+        if pb_level != None:
+            newitem["level"] = str(pb_level)
+        elif min_level != None and max_level != None:
+            if min_level == max_level:
+                newitem["level"] = str(min_level)
+            else:
+                newitem["level"] = str(min_level) + "-" + str(max_level)
 
         # Ordered kill eater attribute lines
         linefmt = "{0[1]}: {0[2]}"
@@ -529,7 +539,7 @@ class cache:
 
         return newitem
 
-    def __init__(self, modid = None, language = None):
+    def __init__(self, mode = None, language = None):
         """ modid and language will be set to their respective values in web.ctx if not given """
 
         clang = language or web.ctx.language
@@ -539,7 +549,7 @@ class cache:
 
         self._language = code
         self._language_name = name
-        self._mod_id = str(modid or web.ctx.current_game)
+        self._mod_id = mode
         self._recent_packs_key = "lastpacks-" + self._mod_id
         self._resource_prefix = config.ini.get("resources", "static-prefix")
         self._bp_lifetime = config.ini.getint("cache", "backpack-expiry")

@@ -1,11 +1,7 @@
-$def with (mod = None, packs = [], showcase_item = None)
-$ game_label = game_modes.get(instance.current_game, "Home")
-$if instance.current_game:
-    $var title: $project_name - $game_label
-    $ game_logo_suffix = instance.current_game
-$else:
-    $var title: $project_name
-    $ game_logo_suffix = "tf2"
+$def with (mod, packs = [], showcase_item = None)
+$ game_label = game_modes.get(mod, "Main")
+$ game_logo_suffix = mod or "tf2"
+$var title: $project_name - $game_label
 <div id="header"><img id="logo" src="${static_prefix}logo_${game_logo_suffix}.png" alt="Logo"/></div>
 
 <div id="content">
@@ -13,20 +9,20 @@ $else:
     <div class="titlebar">$project_name - $game_label</div>
     <h2>Welcome! Use the section links above to get started, or view a player's inventory with the search box.</h2>
   </div>
-  <div style="width: 500px; min-height: 300px;  margin: 30px auto 0 auto; position: relative;">
+  <div style="width: 500px; min-height: 400px; margin: 30px auto 0 auto; position: relative;">
   $if showcase_item:
-      <div class="box" style="width: 150px; position: absolute; left: 0;">
-	<div class="titlebar">$mod item showcase</div>
-        <div style="width: 100px; margin: 0 auto 0 auto;">
+      <div class="box" style="width: 220px; position: absolute; left: 0;">
+	<div class="titlebar">$mod.upper() item showcase</div>
+        <div class="slot-item" style="margin: 0 auto 0 auto; float: none;">
           $:showcase_item
 	</div>
       </div>
   $if packs:
-      <div class="box" style="width: 250px; position: absolute; right: 0;">
-	<div class="titlebar">Recent $mod backpacks</div>
-	<table style="width: 300px; margin: 0 auto 0 auto; text-align: left;">
+      <div class="box" style="width: 220px; position: absolute; right: 0;">
+	<div class="titlebar">Recent $mod.upper() backpacks</div>
+	<table class="recent-inv">
 	  $for p in packs:
-              <tr><td><img src="$p['avatar']" alt="a" width="16" height="16"/></td><th><a href="$markup.generate_mode_url('user/{0}'.format(p['id']), mod.lower())">$p["persona"]</a></th></tr>
+              <tr><td><img src="$p['avatar']" alt="a" width="16" height="16"/></td><td><a href="$markup.generate_root_url('user/{0}'.format(p['id']), mod)">$p["persona"]</a></td></tr>
 	</table>
       </div>
   </div>

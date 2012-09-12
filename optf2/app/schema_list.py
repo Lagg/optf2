@@ -25,10 +25,11 @@ templates = template.template
 class items:
     """ Dumps every item in the schema in a pretty way """
 
-    def GET(self):
+    def GET(self, app):
         query = web.input()
-        cache = database.cache()
+        cache = database.cache(mode = app)
 
+        markup.init_theme(app)
         markup.set_navlink()
 
         try:
@@ -38,7 +39,7 @@ class items:
 
         try:
             filter_classes = markup.sorted_class_list(itemtools.get_equippable_classes(items, cache))
-            items = itemtools.filter_by_class(items, query["sortclass"])
+            items = itemtools.filter_by_class(items, markup.get_class_for_id(query["cls"], app)[0])
         except KeyError:
             pass
 
@@ -62,7 +63,7 @@ class items:
         stats = itemtools.get_stats(items)
         price_stats = itemtools.get_price_stats(items, cache)
 
-        return templates.schema_items(items,
+        return templates.schema_items(app, items,
                                       filter_classes,
                                       filter_qualities,
                                       filter_capabilities,
@@ -72,10 +73,11 @@ class items:
 class attributes:
     """ Dumps all schema attributes in a pretty way """
 
-    def GET(self):
+    def GET(self, app):
         query = web.input()
-        cache = database.cache()
+        cache = database.cache(mode = app)
 
+        markup.init_theme(app)
         markup.set_navlink()
 
         try:
@@ -106,17 +108,18 @@ class attributes:
                         attached_items.append(item)
                         break
 
-            return templates.attribute_attachments([cache._build_processed_item(item) for item in attached_items], attribute)
+            return templates.attribute_attachments(app, [cache._build_processed_item(item) for item in attached_items], attribute)
         else:
             return templates.schema_attributes(attribs)
 
 class particles:
-    def GET(self):
+    def GET(self, app):
+        markup.init_theme(app)
         markup.set_navlink()
         try:
-            schema = database.cache().get_schema()
+            schema = database.cache(mode = app).get_schema()
             particles = schema.get_particle_systems()
 
-            return templates.schema_particles(particles)
+            return templates.schema_particles(app, particles)
         except database.CacheEmptyError as E:
             return templates.error(E)

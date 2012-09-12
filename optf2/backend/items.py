@@ -19,7 +19,7 @@ import re
 import time
 import operator
 import steam
-from optf2.frontend.markup import absolute_url, get_page_sizes, get_class_for_id
+from optf2.frontend.markup import get_class_for_id
 from optf2.backend import config
 from optf2.backend import log
 from optf2.backend import database
@@ -33,17 +33,12 @@ currencysymbols = {"USD": "$",
 def condensed_to_id64(value):
     return "7656" + str(int(value) + 1197960265728)
 
-def build_page_object_unpositioned(items, pagesize = None, mode = None):
+def build_page_object_unpositioned(items, pagesize = None):
     """ Returns the same thing build_page_object does, but
     ignores positioning info and places cells in the order
-    items are listed """
+    items are listed, pagesize is the number of items per page """
 
-    if not mode: mode = web.ctx.current_game or "tf2"
-
-    if not pagesize:
-        celldims = get_page_sizes()
-        dims = celldims.get(mode, celldims["default"])
-        pagesize = dims["width"] * dims["height"]
+    if not pagesize: pagesize = 50
 
     fitems = filter(None, items)
     ilen = len(fitems)
@@ -62,21 +57,16 @@ def build_page_object_unpositioned(items, pagesize = None, mode = None):
 
     return imap
 
-def build_page_object(items, pagesize = None, ignore_position = False, mode = None):
+def build_page_object(items, pagesize = None, ignore_position = False):
     """ Returns a dict of items mapped to their sections and positions, or a default integer
     map if not implemented. Pagesize is the default minimum number of cells to a page
     if ignoreposition is true ignore any positioning info and build pages as items are given
     in the list """
 
-    if not mode: mode = web.ctx.current_game or "tf2"
-
-    if not pagesize:
-        celldims = get_page_sizes()
-        dims = celldims.get(mode, celldims["default"])
-        pagesize = dims["width"] * dims["height"]
-
     imap = {}
     displaced = []
+
+    if not pagesize: pagesize = 50
 
     if ignore_position:
         return build_page_object_unpositioned(items, pagesize), displaced
@@ -182,9 +172,7 @@ def sort(items, sortby):
     return solid_items
 
 def filter_by_class(items, theclass):
-    param = get_class_for_id(theclass)[0]
-
-    return [item for item in items if item and param in item.get("equipable", [])]
+    return [item for item in items if item and theclass in item.get("equipable", [])]
 
 def filter_by_quality(items, thequality):
     return [item for item in items if item and str(item.get("quality")) == str(thequality)]

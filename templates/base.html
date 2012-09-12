@@ -9,20 +9,13 @@ $def with (content)
     <meta name="keywords" content="p2, portal 2, tf2, team fortress 2, steam, steam api, backpack, backpack viewer"/>
     <link rel="stylesheet" type="text/css" href="${static_prefix}jquery/css/jquery-ui-1.8.23.custom.css"/>
     <link rel="stylesheet" type="text/css" href="${static_prefix}common.css"/>
-    $if instance.current_game:
-        $ realstyle = cssaliases.get(instance.current_game, instance.current_game)
-        <link rel="stylesheet" type="text/css" href="${static_prefix}${realstyle}.css"/>
+    $for url in instance.get("css_extra", []):
+        <link rel="stylesheet" type="text/css" href="$url"/>
     <link rel="shortcut icon" type="image/png" href="${static_prefix}optf2_icon.png"/>
-    $ rss_url = instance.env.get("optf2_rss_url")
-    $ rss_title = instance.env.get("optf2_rss_title")
-    $if rss_url:
-        <link rel="alternate" title="$rss_title" href="$rss_url" type="application/rss+xml"/>
-    <script type="text/javascript">
-    virtual_root = "${virtual_root}";
-    static_prefix = "${static_prefix}";
-    current_game = "${instance.current_game}";
-    cellsPerRow = ${pagesizes.get(instance.current_game, pagesizes['default'])['width']};
-    </script>
+    $for title, url in instance.get("rss_feeds", []):
+        <link rel="alternate" title="$title" href="$url" type="application/rss+xml"/>
+    $ conf = instance.get("_cvars")
+    $if conf: <script type="text/javascript"> var jsConf = $:json_dump(conf); </script>
     <script type="text/javascript" src="${static_prefix}jquery/js/jquery-1.8.0.min.js"></script>
     <script type="text/javascript" src="${static_prefix}jquery/js/jquery-ui-1.8.23.custom.min.js"></script>
     <script type="text/javascript" src="${static_prefix}optf2.js"></script>
@@ -31,11 +24,12 @@ $def with (content)
     <ul class="navbar">
       <li><a href="$virtual_root">$project_name</a></li>
       $ navlink = instance.get("navlink", '')
+      $ nav_node = markup.get_top_nav_node()
       $if navlink: $ navlink = '/' + navlink
       $for mid, label in game_modes.iteritems():
           $ mhome = virtual_root + mid
           $ extra = None
-          $if mid == instance.current_game: $ extra = ' class="focused"'
+          $if mid == nav_node: $ extra = ' class="focused"'
           <li$:extra>
 	    <div class="dropdown-menu">
 	      <a href="${mhome + navlink}">$label</a>
@@ -51,15 +45,13 @@ $def with (content)
     </ul>
     $ motd = instance.get("motd")
     $if motd: <div class="motd">$:motd</div>
-
     <div id="search-form-container">
-      <form method="get" id="search-form" action="$markup.generate_mode_url()">
+      <form method="get" id="search-form" action="$markup.generate_root_url(subroot = nav_node)">
 	<fieldset>
 	  <input type="text" id="search-field" name="user"/><button type="submit" id="search-button"><span class="ui-icon ui-icon-search"></span></button>
 	</fieldset>
       </form>
     </div>
-
     $:content
   </body>
 </html>

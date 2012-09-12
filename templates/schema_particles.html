@@ -1,4 +1,4 @@
-$def with (particles)
+$def with (app, particles)
 $var title: $project_name - All Particles
 
 <div id="header">
@@ -8,10 +8,9 @@ $var title: $project_name - All Particles
   <div id="backpack">
   $for k, particle in particles.iteritems():
       <div class="item_cell">
-        <img class="item-image small" src="$markup.generate_particle_icon_url(particle['id'])" alt="${particle['id']}"/>
+        <img class="item-image small" src="$markup.generate_particle_icon_url(particle['id'], app)" alt="${particle['id']}"/>
         <div class="tooltip">
           <div class="item-name">$particle["name"]</div>
-          <div class="item-level">Level 100 Pilk Icon</div>
           <div class="attr-neutral">ID: $particle["id"]</div>
           <div class="attr-positive">System name: $particle["system"]</div>
         </div>

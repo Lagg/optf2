@@ -1,4 +1,5 @@
 import web
+import json
 from optf2.backend import items as itemtools
 from optf2.backend.config import ini as config
 from optf2.frontend import markup as markuptools
@@ -8,8 +9,6 @@ for wiki in config.items("wiki"):
     sep = wiki[1].find(':')
     pair = (wiki[1][:sep], wiki[1][sep + 1:])
     wikimap[wiki[0]] = (pair[0].strip(), pair[1].strip())
-
-cssmap = dict(config.items("css-aliases"))
 
 # Using this from web.template, don't want to import entire __builtin__
 # module (i.e. eval) so this will do
@@ -38,8 +37,9 @@ globals = {"virtual_root": config.get("resources", "virtual-root"),
            "iurl": web.input,
            "markup": markuptools,
            "game_modes": markuptools.odict(config.items("modes")),
-           "cssaliases": cssmap,
-           "pagesizes": markuptools.get_page_sizes()
+           "pagesizes": markuptools.get_page_sizes(),
+           "json_dump": json.dumps,
+           "json_load": json.loads
            }
 
 template = web.template.render(config.get("resources", "template-dir"), base = "base",

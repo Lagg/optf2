@@ -1,11 +1,11 @@
-$def with (user, items, views, filter_classes, baditems, stats, filter_qualities, appid, price_stats, cell_count)
+$def with (app, user, items, baditems = [], filter_classes = None, filter_qualities = None, stats = None, price_stats = None, cell_count = 0)
 $ usern = user["persona"]
 $ id64 = user["id64"]
 $ profileurl = "http://steamcommunity.com/profiles/{0}".format(id64)
 $ avatarurl = user["avatarurl"]
 $ realn = user.get("realname")
 $var title: $project_name - $usern's Backpack
-$ rss = markup.generate_mode_url("feed/{0}".format(id64))
+$ rss = markup.generate_root_url("feed/{0}".format(id64), app)
 $ onlinestates = {0: "offline", 1: "online", 2: "busy", 3: "away", 4: "snooze", 5: "looking to trade", 6: "looking to play"}
 <div id="content">
   <div class="item-tools">
@@ -25,11 +25,11 @@ $ onlinestates = {0: "offline", 1: "online", 2: "busy", 3: "away", 4: "snooze", 
         <div class="dropdown-menu">
           <b>Class</b>
           <ul>
-            <li><a href="$qurl(sortclass = None)"><img src="${static_prefix}tf_icon.png" alt="All" title="All"/> All</a></li>
+            <li><a href="$qurl(cls = None)"><img class="class-icon" src="${static_prefix}tf_icon.png" alt="All" title="All"/> All</a></li>
             $for cid, name in filter_classes:
               <li>
-                <a href="$qurl(sortclass = cid)">
-                  $:markup.generate_class_sprite_img(cid) $name
+                <a href="$qurl(cls = cid)">
+                  $:markup.generate_class_sprite_img(cid, app) $name
                 </a>
               </li>
           </ul>
@@ -43,10 +43,10 @@ $ onlinestates = {0: "offline", 1: "online", 2: "busy", 3: "away", 4: "snooze", 
               <li><a href="$qurl(quality = id)"><span class="prefix-$id">$label</span></a></li>
           </ul>
 	</div>
-      <a id="loadout-button" href="$markup.generate_mode_url('loadout/{0}'.format(id64))">Loadout</a>
+      <a id="loadout-button" href="$markup.generate_root_url('loadout/{0}'.format(id64), app)">Loadout</a>
       <a id="feed-button" href="$rss">RSS</a>
   </div>
-  <div id="backpack" style="width: 1040px;" class="bp-${appid}-${id64}">
+  <div id="backpack" style="width: 1040px;">
     <div class="side-box">
       <div class="header">Player</div>
       <div class="player-badge">
@@ -80,7 +80,7 @@ $ onlinestates = {0: "offline", 1: "online", 2: "busy", 3: "away", 4: "snooze", 
 	  </span>
         </div>
       </div>
-      $if price_stats["worth"]:
+      $if price_stats and price_stats["worth"]:
           <div class="header">User's expenses</div>
           <table>
 	    <tr><th>&nbsp;</th><th>Total</th><th>Avg.</th></tr>
@@ -91,27 +91,28 @@ $ onlinestates = {0: "offline", 1: "online", 2: "busy", 3: "away", 4: "snooze", 
                 $ sym = price_stats["sym"][k]
                 <tr><th>$k</th> <td>$sym$worth[k]</td> <td>$sym$price_stats["avg"][k]</td></tr>
           </table>
-      <div class="header">Item statistics</div>
-      <table>
-        $ typekeys = stats.keys()
-        $typekeys.sort()
-        $for k in typekeys:
-            $if k == "total": $continue
-            <tr><th>$k.title()</th><td>$stats[k]</td></tr>
-        <tr><th>Total</th><td>$stats["total"] / $cell_count</td></tr>
-        $if cell_count <= 50:
-            <tr><td colspan="2">User is free to play</td></tr>
-        $if cell_count < stats["total"]:
-            <tr><th colspan="2" style="color: red;">Pack is over capacity</th></tr>
-      </table>
+      $if stats:
+	  <div class="header">Item statistics</div>
+	  <table>
+            $ typekeys = stats.keys()
+	    $ cell_total = ''
+            $if cell_count > 0: $ cell_total = " / {0}".format(cell_count)
+            $typekeys.sort()
+            $for k in typekeys:
+              $if k == "total": $continue
+              <tr><th>$k.title()</th><td>$stats[k]</td></tr>
+            <tr><th>Total</th><td>$stats["total"]$cell_total</td></tr>
+            $if cell_count > 0 and cell_count <= 50:
+              <tr><td colspan="2">User is free to play</td></tr>
+            $if cell_count > 0 and cell_count < stats["total"]:
+              <tr><th colspan="2" style="color: red;">Pack is over capacity</th></tr>
+	  </table>
     </div>
-    $if len(items) <= 0 and len(baditems) <= 0:
-        <h2>Empty!</h2>
-    $if len(baditems) > 0:
+    $if baditems:
         <div class="autosize box" style="max-width: 1040px; margin: 15px auto 15px auto;">
 	  <div class="titlebar">Displaced items</div>
             $for item in baditems:
-                <div class="slot-item">$:markup.generate_cell(item, invalid = True, user = user)</div>
+                <div class="slot-item">$:markup.generate_item_cell(app, item, invalid = True, user = user)</div>
         </div>
     $ pagekeys = items.keys()
     $ pagekeys.sort()
@@ -119,7 +120,8 @@ $ onlinestates = {0: "offline", 1: "online", 2: "busy", 3: "away", 4: "snooze", 
         <div id="page-${k}" class="backpack-page">
 	  <a class="page-label" href="#page-$k">$k</a>
           $for item in items[k]:
-              $:markup.generate_cell(item, user = user)
+              $:markup.generate_item_cell(app, item, user = user)
         </div>
+    $if not items: <h2>Empty!</h2>
   </div>
 </div>

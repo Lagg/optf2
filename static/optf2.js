@@ -1,4 +1,4 @@
-var invalidIconURL = static_prefix + "item_icons/Invalid_icon.png";
+var invalidIconURL = jsConf.staticPrefix + "item_icons/Invalid_icon.png";
 
 function makeToggleButton(label, id, callback, append) {
     var b = $('<input type="checkbox" id="' + id + '"/><label for="' + id + '">' + label + '</label>');
@@ -11,7 +11,7 @@ $(document).ready(function(){
         this.src = invalidIconURL;
     });
 
-    $('img[class~="icon-particle"]').one("error", function() {
+    $('img.icon-particle').one("error", function() {
         $(this).remove();
     });
 
@@ -325,12 +325,11 @@ function ItemCells() {
 
     this.fitToContainer = function(container) {
 	var jContainer = $(container);
-	var containerCells = jContainer.find(cellSelector).not(".ungrouped > .item_cell");
+	var containerCells = jContainer.find(".backpack-page .item_cell").not(".ungrouped > .item_cell");
 
 	if (container && containerCells.length != 0) {
 	    if(jContainer.length != 0) {
-		/* Ignore "detached" cells that happen to be in the same container, cellsPerRow is a generated global */
-		jContainer.width(containerCells.outerWidth(true) * cellsPerRow);
+		jContainer.width(containerCells.outerWidth(true) * jsConf.cellsPerRow);
 	    }
 	}
     };
@@ -616,7 +615,7 @@ function ItemDialog() {
 		$(event.target).find("img.item-image").one("error", function() {
 		    $(this).attr("src", invalidIconURL);
 		});
-		$(event.target).find('img[class~="icon-particle"]').one("error", function() {
+		$(event.target).find('img.icon-particle').one("error", function() {
 		    $(this).remove();
 		});
 		self.resizeEvent(event, ui);
@@ -687,7 +686,7 @@ function ItemDialog() {
 	var ticker = $(document.createElement("img"));
 
 	ticker.attr({
-	    "src": static_prefix + "loading.gif",
+	    "src": jsConf.staticPrefix + "loading.gif",
 	    "id": tickerID,
 	    "class": "ticker",
 	    "alt": "Loading..."

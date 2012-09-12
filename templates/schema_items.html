@@ -1,4 +1,4 @@
-$def with (items, filter_classes, filter_qualities, filter_capabilities, stats, price_stats)
+$def with (app, items, filter_classes, filter_qualities, filter_capabilities, stats, price_stats)
 $var title: $project_name - All Items
 
 <div id="header" style="margin-bottom: 30px;">
@@ -20,11 +20,11 @@ $var title: $project_name - All Items
       <div class="dropdown-menu">
 	<b>Class</b>
 	<ul>
-          <li><a href="$qurl(sortclass = None)"><img src="${static_prefix}tf_icon.png" alt="All" title="All"/> All</a></li>
+          <li><a href="$qurl(cls = None)"><img class="class-icon" src="${static_prefix}tf_icon.png" alt="All" title="All"/> All</a></li>
           $for cid, name in filter_classes:
             <li>
-              <a href="$qurl(sortclass = cid)">
-                $:markup.generate_class_sprite_img(cid) $name
+              <a href="$qurl(cls = cid)">
+                $:markup.generate_class_sprite_img(cid, app) $name
               </a>
             </li>
 	</ul>
@@ -73,10 +73,10 @@ $var title: $project_name - All Items
 	  <div class="header">Most expensive</div>
           $for item, price in price_stats["most-expensive"]:
               <div class="header">$$$price["USD"]</div>
-              <div class="ungrouped">$:markup.generate_cell(item)</div>
+              <div class="ungrouped">$:markup.generate_item_cell(app, item)</div>
 
     </div>
   $for item in items:
-      $:markup.generate_cell(item, pricestats = price_stats)
+      $:markup.generate_item_cell(app, item, pricestats = price_stats)
   </div>
 </div>

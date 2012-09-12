@@ -1,8 +1,8 @@
-$def with (items, attribute)
+$def with (app, items, attribute)
 $ attrname = attribute.get_name()
 $var title: $project_name - Items with $attrname attached
 
-$ returnurl = markup.generate_mode_url('attributes#att-' + str(attribute.get_id()))
+$ returnurl = markup.generate_root_url('attributes#att-' + str(attribute.get_id()), app)
 <div id="header">
   $if not items:
       <h1><a href="$returnurl">No schema items have <b class="attr-$attribute.get_type()">$attrname</b> attached.</a></h1>
@@ -13,7 +13,7 @@ $ returnurl = markup.generate_mode_url('attributes#att-' + str(attribute.get_id(
         <div class="titlebar">Items with <b class="attr-$attribute.get_type()">$attrname</b> attached</div>
         $for item in items:
             <div class="slot-item">
-            $:markup.generate_cell(item)
+            $:markup.generate_item_cell(app, item)
             </div>
       </div>
 </div>

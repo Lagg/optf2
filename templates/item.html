@@ -1,5 +1,5 @@
-$def with (user, item, outdated, price = None, caps = None)
-$ wikiname, wikiurl = wiki_map.get(instance.current_game, (None, None))
+$def with (app, user, item, price = None, caps = None)
+$ wikiname, wikiurl = wiki_map.get(app, (None, None))
 $if not user:
     $ usern = "Schema"
 $else:
@@ -12,7 +12,7 @@ $var title: $project_name - $usern $:item["ownedname"]
         $ urlpart = "items"
     $else:
         $ urlpart = "user/{0}".format(id64)
-    $ mainseturl = markup.generate_mode_url(urlpart)
+    $ mainseturl = markup.generate_root_url(urlpart, app)
     $markup.set_navlink(path = mainseturl)
     $ coloroverride = item.get("namergb")
     $ style = ''
@@ -30,7 +30,7 @@ $var title: $project_name - $usern $:item["ownedname"]
       $ pid = item.get("pid")
       $ texture = item.get("texture")
       $if pid:
-          <img class="icon-particle large" src="$markup.generate_particle_icon_url(pid)" alt="Picon"/>
+          <img class="icon-particle large" src="$markup.generate_particle_icon_url(pid, app)" alt="Picon"/>
       $if texture:
 	  <img class="icon-custom-texture large" src="$texture" alt="texture"/>
     </div>
@@ -43,7 +43,7 @@ $var title: $project_name - $usern $:item["ownedname"]
 
   $:markup.generate_item_description(item)
 
-  $:markup.generate_attribute_list(item, showlinks = True)
+  $:markup.generate_attribute_list(app, item, showlinks = True)
 
   <img src="${static_prefix}vertical.gif" height="1" width="100%" alt="divider"/>
 
@@ -54,10 +54,10 @@ $var title: $project_name - $usern $:item["ownedname"]
       $ container = item.get("container")
       $if container:
           <li class="attr-positive">
-            Unopened <a href="$markup.generate_mode_url('item/{0}/{1}'.format(id64, container))">Gift</a> from
+            Unopened <a href="$markup.generate_root_url('item/{0}/{1}'.format(id64, container), app)">Gift</a> from
 	    $ giftgiver = item.get("gifter")
 	    $if giftgiver:
-                <a href="$markup.generate_mode_url('user/{0}'.format(giftgiver['id64']))">$giftgiver["persona"]</a>
+                <a href="$markup.generate_root_url('user/{0}'.format(giftgiver['id64']), app)">$giftgiver["persona"]</a>
           </li>
       $elif serial:
           <li class="attr-neutral">ID: <span class="item_id">$serial</span></li>
@@ -69,18 +69,14 @@ $var title: $project_name - $usern $:item["ownedname"]
       </li>
       $ equipped = item.get("equipped")
       $if equipped:
-          <li class="attr-neutral">Equipped: $:markup.generate_class_icon_links(equipped, user = user, wiki_url = wikiurl)</li>
-      $if outdated:
-          <li class="attr-negative" style="font-weight: normal">
-            This item is out of date. It may have been deleted or customized.
-          </li>
+          <li class="attr-neutral">Equipped: $:markup.generate_class_icon_links(equipped, app, user = user, wiki_url = wikiurl)</li>
   $else:
       <li class="attr-neutral">
         ID: <span class="item_id">$item["sid"]</span>
       </li>
       $ equipable = item.get("equipable")
       $if equipable:
-          <li class="attr-neutral">Used by: $:markup.generate_class_icon_links(equipable, user = user, wiki_url = wikiurl)</li>
+          <li class="attr-neutral">Used by: $:markup.generate_class_icon_links(equipable, app, user = user, wiki_url = wikiurl)</li>
       $ slot = item.get("slot")
       $if slot:
           <li class="attr-neutral">Slot: $slot.title()</li>
@@ -96,7 +92,7 @@ $var title: $project_name - $usern $:item["ownedname"]
     $if item_wiki_url:
         <li><a href="$item_wiki_url">$wikiname article</a></li>
     $if user:
-        <li><a href="$markup.generate_mode_url('item/{0}'.format(item['sid']))">Schema version</a></li>
+        <li><a href="$markup.generate_root_url('item/{0}'.format(item['sid']), app)">Schema version</a></li>
   </ul>
   </div>
   </div>

@@ -1,4 +1,7 @@
-.item_cell { width: 100px; height: 68px; border-radius: 0; margin: 5px; }
-.item-image[class~=small] { max-width: 100px; max-height: 68px; border-radius: 0; }
-.crate-series-icon { left: 44.5px; top: 25.5px; }
-.ticker { left: 42px; top: 26px; }
+.item_cell { width: 102px; height: 68px; border-radius: 0; margin: 5px; }
+.slot-item { width: 107px; min-height: 73px; padding: 5px; }
+.slot-item .item_cell { margin: 0; }
+.item-image.small { width: 102px; height: 68px; border-radius: 0; }
+.item-image.large { width: 512px; height: 340px; }
+.crate-series-icon { left: 45.5px; top: 25.5px; }
+.ticker { left: 43px; top: 26px; }
