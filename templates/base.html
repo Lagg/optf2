@@ -14,7 +14,7 @@ $def with (content)
     <link rel="shortcut icon" type="image/png" href="${static_prefix}optf2_icon.png"/>
     $for title, url in instance.get("rss_feeds", []):
         <link rel="alternate" title="$title" href="$url" type="application/rss+xml"/>
-    $ conf = instance.get("_cvars")
+    $ conf = instance.get("_cvars", {})
     $if conf: <script type="text/javascript"> var jsConf = $:json_dump(conf); </script>
     <script type="text/javascript" src="${static_prefix}jquery/js/jquery-1.8.0.min.js"></script>
     <script type="text/javascript" src="${static_prefix}jquery/js/jquery-ui-1.8.23.custom.min.js"></script>
@@ -49,6 +49,8 @@ $def with (content)
       <form method="get" id="search-form" action="$markup.generate_root_url(subroot = nav_node)">
 	<fieldset>
 	  <input type="text" id="search-field" name="user"/><button type="submit" id="search-button"><span class="ui-icon ui-icon-search"></span></button>
+	  $ formdest = conf.get("formDest")
+	  $if formdest: <input type="hidden" name="formdest" value="$formdest"/>
 	</fieldset>
       </form>
     </div>

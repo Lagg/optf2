@@ -17,7 +17,6 @@ OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 import web
 import pylibmc
 import operator
-from collections import deque
 from time import time
 from binascii import crc32
 # For temporary schema object store
@@ -289,16 +288,18 @@ class cache:
         id64 = profilerecord["id64"]
 
         if not lastpacks:
-            lastpacks = deque(maxlen = 10)
+            lastpacks = []
         else:
+            # TODO: Cast is temporary until move away from deque propagates
+            lastpacks = list(lastpacks)
             for p in lastpacks:
                 if p["id"] == id64:
                     lastpacks.remove(p)
                     break
 
-        lastpacks.appendleft(dict(id = id64, persona = profilerecord["persona"],
-                                  avatar = profilerecord["avatarurl"]))
-        self.set(lastpackskey, lastpacks)
+        lastpacks.insert(0, dict(id = id64, persona = profilerecord["persona"],
+                                 avatar = profilerecord["avatarurl"]))
+        self.set(lastpackskey, lastpacks[:10])
 
 
     def _build_processed_item(self, item):

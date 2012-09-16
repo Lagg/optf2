@@ -8,32 +8,34 @@ from optf2.backend import config
 
 class search_page_parser(HTMLParser):
     def handle_starttag(self, tag, attrs):
-        link = None
-        aclass = None
-        src = None
-        self._lasttag = tag
+        attr = dict(attrs)
+        link = attr.get("href")
+        aclass = attr.get("class")
 
-        for attr in attrs:
-            if attr[0] == "href": link = attr[1]
-            if attr[0] == "class": aclass = attr[1]
-            if attr[0] == "src": src = attr[1]
+        self._tagstack.append((tag, aclass))
 
         if aclass == "linkTitle" and link and link.startswith(self._community_url):
-            self._obj["id"] = os.path.basename(link)
+            # id64 is a misnomer, but is there for compatibility reasons
+            self._obj["id64"] = os.path.basename(link)
 
             if link.startswith(self._community_url + "profiles"): self._obj["id_type"] = "id64"
             else: self._obj["id_type"] = "id"
 
-        if tag == "img":
-            self._lastimg = src
+        img = attr.get("src")
+        if tag == "img" and img and img.find("avatars") != -1:
+            self._obj["avatarurl"] = img.replace("_medium", "")
 
     def handle_data(self, data):
-        if self._lasttag == "a" and "id" in self._obj:
-            self._obj["persona"] = data.strip()
+        try:
+            lasttag, aclass = self._tagstack[-1]
+            if aclass and aclass == "linkTitle":
+                self._obj["persona"] = data.strip()
+        except IndexError:
+            pass
 
     def handle_endtag(self, tag):
-        if self._obj:
-            self._obj["avatar"] = self._lastimg.replace("_medium", "")
+        stag, aclass = self._tagstack.pop()
+        if aclass and aclass.find("resultItem") != -1:
             self._results.append(self._obj)
             self._obj = {}
 
@@ -42,8 +44,7 @@ class search_page_parser(HTMLParser):
 
     def __init__(self, user):
         self._obj = {}
-        self._lasttag = None
-        self._lastimg = None
+        self._tagstack = []
         self._community_url = "http://steamcommunity.com/"
         self._results = []
         search_url = self._community_url + "actions/Search?T=Account&K={0}".format(web.urlquote(user))
@@ -55,42 +56,43 @@ class search_page_parser(HTMLParser):
 
         self.feed(req._download())
 
+def profile_search(user, greedy = False):
+    """ If greedy it'll search even if the
+    given string is exactly matched against
+    an ID or vanity. Exact matches marked with
+    'exact' property """
+    # TODO: Previous weighted search is ugly and inaccurate, make something better
+    resultlist = []
+    if not user: return
+    baseurl = user.strip('/').split('/')
+    if len(baseurl) > 0:
+        user = baseurl[-1]
+
+    try:
+        prof = database.cache().get_profile(user)
+        prof["exact"] = True
+        resultlist.append(prof)
+        if not greedy:
+            return resultlist
+    except:
+        pass
+
+    try:
+        parser = search_page_parser(user)
+        resultlist += parser.get_results()
+    except:
+        pass
+
+    return resultlist
+
 class search_profile:
-    """ Searches for an account matching the username given in the query
-    and returns a JSON object
-    Yes it's dirty, yes it'll probably die if Valve changes the layout.
-    Yes it's Valve's fault for not providing an equivalent API call.
-    Yes I can't use minidom because I would have to replace unicode chars
-    because of Valve's lazy encoding.
-    Yes I'm designing it to be reusable by other people and myself. """
-
+    """ API interface to built in profile searcher """
     def GET(self, user):
-        try:
-            parser = search_page_parser(user)
-            userlist = parser.get_results()
-            ulen = len(userlist)
-            umax = ulen - 1
-            ul = user.lower()
-
-            for i in xrange(umax):
-                elem = userlist[i]
-                pl = elem["persona"].lower()
-                uid = elem["id"].lower()
-
-                if pl == ul:
-                    userlist.insert(0, userlist.pop(i))
-                elif uid == ul:
-                    userlist.insert(min(1, umax), userlist.pop(i))
-                elif ul.startswith(pl):
-                    userlist.insert(min(2, umax), userlist.pop(i))
-                elif ul.startswith(uid):
-                    userlist.insert(min(3, umax), userlist.pop(i))
-
-            return json.dumps(userlist)
-        except:
-            return "[]"
+        web.header("Content-Type", "text/javascript")
+        return json.dumps(profile_search(user, greedy = True))
 
 class persona:
+    """ Used for wiki cap related things """
     def GET(self, uid):
         user = {}
         callback = web.input().get("jsonp")
