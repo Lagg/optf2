@@ -258,10 +258,7 @@ class cache:
             try:
                 pack = getattr(steam, modulename).backpack(id64, schema = schema)
             except AttributeError:
-                try:
-                    pack = self.get_inv_backpack(user)
-                except:
-                    raise itemtools.ItemBackendUnimplemented("No backend available for " + str(modulename))
+                pack = self.get_inv_backpack(user)
 
             processedpack["cells"] = pack.get_total_cells()
             for item in pack:
