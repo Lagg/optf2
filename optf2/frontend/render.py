@@ -15,19 +15,24 @@ default_cvars = {"vRoot": virtual_root,
                  "staticPrefix": static_prefix,
                  "cellsPerRow": 10}
 
+def urlr(exp):
+    return virtual_root + exp + "/*"
+
 urls = (
-    virtual_root + "persona/(.+)", app.api.persona,
-    virtual_root + "about", app.static.about,
-    virtual_root + "(.+)/items", app.schema_list.items,
-    virtual_root + "(.+)/attributes", app.schema_list.attributes,
-    virtual_root + "(.+)/particles", app.schema_list.particles,
-    virtual_root + "(.+)/item/(-?[0-9]+)", app.backpack.item,
-    virtual_root + "(.+)/item/(.+)/(-?[0-9]+)", app.backpack.live_item,
-    virtual_root + "(.+)/loadout/(.+)", app.backpack.loadout,
-    virtual_root + "(.+)/feed/(.+)", app.backpack.feed,
-    virtual_root + "(.+)/user/(.*)", app.backpack.fetch,
-    virtual_root + "(.+)/(.+)", app.backpack.fetch,
-    virtual_root + "(.*)", app.index.game_root
+    urlr("persona/(.+)"), app.api.persona,
+    urlr("api/profileSearch/(.+)"), app.api.search_profile,
+    urlr("inv/(?:user/)?(.+)"), app.sim.selector,
+    urlr("inv"), app.sim.main,
+    urlr("about"), app.static.about,
+    urlr("(\w+)/items"), app.schema_list.items,
+    urlr("(\w+)/attributes"), app.schema_list.attributes,
+    urlr("(\w+)/particles"), app.schema_list.particles,
+    urlr("(\w+)/item/(-?\d+)"), app.backpack.item,
+    urlr("(\w+)/item/(\w+)/(-?\d+)"), app.backpack.live_item,
+    urlr("(\w+)/loadout/(.+)"), app.backpack.loadout,
+    urlr("(\w+)/feed/(.+)"), app.backpack.feed,
+    urlr("(\w+)/(?:user/)?(.+)"), app.backpack.fetch,
+    urlr("(\w*)"), app.index.game_root
     )
 
 application = web.application(urls, globals())

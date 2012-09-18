@@ -122,12 +122,12 @@ class live_item:
             user = cache.get_profile(user)
             items = cache.get_backpack(user)
 
-            item = items["items"][long(iid)]
-
             if web.input().get("contents"):
                 contents = item.get("contents")
                 if contents:
                     item = contents
+
+            item = items["items"][long(iid)]
         except steam.base.HttpError as E:
             return templates.error("Couldn't connect to Steam (HTTP {0})".format(E))
         except steam.user.ProfileError as E:
@@ -176,6 +176,9 @@ class fetch:
 
             filter_classes = markup.sorted_class_list(itemtools.get_equippable_classes(items, cache))
             filter_qualities = markup.get_quality_strings(itemtools.get_present_qualities(items), cache)
+            if len(filter_classes) <= 1: filter_classes = None
+            if len(filter_qualities) <= 1: filter_qualities = None
+
             if filter_class:
                 items = itemtools.filter_by_class(items, markup.get_class_for_id(filter_class, app)[0])
             if filter_quality:

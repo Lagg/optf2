@@ -26,7 +26,7 @@ import os
 import steam
 from optf2.backend import config
 from optf2.backend import log
-from optf2.backend.items import get_class_for_id
+import items as itemtools
 from optf2.frontend.markup import absolute_url
 
 def _(thestring):
@@ -170,10 +170,8 @@ class cache:
 
         try:
             modclass = getattr(steam, modulename).item_schema
-            # there's no real schema yet, TODO
-            if modulename == "sim": return modclass()
         except AttributeError:
-            raise steam.items.SchemaError("steamodd hasn't implemented a schema for {0}".format(modulename))
+            raise itemtools.ItemBackendUnimplemented("Backend couldn't give a schema for {0}".format(modulename))
 
         return self._get_generic_aco(modclass, "schema", cachefilter = cb, stale = stale, getlm = operator.methodcaller("get_last_modified"), usepickle = True)
 
@@ -254,10 +252,16 @@ class cache:
         if not pack:
             try:
                 schema = self.get_schema()
-            except CacheEmptyError:
+            except:
                 schema = None
 
-            pack = getattr(steam, modulename).backpack(id64, schema = schema)
+            try:
+                pack = getattr(steam, modulename).backpack(id64, schema = schema)
+            except AttributeError:
+                try:
+                    pack = self.get_inv_backpack(user)
+                except:
+                    raise itemtools.ItemBackendUnimplemented("No backend available for " + str(modulename))
 
             processedpack["cells"] = pack.get_total_cells()
             for item in pack:
@@ -272,6 +276,30 @@ class cache:
         self.update_recent_pack_list(user)
 
         return pack
+
+    def get_inv_context(self, user):
+        id64 = user["id64"]
+        ctxkey = "invctx-{0}".format(id64)
+        # TODO: Add cache life config settings for these
+        ctx = self.get(ctxkey)
+        if not ctx:
+            ctx = list(steam.sim.backpack_context(id64))
+            self.set(ctxkey, ctx, time = 120)
+
+        return ctx
+
+    def get_inv_backpack(self, user):
+        id64 = user["id64"]
+        app = self.get_mod_id()
+
+        ctx = self.get_inv_context(user)
+        appctx = None
+        for c in ctx:
+            if str(app) == str(c["appid"]):
+                appctx = c
+                break
+
+        return steam.sim.backpack(id64, appctx)
 
     def get_mod_id(self):
         return self._mod_id
@@ -356,7 +384,7 @@ class cache:
         if qty > 1: newitem["qty"] = qty
         if quality_str: newitem["quality"] = quality_str
         # May need string->ID swapper
-        if equipable: newitem["equipable"] = [get_class_for_id(c, self._mod_id)[0] for c in equipable]
+        if equipable: newitem["equipable"] = [itemtools.get_class_for_id(c, self._mod_id)[0] for c in equipable]
         # Certain items will be part of a category system, this is used for advanced paging
         if category: newitem["cat"] = category
         newitem["image"] = imgsmall or default_cell_image
@@ -550,7 +578,7 @@ class cache:
 
         self._language = code
         self._language_name = name
-        self._mod_id = mode
+        self._mod_id = str(mode)
         self._recent_packs_key = "lastpacks-" + self._mod_id
         self._resource_prefix = config.ini.get("resources", "static-prefix")
         self._bp_lifetime = config.ini.getint("cache", "backpack-expiry")

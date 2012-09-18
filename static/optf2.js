@@ -122,6 +122,34 @@ $(document).ready(function(){
 	    $("#loadout-result").toggle();
 	}
     });
+
+    $("button#inv-search").button({icons: {primary: "ui-icon-search"}});
+    $("#inv-form").submit(function() {
+	var output = $("#search-output table");
+	var val = $("#inv-field").val();
+
+	output.empty();
+
+	if (!val) { output.prepend("Need an ID"); return false; }
+
+	output.prepend("Searching for <b>" + val + "</b>...");
+
+	$.getJSON("/api/profileSearch/" + val, function(data) {
+	    output.empty();
+	    $.each(data, function() {
+		var row = $('<tr><td><img src="' + this.avatarurl + '" style="vertical-align: middle;" width="32" height="32"/></td><td><a href="/inv/' + this.id64 + '"><b>' + this.persona + '</b></a></td></tr>');
+		if (this.exact) {
+		    row.find("b").css("color", "red");
+		}
+		row.appendTo(output);
+	    });
+	    if (data.length <= 0) {
+		output.prepend("No results found");
+	    }
+	});
+
+	return false;
+    });
 });
 
 function autosizeBoxes() {

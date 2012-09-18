@@ -131,7 +131,7 @@ def generate_root_url(path = "", subroot = ""):
     """ Generate a URL beginning with the virtual root value,
     followed by an optional sub-root, then the path """
 
-    return pathjoin(virtual_root + subroot, path)
+    return pathjoin(virtual_root, str(subroot), str(path))
 
 def set_navlink(path = "", override = False):
     """ Note: Assumes the first part of the URL is the mode """

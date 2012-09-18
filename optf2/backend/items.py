@@ -22,13 +22,25 @@ import steam
 from optf2.frontend.markup import get_class_for_id
 from optf2.backend import config
 from optf2.backend import log
-from optf2.backend import database
+import database
 
 # Russia, for the sake of OPTF2. Give real symbol.
 currencysymbols = {"USD": "$",
                    "RUB": "",
                    "GBP": unichr(0x00A3),
                    "EUR": unichr(0x20AC)}
+
+class ItemError(Exception):
+    def __init__(self, msg):
+        Exception.__init__(self)
+        self.msg = msg
+
+    def __str__(self):
+        return str(self.msg)
+
+class ItemBackendUnimplemented(ItemError):
+    def __init__(self, msg):
+        ItemError.__init__(self, msg)
 
 def condensed_to_id64(value):
     return "7656" + str(int(value) + 1197960265728)
@@ -205,6 +217,11 @@ def get_stats(items):
         if not ismerged:
             stats.setdefault(slot, 0)
             stats[slot] += 1
+
+    # Redundancy check
+    othercount = stats.get("other")
+    if othercount and othercount == stats["total"]:
+        del stats["other"]
 
     return stats
 

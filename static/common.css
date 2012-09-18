@@ -167,7 +167,7 @@ a:visited { text-decoration: none; }
 #search-form-container { position: absolute; right: 30px; top: 0; width: 219px; border-radius: 10px; height: 30px; }
 .motd { position: absolute; right: 270px; padding: 8px; top: 0; border-radius: 0 0 10px 10px; background: #1a1a1a; border: 1px solid #454545; }
 .motd *, .motd { color: white; }
-#search-form-container fieldset { border: 0; }
+fieldset { border: 0; }
 #search-field, #search-button {
     top: 0px;
     position: absolute;

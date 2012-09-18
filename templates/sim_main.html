@@ -1,0 +1,28 @@
+$var title: $project_name - SIM Main
+<div id="header"><img src="${static_prefix}logo_tf2.png" alt="logo" id="logo"/></div>
+<div id="content">
+    <div style="width: 550px; margin: 0 auto 0 auto; margin-bottom: 2em;" class="box">
+      <div class="titlebar">Open Invitation</div>
+      <p>
+	Welcome to the open test of the new OPTF2 inventory layer and profile search
+	tool. Type in a name, ID, or other keyword for the user who's inventory you wish to see. Please report
+	any problems or suggestions to the <a style="font-size: 1.1em;" href="http://steamcommunity.com/groups/officialoptf2">official OPTF2 group forum</a>
+      </p>
+      <p style="margin-top: 1.2em; font-size: 1.2em;font-family: Verdana, Arial, sans-serif;">
+	Places of particular interest are the ones not already supported by OPTF2 in the main navigation such as 
+	Valve's games like <b>TF2, DOTA 2, and Portal 2</b> but third party games such as <b>Spiral Knights or SMNC</b>, and your main <b>Steam</b> inventory.
+	Supporting those seamlessly is the main objective of this project. Because of that, Op Inv viewing of Valve's games are temporarily disabled until the
+	test is complete. Thank you for your participation. -- <b>Lagg</b>
+      </p>
+    </div>
+    <form method="get" id="inv-form" action="$markup.generate_root_url(subroot=markup.get_top_nav_node())">
+      <fieldset>
+	<input type="text" id="inv-field" name="user"/>
+	<button type="submit" id="inv-search">Search</button>
+      </fieldset>
+    </form>
+  <div id="search-output" style="margin-top: 20px;">
+    <table style="width: 200px; text-align: left; margin: 0 auto 0 auto;" cellpadding="5">
+    </table>
+  </div>
+</div>
