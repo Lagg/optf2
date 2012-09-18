@@ -121,13 +121,12 @@ class live_item:
         try:
             user = cache.get_profile(user)
             items = cache.get_backpack(user)
+            item = items["items"][long(iid)]
 
             if web.input().get("contents"):
                 contents = item.get("contents")
                 if contents:
                     item = contents
-
-            item = items["items"][long(iid)]
         except steam.base.HttpError as E:
             return templates.error("Couldn't connect to Steam (HTTP {0})".format(E))
         except steam.user.ProfileError as E:
