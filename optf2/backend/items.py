@@ -54,18 +54,13 @@ def build_page_object_unpositioned(items, pagesize = None):
 
     fitems = filter(None, items)
     ilen = len(fitems)
-    (pages, rem) = divmod(ilen, pagesize)
+    pagecount = (ilen + (pagesize - (ilen % pagesize))) / pagesize
     imap = {}
 
-    if rem > 0: pages += 1
-
-    sections = xrange(1, pages + 1)
-
-    for i in sections:
-        imap[i] = fitems[(i - 1) * pagesize:i * pagesize]
-
-    if rem:
-        imap[sections[-1]] += [None] * (pagesize - rem)
+    for page in xrange(1, pagecount + 1):
+        offset = page * pagesize
+        itemslice = fitems[offset - pagesize:offset]
+        imap[page] = itemslice + ([None] * (pagesize - len(itemslice)))
 
     return imap
 
@@ -92,32 +87,33 @@ def build_page_object(items, pagesize = None, ignore_position = False):
             displaced.append(item)
             continue
 
-        section = item.get("cat")
-        if not section:
-            section = 1
-            if itempos > pagesize:
-                (section, diff) = divmod(itempos, pagesize)
-                if diff > 0: section += 1
+        # Will use page names before
+        # numbered if available
+        pagename = item.get("cat")
+        posrem = itempos % pagesize
+        if posrem > 0: posrem += pagesize - posrem
+        pageno = (itempos + posrem) / pagesize
+        page = pageno
+        roundedsize = pageno * pagesize
+        realsize = pagesize
 
-        imap.setdefault(section, [None] * (pagesize + 1))
-
-        expandedsize = 0
-        if itempos > len(imap[section]) - 1:
-            try:
-                itempos -= (pagesize * (section - 1))
-            except TypeError:
-                expandedsize = itempos
-                rem = expandedsize % pagesize
-                if rem > 0: expandedsize += (pagesize - rem)
-
-        imap[section] += [None] * expandedsize
-
-        if imap[section][itempos] == None:
-            imap[section][itempos] = item
+        if pagename:
+            page = pagename
+            realsize = roundedsize
         else:
-            overlapped = imap[section][itempos]
+            itempos -= roundedsize + 1
+
+        imap.setdefault(page, [])
+        pagelen = len(imap[page])
+        if realsize > pagelen:
+            imap[page] += [None] * ((realsize - pagelen) + 1)
+
+        if imap[page][itempos] == None:
+            imap[page][itempos] = item
+        else:
+            overlapped = imap[page][itempos]
             if overlapped.get("id") > item.get("id"):
-                imap[section][itempos] = item
+                imap[page][itempos] = item
                 displaced.append(overlapped)
             else:
                 displaced.append(item)
