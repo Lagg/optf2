@@ -91,8 +91,9 @@ $var title: $project_name - $usern $:item["ownedname"]
   <ul class="link-list">
     $if item_wiki_url:
         <li><a href="$item_wiki_url">$wikiname article</a></li>
-    $if user:
-        <li><a href="$markup.generate_root_url('item/{0}'.format(item['sid']), app)">Schema version</a></li>
+    $ sid = item.get("sid")
+    $if user and sid:
+        <li><a href="$markup.generate_root_url('item/{0}'.format(sid), app)">Schema version</a></li>
   </ul>
   </div>
   </div>

@@ -10,10 +10,10 @@ class game_root:
     def GET(self, app = None):
         usestale = True
 
-        # Random mainpages (until dedicated main homepage is done)
+        # Until dedicated main homepage is done
         if not app:
             from optf2.frontend import render
-            app = random.choice(render.valid_modes)
+            app = render.valid_modes[0]
 
         user = web.input().get("user")
         profile = api.profile_search(user)

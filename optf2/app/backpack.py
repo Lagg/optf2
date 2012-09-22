@@ -102,6 +102,8 @@ class item:
             return templates.item_error_notfound(iid)
         except database.CacheEmptyError as E:
             return templates.error(E)
+        except itemtools.ItemBackendUnimplemented:
+            return templates.error("No backend found to handle the given item, this could mean that the item has no available associated schema (yet)")
 
         caps = markup.get_capability_strings(itemtools.get_present_capabilities([item]))
 
