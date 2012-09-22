@@ -5,10 +5,11 @@ $var title: $project_name - All Particles
   <h2>All particle effects</h2>
 </div>
 <div id="content">
-  <div id="backpack">
+  <div id="particle-list">
   $for k, particle in particles.iteritems():
       <div class="item_cell">
-        <img class="item-image small" src="$markup.generate_particle_icon_url(particle['id'], app)" alt="${particle['id']}"/>
+	$ url = markup.generate_particle_icon_url(particle['id'], app)
+        <a href="$url" target="_blank"><img class="item-image small" src="$url" alt="${particle['id']}"/></a>
         <div class="tooltip">
           <div class="item-name">$particle["name"]</div>
           <div class="attr-neutral">ID: $particle["id"]</div>

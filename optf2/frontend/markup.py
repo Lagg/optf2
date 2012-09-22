@@ -330,28 +330,32 @@ def generate_item_cell(app, item, invalid = False, show_equipped = True, user = 
     if coloroverride:
         style = ' style="border-color: #{0};"'.format(coloroverride)
 
+    pid = item.get("pid", '')
+    if pid:
+        pid = '<img class="icon-particle" alt="picon" src="' + generate_particle_icon_url(pid, app) + '"/>'
+
     markup = ('<div class="{0} cell-{1}"{6} id="s{2}">' +
               '<a class="item-link" href="{3}">' +
               '<img class="item-image small" src="{4}" alt="{5}"/>' +
+              '{7}' +
               '</a>'
-              ).format(cell_class, quality, itemid, item_link, item["image"], itemid, style)
+              ).format(cell_class, quality, itemid, item_link, item["image"], itemid, style, pid)
 
     contents = item.get("contents")
     series = item.get("series")
     craftno = item.get("craftno")
-    pid = item.get("pid")
     texture = item.get("texture")
     if contents:
         markup += '<img src="' + contents["image"] + '" alt="0" class="item-image gift-preview"/>'
 
-    markup += '<div class="cell-top">'
+    ctop = ''
     if item.get("cname"):
-        markup += '<img src="' + static_prefix + 'name_tag.png" alt="Named"/>'
+        ctop += '<img src="' + static_prefix + 'name_tag.png" alt="Named"/>'
     if item.get("cdesc"):
-        markup += '<img src="' + static_prefix + 'desc_tag.png" alt="Described"/>'
+        ctop += '<img src="' + static_prefix + 'desc_tag.png" alt="Described"/>'
     if "gifter" in item:
-        markup += '<img src="' + static_prefix + 'gift_icon.png" alt="Gift"/>'
-    markup += '</div>'
+        ctop += '<img src="' + static_prefix + 'gift_icon.png" alt="Gift"/>'
+    if ctop: markup += '<div class="cell-top">' + ctop + '</div>'
 
     for cid, color in item.get("colors", []):
         sec = ''
@@ -361,17 +365,15 @@ def generate_item_cell(app, item, invalid = False, show_equipped = True, user = 
         markup += '<span class="crate-series-icon">{0}</span>'.format(series)
     if craftno:
         markup += '<div class="craft-number-icon">{0}</div>'.format(craftno)
-    if pid:
-        markup += '<img class="icon-particle" alt="Picon" src="' + generate_particle_icon_url(pid, app) + '"/>'
     if texture:
         markup += '<img class="icon-custom-texture"  src="' + texture + '" alt="texture"/>'
 
-    markup += '<div class="cell-bot">'
+    cbottom = ''
     if equipped:
-        markup += '<span class="ui-icon ui-icon-suitcase"></span>'
+        cbottom += '<span class="ui-icon ui-icon-suitcase"></span>'
     if quantity:
-        markup += '<span class="cell-quantity">' + str(quantity) + '</span>'
-    markup += '</div>'
+        cbottom += '<span class="cell-quantity">' + str(quantity) + '</span>'
+    if cbottom: markup += '<div class="cell-bot">' + cbottom + '</div>'
 
     if coloroverride: style = ' style="color: #{0};"'.format(coloroverride)
     quality = item.get("quality", "normal")

@@ -667,9 +667,9 @@ function ItemDialog() {
 
     this.resizeEvent = function (event, ui) {
 	var item = $(event.target);
-	var image = item.find(".item-image");
+	var image = item.find(".item-image, .icon-particle");
 	var container = item.find(".item-zoom");
-	var icons = item.find(".icon-particle, .icon-custom-texture");
+	var icons = item.find(".icon-custom-texture");
 
 
 	if (ui.size == undefined) {
