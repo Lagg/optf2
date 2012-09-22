@@ -104,8 +104,8 @@ def get_class_overrides(ident):
     return (classoverrides.get(ident),
             reverrides.get(ident + "_swap"))
 
-def sorted_class_list(classes, mode = None):
-    validclasses = [get_class_for_id(c, mode) for c in classes]
+def sorted_class_list(classes, app = None):
+    validclasses = [get_class_for_id(c, app) for c in classes]
 
     return sorted(validclasses, key = operator.itemgetter(1))
 

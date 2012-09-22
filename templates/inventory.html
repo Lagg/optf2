@@ -1,4 +1,4 @@
-$def with (app, user, items, baditems = [], filter_classes = None, filter_qualities = None, stats = None, price_stats = None, cell_count = 0)
+$def with (app, user, items, sorters, baditems = [], filter_classes = None, filter_qualities = None, stats = None, price_stats = None, cell_count = 0)
 $ usern = user["persona"]
 $ id64 = user["id64"]
 $ profileurl = "http://steamcommunity.com/profiles/{0}".format(id64)
@@ -13,12 +13,8 @@ $ onlinestates = {0: "offline", 1: "online", 2: "busy", 3: "away", 4: "snooze", 
         <b>Sort</b>
         <ul>
           <li><a href="$qurl(sort = None)">Default</a></li>
-          <li><a href="$qurl(sort = 'id')">ID</a></li>
-          <li><a href="$qurl(sort = 'time')">Time</a></li>
-          <li><a href="$qurl(sort = 'level')">Level</a></li>
-          <li><a href="$qurl(sort = 'name')">Name</a></li>
-          <li><a href="$qurl(sort = 'slot')">Slot</a></li>
-          <li><a href="$qurl(sort = 'class')">Class</a></li>
+	  $for op in sorters:
+	    <li><a href="$qurl(sort = op)">$op</a></li>
         </ul>
       </div>
       $if filter_classes:

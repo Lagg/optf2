@@ -37,26 +37,28 @@ class items:
         except database.CacheEmptyError as E:
             return templates.error(E)
 
+        filters = itemtools.filtering(items)
         try:
-            filter_classes = markup.sorted_class_list(itemtools.get_equippable_classes(items, cache))
-            items = itemtools.filter_by_class(items, markup.get_class_for_id(query["cls"], app)[0])
+            filter_classes = markup.sorted_class_list(itemtools.get_equippable_classes(items, cache), app)
+            items = filters.byClass(markup.get_class_for_id(query["cls"], app)[0])
         except KeyError:
             pass
 
         try:
             filter_qualities = markup.get_quality_strings(itemtools.get_present_qualities(items), cache)
-            items = itemtools.filter_by_quality(items, query["quality"])
+            items = filters.byQuality(query["quality"])
         except KeyError:
             pass
 
         try:
             filter_capabilities = markup.get_capability_strings(itemtools.get_present_capabilities(items))
-            items = itemtools.filter_by_capability(items, query["capability"])
+            items = filters.byCapability(query["capability"])
         except KeyError:
             pass
 
+        sorter = itemtools.sorting(items)
         try:
-            items = itemtools.sort(items, query["sort"])
+            items = sorter.sort(query["sort"])
         except KeyError:
             pass
 
@@ -64,6 +66,7 @@ class items:
         price_stats = itemtools.get_price_stats(items, cache)
 
         return templates.schema_items(app, items,
+                                      sorter.get_sort_methods(),
                                       filter_classes,
                                       filter_qualities,
                                       filter_capabilities,

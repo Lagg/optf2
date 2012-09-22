@@ -42,6 +42,92 @@ class ItemBackendUnimplemented(ItemError):
     def __init__(self, msg):
         ItemError.__init__(self, msg)
 
+class filtering:
+    """ item list filtering, note that these are their own
+    sets of filters which do different things and take different
+    operands, unlike the sorting methods. Hence no automation, just
+    a similar API """
+
+    def __init__(self, items):
+        self._items = items
+
+    def byCapability(self, capability):
+        return [item for item in self._items if item and capability in item.get("caps", [])]
+
+    def byClass(self, cls):
+        return [item for item in self._items if item and cls in item.get("equipable", [])]
+
+    def byQuality(self, quality):
+        return [item for item in self._items if item and str(item.get("quality")) == str(quality)]
+
+class sorting:
+    """ Item list sorting """
+
+    def byClass(self, v):
+        return sorted(v.get("equipable", []))
+
+    def byID(self, v):
+        return v.get("id", v.get("sid"))
+
+    def byLevel(self, v):
+        level = v.get("level")
+
+        try:
+            return int(level)
+        except ValueError:
+            return level
+
+    def byName(self, v):
+        if v.get("cname"):
+            return v.get("mainname")
+        else:
+            return v.get("basename")
+
+    bySchemaID = operator.itemgetter("sid")
+
+    def bySlot(self, v):
+        return v.get("slot", sorted(v.get("equipped", {}).values()))
+
+    # Special, marks reverse ID sort
+    byTime = lambda self, v: None
+
+    def get_sort_methods(self):
+        """ Returns a list of defined sort key methods """
+
+        sorters = []
+        prefix = "by"
+
+        for m in dir(self):
+            if m.startswith(prefix):
+                sorters.append(m[len(prefix):])
+
+        return sorters
+
+    def sort(self, by, **kwargs):
+        """ by takes a string that is
+        the suffix of an implemented sort key method """
+
+        if not by: return self._items
+
+        # TODO: Sequential IDs aren't in at least 1 3rd party game
+        try:
+            sortkey = by
+
+            if not callable(sortkey):
+                sortkey = getattr(self, "by" + str(by))
+        except AttributeError:
+            pass
+        else:
+            if sortkey == self.byTime:
+                return self.sort(self.byID, reverse = True)
+            else:
+                self._items.sort(key = sortkey, **kwargs)
+
+        return self._items
+
+    def __init__(self, items):
+        self._items = items
+
 def condensed_to_id64(value):
     return "7656" + str(int(value) + 1197960265728)
 
@@ -133,58 +219,6 @@ def build_page_object(items, pagesize = None, ignore_position = False):
 
     return imap, displaced
 
-def sort(items, sortby):
-    if not items:
-        return []
-
-    itemcmp = None
-
-    if sortby == "id" or sortby == "time":
-        itemcmp = lambda o: o.get("id", o.get("sid"))
-    elif sortby == "level":
-        def levelcmp(obj):
-            level = obj.get("level")
-
-            if level != None:
-                try:
-                    return int(level)
-                except ValueError:
-                    return level
-        itemcmp = levelcmp
-    elif sortby == "name":
-        def namecmp(obj):
-            if obj.get("cname"):
-                return obj.get("mainname")
-            else:
-                return obj.get("basename")
-        itemcmp = namecmp
-    elif sortby == "slot":
-        itemcmp = lambda o: o.get("slot", sorted(o.get("equipped", {}).values()))
-    elif sortby == "class":
-        itemcmp = lambda o: sorted(o.get("equipable", []))
-    elif sortby == "schemaid":
-        itemcmp = operator.itemgetter("sid")
-    else:
-        return items
-
-    solid_items = items
-
-    if itemcmp:
-        solid_items = list(items)
-        solid_items.sort(key = itemcmp)
-
-        # TODO: For some reason some item systems don't have sequential IDs
-        if sortby == "time":
-            solid_items.reverse()
-
-    return solid_items
-
-def filter_by_class(items, theclass):
-    return [item for item in items if item and theclass in item.get("equipable", [])]
-
-def filter_by_quality(items, thequality):
-    return [item for item in items if item and str(item.get("quality")) == str(thequality)]
-
 def get_stats(items):
     """ Returns a dict of various backpack stats """
     stats = {"total": 0}
@@ -250,9 +284,6 @@ def get_present_qualities(items):
     qualities = set(map(operator.itemgetter("quality"), items))
 
     return sorted(qualities)
-
-def filter_by_capability(items, capability):
-    return [item for item in items if item and capability in item.get("caps", [])]
 
 def get_price_stats(items, cache):
     try:

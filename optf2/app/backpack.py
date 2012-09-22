@@ -59,7 +59,7 @@ class loadout:
             # initial normal items
             try:
                 schema = cache.get_schema()
-                normalitems = itemtools.filter_by_quality([cache._build_processed_item(item) for item in schema], "normal")
+                normalitems = itemtools.filtering([cache._build_processed_item(item) for item in schema]).byQuality("normal")
                 equippeditems, slotlist, classmap = self.build_loadout(normalitems, equippeditems, slotlist, classmap)
             except database.CacheEmptyError:
                 pass
@@ -156,7 +156,7 @@ class fetch:
             return templates.error("Need an ID")
 
         query = web.input()
-        sortby = query.get("sort", "cell")
+        sortby = query.get("sort")
         filter_class = query.get("cls")
         filter_quality = query.get("quality")
 
@@ -173,21 +173,24 @@ class fetch:
             user = self._get_profile(sid, cache)
             items, cell_count = self._get_inv(user, cache)
 
-            filter_classes = markup.sorted_class_list(itemtools.get_equippable_classes(items, cache))
+            filters = itemtools.filtering(items)
+            filter_classes = markup.sorted_class_list(itemtools.get_equippable_classes(items, cache), app)
             filter_qualities = markup.get_quality_strings(itemtools.get_present_qualities(items), cache)
             if len(filter_classes) <= 1: filter_classes = None
             if len(filter_qualities) <= 1: filter_qualities = None
 
             if filter_class:
-                items = itemtools.filter_by_class(items, markup.get_class_for_id(filter_class, app)[0])
+                items = filters.byClass(markup.get_class_for_id(filter_class, app)[0])
             if filter_quality:
-                items = itemtools.filter_by_quality(items, filter_quality)
+                items = filters.byQuality(filter_quality)
 
             stats = itemtools.get_stats(items)
 
-            sorted_items = itemtools.sort(items, sortby)
+            sorter = itemtools.sorting(items)
+            sorted_items = sorter.sort(sortby)
+
             baditems = []
-            (items, baditems) = itemtools.build_page_object(sorted_items, pagesize = pagesize, ignore_position = (sortby != "cell"))
+            (items, baditems) = itemtools.build_page_object(sorted_items, pagesize = pagesize, ignore_position = sortby)
 
             price_stats = itemtools.get_price_stats(sorted_items, cache)
 
@@ -203,7 +206,7 @@ class fetch:
         web.ctx.rss_feeds = [("{0}'s Backpack".format(user["persona"].encode("utf-8")),
                               markup.generate_root_url("feed/" + str(user["id64"]), app))]
 
-        return templates.inventory(app, user, items, baditems,
+        return templates.inventory(app, user, items, sorter.get_sort_methods(), baditems,
                                    filter_classes, filter_qualities, stats,
                                    price_stats, cell_count)
 
@@ -218,7 +221,8 @@ class feed:
             cache = database.cache(mode = app)
             user = cache.get_profile(sid)
             items = cache.get_backpack(user)["items"].values()
-            items = itemtools.sort(items, web.input().get("sort", "time"))
+            sorter = itemtools.sorting(items)
+            items = sorter.sort(web.input().get("sort", sorter.byTime))
 
             return renderer.inventory_feed(app, user, items[:config.ini.getint("rss", "inventory-max-items")])
 

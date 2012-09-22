@@ -1,4 +1,4 @@
-$def with (app, items, filter_classes, filter_qualities, filter_capabilities, stats, price_stats)
+$def with (app, items, sorters, filter_classes, filter_qualities, filter_capabilities, stats, price_stats)
 $var title: $project_name - All Items
 
 <div id="header" style="margin-bottom: 30px;">
@@ -9,11 +9,8 @@ $var title: $project_name - All Items
       <b>Sort</b>
       <ul>
         <li><a href="$qurl(sort = None)">Default</a></li>
-        <li><a href="$qurl(sort = 'schemaid')">ID</a></li>
-        <li><a href="$qurl(sort = 'level')">Level</a></li>
-        <li><a href="$qurl(sort = 'name')">Name</a></li>
-        <li><a href="$qurl(sort = 'slot')">Slot</a></li>
-        <li><a href="$qurl(sort = 'class')">Class</a></li>
+	$for op in sorters:
+	  <li><a href="$qurl(sort = op)">$op</a></li>
       </ul>
     </div>
     $if filter_classes:
