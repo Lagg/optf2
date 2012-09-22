@@ -266,8 +266,6 @@ tr.row-even { background-color: #1c1c1c; }
 
 #header { text-align: center; clear: both; }
 
-#avatar { top: 2px; position: absolute; width: 32px; height: 32px; left: 10px; }
-
 #logo { width: 389px; height: 126px; margin: 50px auto 50px auto; display: block; }
 
 .link-list { list-style-type: none; padding: 0; }
@@ -321,6 +319,7 @@ tr.row-even { background-color: #1c1c1c; }
 .side-box .header { background: #454545; width: 100%; padding: 5px 0 5px 0; margin: 10px 0 10px 0; font-weight: bold; font-size: 1.1em; }
 .side-box .header:first-of-type { margin-top: 0; border-radius: 10px 10px 0 0; }
 .side-box .player-badge { min-height: 70px; padding: 4px; }
+.player-badge .valve { vertical-align: middle; margin-bottom: 1em; }
 .side-box .item_cell { float: none; margin: 0 auto 0 auto; }
 
 .side-box table { width: 100%; }

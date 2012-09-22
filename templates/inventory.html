@@ -39,7 +39,8 @@ $ onlinestates = {0: "offline", 1: "online", 2: "busy", 3: "away", 4: "snooze", 
               <li><a href="$qurl(quality = id)"><span class="prefix-$id">$label</span></a></li>
           </ul>
 	</div>
-      <a id="loadout-button" href="$markup.generate_root_url('loadout/{0}'.format(id64), app)">Loadout</a>
+      $if filter_classes:
+        <a id="loadout-button" href="$markup.generate_root_url('loadout/{0}'.format(id64), app)">Loadout</a>
       <a id="feed-button" href="$rss">RSS</a>
   </div>
   <div id="backpack" style="width: 1040px;">
@@ -52,13 +53,10 @@ $ onlinestates = {0: "offline", 1: "online", 2: "busy", 3: "away", 4: "snooze", 
 	  </a>
         </div>
         <div>
-	  $ name_suffix = ""
-	  $ isvalve = user.get("valve")
-	  $if isvalve:
-              $ name_suffix = '<img src="{0}valve.png" alt="Valve" title="Valve Employee"/>'.format(static_prefix)
-	  $if user.get("private"):
-	      $ name_suffix += '<span class="attr-negative" style="font-weight: normal;"> (private)</span>'
-	  <b><a href="$profileurl">$usern</a> $:name_suffix</b><br/>
+	  $if user.get("valve"): <img class="valve" src="${static_prefix}valve.png" alt="Valve"/><br/>
+	  <b><a href="$profileurl">$usern</a>
+	  $if user.get("private"): <span class="attr-negative" style="font-weight: normal;"> (private)</span>
+	  </b><br/>
 	  $ scode = user.get("status")
 	  $ statclass = onlinestates.get(scode, '')
 	  $ status = "status: {0}".format(scode)
