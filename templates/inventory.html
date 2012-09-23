@@ -96,8 +96,7 @@ $ onlinestates = {0: "offline", 1: "online", 2: "busy", 3: "away", 4: "snooze", 
               $if k == "total": $continue
               <tr><th>$k.title()</th><td>$stats[k]</td></tr>
             <tr><th>Total</th><td>$stats["total"]$cell_total</td></tr>
-            $ f2pcheck = ["tf2", "tf2b", "d2", "d2b", "p2"] # TODO: Set in config file
-            $if app in f2pcheck and cell_count > 0 and cell_count <= 50:
+            $if app in f2p_check and cell_count > 0 and cell_count <= 50:
               <tr><td colspan="2">User is free to play</td></tr>
             $if cell_count > 0 and cell_count < stats["total"]:
               <tr><th colspan="2" style="color: red;">Pack is over capacity</th></tr>

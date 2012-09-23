@@ -5,10 +5,10 @@ from optf2.backend.config import ini as config
 from optf2.frontend import markup as markuptools
 
 wikimap = {}
-for wiki in config.items("wiki"):
-    sep = wiki[1].find(':')
-    pair = (wiki[1][:sep], wiki[1][sep + 1:])
-    wikimap[wiki[0]] = (pair[0].strip(), pair[1].strip())
+for mode, wiki in config.items("wiki"):
+    wikimap[mode] = map(str.strip, wiki.split(':', 1))
+
+inv_graylist = dict(config.items("inv-graylist"))
 
 # Using this from web.template, don't want to import entire __builtin__
 # module (i.e. eval) so this will do
@@ -34,12 +34,13 @@ globals = {"virtual_root": config.get("resources", "virtual-root"),
            "project_name": config.get("misc", "project-name"),
            "wiki_map": wikimap,
            "qurl": web.http.changequery,
-           "iurl": web.input,
            "markup": markuptools,
            "game_modes": markuptools.odict(config.items("modes")),
            "pagesizes": markuptools.get_page_sizes(),
            "json_dump": json.dumps,
-           "json_load": json.loads
+           "json_load": json.loads,
+           "f2p_check": config.getlist("misc", "f2p-check-modes"),
+           "inv_app_graylist": inv_graylist
            }
 
 template = web.template.render(config.get("resources", "template-dir"), base = "base",

@@ -1,7 +1,5 @@
 $def with (user, context)
 $var title: $project_name - Inventory Layer - Game Selection
-$# TODO: Not hardcode
-$ graylist = {440: "tf2", 570: "d2", 620: "p2"}
 <div id="content">
   $for ctx in context:
     <div class="box" style="width: 500px; margin: 0 auto 2em auto;">
@@ -9,8 +7,8 @@ $ graylist = {440: "tf2", 570: "d2", 620: "p2"}
 	<img style="width: 24px; height: 24px; vertical-align: middle;" src="$ctx['icon']" alt="icon"/>
 	$ctx["name"] - $ctx["asset_count"] items
       </div>
-      $ appid = ctx['appid']
-      $ url = markup.generate_root_url('user/{0}'.format(user['id64']), graylist.get(appid, appid))
+      $ appid = str(ctx['appid'])
+      $ url = markup.generate_root_url('user/{0}'.format(user['id64']), inv_app_graylist.get(appid, appid))
       <a href="$url"><img src="$ctx['inventory_logo']" alt="logo"/></a><br/>
       <a href="$ctx['link']" target="_blank">Store page</a>
       <table style="text-align: left; margin: 0 auto 0 auto;" cellpadding="4" cellspacing="4">
