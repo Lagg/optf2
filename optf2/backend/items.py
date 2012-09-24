@@ -70,12 +70,7 @@ class sorting:
         return v.get("id", v.get("sid"))
 
     def byLevel(self, v):
-        level = v.get("level")
-
-        try:
-            return int(level)
-        except ValueError:
-            return level
+        return v.get("level", 0)
 
     def byName(self, v):
         if v.get("cname"):
