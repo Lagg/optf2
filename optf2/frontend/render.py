@@ -19,8 +19,7 @@ def urlr(exp):
     return virtual_root + exp + "/*"
 
 urls = (
-    urlr("persona/(.+)"), app.api.persona,
-    urlr("api/profileSearch/(.+)"), app.api.search_profile,
+    virtual_root + "api", app.api.subapplication,
     urlr("inv/(?:user/)?(.+)"), app.sim.selector,
     urlr("inv"), app.sim.main,
     urlr("about"), app.static.about,

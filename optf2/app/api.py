@@ -6,6 +6,39 @@ from HTMLParser import HTMLParser
 from optf2.backend import database
 from optf2.backend import config
 
+# Subapplication and URLs defined after classes
+# TODO: Well defined error objects for when this is
+# more fleshed out
+
+jsonMimeType = "application/json"
+
+class jsonHTTPError(web.HTTPError):
+    """" Replacement for web.* stuff,
+    they set content-types to text/html by default.
+    Not sure if two headers of those are allowed in the spec. """
+    def __init__(self, status, message = None):
+        headers = {"Content-Type": jsonMimeType}
+        web.HTTPError.__init__(self, status, headers, message or "{}")
+
+class jsonBadRequest(jsonHTTPError):
+    """ Replacement for web.BadRequest """
+    def __init__(self, message = None):
+        status = "400 Bad Request"
+        jsonHTTPError.__init__(self, status, message)
+
+class jsonNotFound(jsonHTTPError):
+    """ Replacement for web.NotFound """
+    def __init__(self, message = None):
+        status = "404 Not Found"
+        jsonHTTPError.__init__(self, status, message)
+
+class jsonInternalError(jsonHTTPError):
+    """ Replacement for web._InternalError
+    no stack calls needed here really """
+    def __init__(self, message = None):
+        status = "500 Internal Server Error"
+        jsonHTTPError.__init__(self, status, message)
+
 class search_page_parser(HTMLParser):
     def handle_starttag(self, tag, attrs):
         attr = dict(attrs)
@@ -87,9 +120,14 @@ def profile_search(user, greedy = False):
 
 class search_profile:
     """ API interface to built in profile searcher """
-    def GET(self, user):
-        web.header("Content-Type", "text/javascript")
-        return json.dumps(profile_search(user, greedy = True))
+    def GET(self):
+        user = web.input().get("user")
+
+        if user:
+            web.header("Content-Type", jsonMimeType)
+            return json.dumps(profile_search(user, greedy = True))
+        else:
+            raise jsonBadRequest()
 
 class persona:
     """ Used for wiki cap related things """
@@ -104,9 +142,19 @@ class persona:
             user["id64"] = str(user["id64"])
         except: pass
 
-        web.header("Content-Type", "text/javascript")
+        web.header("Content-Type", jsonMimeType)
+
         jsonobj = json.dumps(user)
         if not callback:
             return jsonobj
         else:
             return callback + '(' + jsonobj + ');'
+
+urls = (
+    "/profileSearch", search_profile,
+    "/persona/(.+)", persona
+    )
+
+subapplication = web.application(urls)
+subapplication.internalerror = jsonInternalError
+subapplication.notfound = jsonNotFound

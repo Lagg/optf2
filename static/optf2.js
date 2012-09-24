@@ -134,7 +134,7 @@ $(document).ready(function(){
 
 	output.prepend("Searching for <b>" + val + "</b>...");
 
-	$.getJSON("/api/profileSearch/" + val, function(data) {
+	$.getJSON("/api/profileSearch", {user: val}, function(data) {
 	    output.empty();
 	    $.each(data, function() {
 		var row = $('<tr><td><img src="' + this.avatarurl + '" style="vertical-align: middle;" width="32" height="32"/></td><td><a href="/inv/' + this.id64 + '"><b>' + this.persona + '</b></a></td></tr>');
