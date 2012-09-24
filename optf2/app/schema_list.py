@@ -76,8 +76,7 @@ class items:
 class attributes:
     """ Dumps all schema attributes in a pretty way """
 
-    def GET(self, app):
-        query = web.input()
+    def GET(self, app, attachment_check = None):
         cache = database.cache(mode = app)
 
         markup.init_theme(app)
@@ -89,7 +88,6 @@ class attributes:
         except database.CacheEmptyError as E:
             return templates.error(E)
 
-        attachment_check = query.get("att")
         attribute = None
 
         if attachment_check:
@@ -97,19 +95,15 @@ class attributes:
             attached_items = []
 
             for attr in attribs:
-                if str(attr.get_id()) == str(attachment_check):
+                if str(attr.get_id()) == attachment_check:
                     attribute = attr
                     break
             if not attribute:
                 return templates.error(attachment_check + ": No such attribute")
 
             for item in items:
-                attrs = item.get_attributes()
-                for attr in attrs:
-                    if str(attr.get_id()) == str(attachment_check):
-                        if not attribute: attribute = attr
-                        attached_items.append(item)
-                        break
+                if attr.get_id() in item:
+                    attached_items.append(item)
 
             return templates.attribute_attachments(app, [cache._build_processed_item(item) for item in attached_items], attribute)
         else:

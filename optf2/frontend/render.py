@@ -25,7 +25,7 @@ urls = (
     urlr("inv"), app.sim.main,
     urlr("about"), app.static.about,
     urlr("(\w+)/items"), app.schema_list.items,
-    urlr("(\w+)/attributes"), app.schema_list.attributes,
+    urlr("(\w+)/attributes/?(\d*)"), app.schema_list.attributes,
     urlr("(\w+)/particles"), app.schema_list.particles,
     urlr("(\w+)/item/(-?\d+)"), app.backpack.item,
     urlr("(\w+)/item/(\w+)/(-?\d+)"), app.backpack.live_item,
