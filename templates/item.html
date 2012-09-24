@@ -5,7 +5,8 @@ $if not user:
 $else:
     $ usern = user["persona"] + "'s"
     $ id64 = user["id64"]
-$var title: $project_name - $usern $:item["ownedname"]
+$var title: $usern $:item["ownedname"]
+$var description: Item page for $usern $item["basename"]
 <div id="header">
   <h1>
     $if not user:

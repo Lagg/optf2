@@ -1,8 +1,11 @@
 $def with (item)
-$var title: $project_name - Item Error
-
+$var title: $item not found
+$var description: Error displaying item $item
 <div id="header">
-  <h2>Item #$item not found.</h2>
+  <h2>No item with ID $item was found or it
+    could not be displayed. Steam
+    may be down or the item has been deleted and
+    $project_name is no longer storing it.</h2>
   <a href="$instance.fullpath">Try again</a> or
   <a href="${virtual_root}">back to index</a>
 </div>

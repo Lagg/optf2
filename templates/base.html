@@ -1,12 +1,12 @@
 $def with (content)
+$ defaultdesc = "View backpacks and inventories of your favorite games including Portal 2, Team Fortress 2, and DOTA 2! Find and inspect unique items and their attributes, explore advanced and hidden Steam data, and much, much more with " + project_name + ": The Grand Unified Steam Information Dumper"
 <?xml version="1.0" encoding="utf-8"?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
                "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
-    <title>$:content.title</title>
-    <meta name="generator" content="$project_name"/>
-    <meta name="keywords" content="p2, portal 2, tf2, team fortress 2, steam, steam api, backpack, backpack viewer"/>
+    <title>$project_name - $:content.title</title>
+    <meta name="description" content="$:content.get('description', defaultdesc)"/>
     <link rel="stylesheet" type="text/css" href="${static_prefix}jquery/css/jquery-ui-1.8.23.custom.css"/>
     <link rel="stylesheet" type="text/css" href="${static_prefix}common.css"/>
     $for url in instance.get("css_extra", []):

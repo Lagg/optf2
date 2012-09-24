@@ -1,8 +1,8 @@
 $def with (app, user, items, classmap, slotlist)
 $ persona = user["persona"]
 $ id = user["id64"]
-$var title: $project_name - $persona's Loadout List
-
+$var title: $persona's Loadout List
+$var description: List of classes and slots with equipped items owned by $persona
 <div id="header">
   <h2 class="loadout-header"><a href="$markup.generate_root_url('user/{0}'.format(id), app)">$persona's</a> Loadouts</h2>
 </div>

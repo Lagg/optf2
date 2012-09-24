@@ -1,7 +1,7 @@
 $def with (app, items, attribute)
 $ attrname = attribute.get_name()
-$var title: $project_name - Items with $attrname attached
-
+$var title: Items with $attrname attached
+$var description: Attribute: $attrname, Attached: $len(items)
 $ returnurl = markup.generate_root_url('attributes#att-' + str(attribute.get_id()), app)
 <div id="header">
   $if not items:

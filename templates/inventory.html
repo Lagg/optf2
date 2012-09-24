@@ -4,7 +4,8 @@ $ id64 = user["id64"]
 $ profileurl = "http://steamcommunity.com/profiles/{0}".format(id64)
 $ avatarurl = user["avatarurl"]
 $ realn = user.get("realname")
-$var title: $project_name - $usern's Backpack
+$var title: $usern's Backpack
+$var description: Persona: $usern, Name: ${realn or "N/A"}
 $ rss = markup.generate_root_url("feed/{0}".format(id64), app)
 $ onlinestates = {0: "offline", 1: "online", 2: "busy", 3: "away", 4: "snooze", 5: "looking to trade", 6: "looking to play"}
 <div id="content">
