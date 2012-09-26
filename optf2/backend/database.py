@@ -139,41 +139,45 @@ class cache:
         except pylibmc.Error as E:
             log.main.error(str(key) + ": " + str(E))
 
-    def get_schema(self, stale = False):
+    def _store_schema_minimaps(self, schema):
         modulename = self._mod_id
         language = self._language
 
-        def cb(result):
-            pmap = {}
-            for item in result:
-                if item._schema_item.get("name", "").find("Paint") != -1:
-                    for attr in item:
-                        if attr.get_name().startswith("set item tint RGB"):
-                            pmap[int(attr.get_value())] = item.get_name()
-            self.set(str("paints-" + modulename + '-' + language), pmap)
+        pmap = {}
+        for item in schema:
+            if item._schema_item.get("name", "").find("Paint") != -1:
+                for attr in item:
+                    if attr.get_name().startswith("set item tint RGB"):
+                        pmap[int(attr.get_value())] = item.get_name()
+        self.set(str("paints-" + modulename + '-' + language), pmap)
 
-            particles = result.get_particle_systems()
-            pmap = dict(zip(particles.keys(),
-                            map(operator.itemgetter("name"), particles.values())))
-            self.set(str("particles-" + modulename + '-' + language), pmap)
+        particles = schema.get_particle_systems()
+        pmap = dict(zip(particles.keys(),
+                        map(operator.itemgetter("name"), particles.values())))
+        self.set(str("particles-" + modulename + '-' + language), pmap)
 
-            qualities = result.get_qualities()
-            qmap = {}
-            if qualities:
-                qualities = qualities.values()
+        qualities = schema.get_qualities()
+        qmap = {}
+        if qualities:
+            qualities = qualities.values()
 
-                qmap = dict(zip(map(operator.itemgetter("str"), qualities),
-                                map(operator.itemgetter("prettystr"), qualities)))
-            self.set(self._quality_key, qmap)
+            qmap = dict(zip(map(operator.itemgetter("str"), qualities),
+                            map(operator.itemgetter("prettystr"), qualities)))
+        self.set(self._quality_key, qmap)
 
-            return result
+        # TODO: Stop this whole get_generic_aco crap
+        return schema
+
+    def get_schema(self, stale = False):
+        modulename = self._mod_id
+        language = self._language
 
         try:
             modclass = getattr(steam, modulename).item_schema
         except AttributeError:
             raise itemtools.ItemBackendUnimplemented("Backend couldn't give a schema for {0}".format(modulename))
 
-        return self._get_generic_aco(modclass, "schema", cachefilter = cb, stale = stale, getlm = operator.methodcaller("get_last_modified"), usepickle = True)
+        return self._get_generic_aco(modclass, "schema", cachefilter = self._store_schema_minimaps, stale = stale, getlm = operator.methodcaller("get_last_modified"), usepickle = True)
 
     def get_assets(self, stale = False):
         modulename = self._mod_id
@@ -209,21 +213,31 @@ class cache:
         return vanity
 
     def _load_profile(self, sid):
-        memkey = "profile-" + str(sid)
-        profile = self.get(memkey)
+        profile = self._get_profile(sid)
         if not profile:
-            pobj = steam.user.profile(sid)
-            game = pobj.get_current_game()
-            profile = {"id64": pobj.get_id64(),
-                       "realname": pobj.get_real_name(),
-                       "persona": pobj.get_persona(),
-                       "avatarurl": pobj.get_avatar_url(pobj.AVATAR_MEDIUM),
-                       "status": pobj.get_status()}
-            if str(pobj.get_primary_group()) == config.ini.get("steam", "valve-group-id"):
-                profile["valve"] = True
-            if pobj.get_visibility() != 3: profile["private"] = True
-            if game: profile["game"] = (game.get("id"), game.get("extra"), game.get("server"))
-            self.set(memkey, profile, time = config.ini.getint("cache", "profile-expiry"))
+            prof = steam.user.profile(sid)
+            profile = self._store_profile(prof)
+        return profile
+
+    def _get_profile(self, sid):
+        memkey = "profile-" + str(sid)
+        return self.get(memkey)
+
+    def _store_profile(self, prof):
+        memkey = "profile-" + str(prof.get_id64())
+
+        game = prof.get_current_game()
+        profile = {"id64": prof.get_id64(),
+                   "realname": prof.get_real_name(),
+                   "persona": prof.get_persona(),
+                   "avatarurl": prof.get_avatar_url(prof.AVATAR_MEDIUM),
+                   "status": prof.get_status()}
+        if str(prof.get_primary_group()) == config.ini.get("steam", "valve-group-id"):
+            profile["valve"] = True
+        if prof.get_visibility() != 3: profile["private"] = True
+        if game: profile["game"] = (game.get("id"), game.get("extra"), game.get("server"))
+        self.set(memkey, profile, time = config.ini.getint("cache", "profile-expiry"))
+
         return profile
 
     def get_profile(self, sid):
@@ -240,63 +254,110 @@ class cache:
         except steam.user.VanityError as E:
             raise steam.user.ProfileError(str(E))
 
+    def _attempt_multi_bp(self, id64):
+        prof = None
+        pack = None
+        ctx = None
+        multi = steam.json_request_multi()
+
+        try:
+            pclass = getattr(steam, self._mod_id).backpack
+            schema = self.get_schema(stale = True)
+            pack = self._get_backpack(id64)
+
+            if not pack:
+                multi.add(pclass(id64, schema = schema))
+        except AttributeError:
+            pclass = steam.sim.backpack
+            ctx = self._get_inv_context(id64)
+            if not ctx:
+                multi.add(steam.sim.backpack_context(id64))
+
+        prof = self._get_profile(id64)
+        if not prof:
+            multi.add(steam.user.profile(id64))
+
+        results = multi.download()
+        for res in results:
+            if isinstance(res, steam.user.profile):
+                prof = self._store_profile(res)
+            elif isinstance(res, pclass):
+                pack = self._store_backpack(id64, res)
+            elif isinstance(res, steam.sim.backpack_context):
+                ctx = self._store_inv_context(id64, res)
+
+        if ctx:
+            appctx = None
+            for c in ctx:
+                if str(self._mod_id) == str(c["appid"]):
+                    appctx = c
+                    break
+
+            pack = self._get_backpack(id64)
+            if not pack:
+                pack = self._store_backpack(id64, pclass(id64, appctx))
+
+        if pack.get("items"):
+            self.update_recent_pack_list(prof)
+
+        return prof, pack
+
     def get_backpack(self, user):
+        """ Uses multi request to get profile and backpack
+        concurrently """
+        sid = str(user)
+        prof = None
+        pack = None
+
+        if sid.isdigit():
+            try:
+                return self._attempt_multi_bp(sid)
+            except steam.user.ProfileError:
+                pass
+
+        try:
+            vid = self.get_vanity(sid)
+            return self._attempt_multi_bp(vid)
+        except steam.user.VanityError as E:
+            raise steam.user.ProfileError(str(E))
+
+    def _get_backpack(self, id64):
         modulename = self._mod_id
-        language = self._language
-        id64 = user["id64"]
-
         memkey = "backpack-{0}-{1}".format(modulename, id64)
+        return self.get(memkey)
 
-        processedpack = {"items": {}}
-        pack = self.get(memkey)
-        if not pack:
-            try:
-                schema = self.get_schema()
-            except:
-                schema = None
+    def _store_backpack(self, id64, bp):
+        modulename = self._mod_id
+        memkey = "backpack-{0}-{1}".format(modulename, id64)
+        pack = {"items": {},
+                "cells": bp.get_total_cells()}
 
-            try:
-                pack = getattr(steam, modulename).backpack(id64, schema = schema)
-            except AttributeError:
-                pack = self.get_inv_backpack(user)
+        for item in bp:
+            pack["items"][item.get_id()] = self._build_processed_item(item)
 
-            processedpack["cells"] = pack.get_total_cells()
-            for item in pack:
-                processedpack["items"][item.get_id()] = self._build_processed_item(item)
-
-            pack = processedpack
-
-            self.set(memkey, pack, time = self._bp_lifetime)
-
-        if not processedpack["items"]: return pack
-
-        self.update_recent_pack_list(user)
+        self.set(memkey, pack, time = self._bp_lifetime)
 
         return pack
 
-    def get_inv_context(self, user):
-        id64 = user["id64"]
-        ctxkey = "invctx-{0}".format(id64)
-        # TODO: Add cache life config settings for these
-        ctx = self.get(ctxkey)
-        if not ctx:
-            ctx = list(steam.sim.backpack_context(id64))
-            self.set(ctxkey, ctx, time = 120)
+    def _get_inv_context(self, id64):
+        memkey = "invctx-{0}".format(id64)
+        return self.get(memkey)
+
+    def _store_inv_context(self, id64, ctx):
+        memkey = "invctx-{0}".format(id64)
+        ctx = list(ctx)
+        self.set(memkey, ctx, time = config.ini.getint("cache", "inventory-list-expiry"))
 
         return ctx
 
-    def get_inv_backpack(self, user):
+    def get_inv_context(self, user):
         id64 = user["id64"]
-        app = self.get_mod_id()
+        ctx = self._get_inv_context(id64)
+        if not ctx:
+            ctxr = steam.sim.backpack_context(id64)
+            ctx = self._store_inv_context(id64, ctxr)
 
-        ctx = self.get_inv_context(user)
-        appctx = None
-        for c in ctx:
-            if str(app) == str(c["appid"]):
-                appctx = c
-                break
-
-        return steam.sim.backpack(id64, appctx)
+        return ctx
 
     def get_mod_id(self):
         return self._mod_id
@@ -315,8 +376,6 @@ class cache:
         if not lastpacks:
             lastpacks = []
         else:
-            # TODO: Cast is temporary until move away from deque propagates
-            lastpacks = list(lastpacks)
             for p in lastpacks:
                 if p["id"] == id64:
                     lastpacks.remove(p)

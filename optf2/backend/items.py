@@ -282,7 +282,7 @@ def get_present_qualities(items):
 
 def get_price_stats(items, cache):
     try:
-        assets = cache.get_assets()
+        assets = cache.get_assets(stale = True)
     except database.CacheEmptyError:
         assets = {}
 

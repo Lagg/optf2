@@ -49,8 +49,8 @@ class loadout:
         try:
             cache = database.cache(mode = app)
 
-            userp = cache.get_profile(user)
-            items = cache.get_backpack(userp)["items"].values()
+            userp, pack = cache.get_backpack(user)
+            items = pack["items"].values()
             equippeditems = {}
             classmap = set()
             slotlist = []
@@ -121,8 +121,7 @@ class live_item:
         cache = database.cache(mode = app)
         markup.init_theme(app)
         try:
-            user = cache.get_profile(user)
-            items = cache.get_backpack(user)
+            user, items = cache.get_backpack(user)
             item = items["items"][long(iid)]
 
             if web.input().get("contents"):
@@ -140,16 +139,6 @@ class live_item:
         return templates.item(app, user, item)
 
 class fetch:
-    def _get_inv(self, user, cache):
-        pack = cache.get_backpack(user)
-        cell_count = pack["cells"]
-        items = pack["items"].values()
-
-        return items, cell_count
-
-    def _get_profile(self, sid, cache):
-        return cache.get_profile(sid)
-
     def GET(self, app, sid):
         sid = sid.strip('/').split('/')
         if len(sid) > 0: sid = sid[-1]
@@ -172,8 +161,9 @@ class fetch:
 
         try:
             cache = database.cache(mode = app)
-            user = self._get_profile(sid, cache)
-            items, cell_count = self._get_inv(user, cache)
+            user, pack = cache.get_backpack(sid)
+            cell_count = pack["cells"]
+            items = pack["items"].values()
 
             filters = itemtools.filtering(items)
             filter_classes = markup.sorted_class_list(itemtools.get_equippable_classes(items, cache), app)
@@ -221,8 +211,8 @@ class feed:
 
         try:
             cache = database.cache(mode = app)
-            user = cache.get_profile(sid)
-            items = cache.get_backpack(user)["items"].values()
+            user, pack = cache.get_backpack(sid)
+            items = pack["items"].values()
             sorter = itemtools.sorting(items)
             items = sorter.sort(web.input().get("sort", sorter.byTime))
 
