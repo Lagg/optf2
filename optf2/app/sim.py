@@ -30,12 +30,3 @@ class selector:
             return templates.error("Couldn't connect to Steam (HTTP {0})".format(E))
         except database.CacheEmptyError as E:
             return templates.error(E)
-
-class main:
-    def GET(self):
-        user = web.input().get("user")
-        profile = api.profile_search(user)
-        if profile:
-            raise web.seeother(generate_root_url(profile[0]["id64"], "inv"))
-        else:
-            return templates.sim_main()

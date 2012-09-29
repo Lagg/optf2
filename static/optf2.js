@@ -123,29 +123,56 @@ $(document).ready(function(){
 	}
     });
 
-    $("button#inv-search").button({icons: {primary: "ui-icon-search"}});
-    $("#inv-form").submit(function() {
-	var output = $("#search-output table");
-	var val = $("#inv-field").val();
+    $("#rp-results").on("click", ".sr", function(e) {
+	e.preventDefault();
+	var resdiv = $(this);
+	resdiv.find(".purl").append(' <img class="loading" src="' + jsConf.staticPrefix + 'loading.gif"/>');
+	$.get(resdiv.find("a").attr("href"),
+	      function(data) {
+		  resdiv.find(".loading").remove();
+		  var boxes = $(data).filter("#content").children(".box");
+		  if (boxes.length <= 0) {
+		      resdiv.button("disable");
+		      resdiv.css("border", "1px solid red");
+		      return;
+		  }
+		  $("#rp-results").fadeOut("fast");
+		  $("#game-summaries").fadeIn("slow");
+		  boxes.width(350)
+		  boxes.css("margin", "1em");
+		  boxes.css("float", "left");
+		  boxes.appendTo("#game-summaries");
+	      });
+    });
+    $("#rp-submit").button({icons: {primary: "ui-icon-search"}});
+    $("#rp-form").submit(function() {
+	var output = $("#rp-results");
+	var field = $("#rp-input");
+	var val = field.val();
 
-	output.empty();
+	if (!val || field.attr("disabled")) return false;
 
-	if (!val) { output.prepend("Need an ID"); return false; }
+	var searchButton = $("#rp-submit");
+	searchButton.hide();
 
-	output.prepend("Searching for <b>" + val + "</b>...");
+	$('<b id="loading-txt">Searching...</b>').insertAfter(searchButton);
+	field.attr("disabled", "disabled");
 
 	$.getJSON("/api/profileSearch", {user: val}, function(data) {
 	    output.empty();
+	    $("#game-summaries").empty();
 	    $.each(data, function() {
-		var row = $('<tr><td><img src="' + this.avatarurl + '" style="vertical-align: middle;" width="32" height="32"/></td><td><a href="/inv/' + this.id64 + '"><b>' + this.persona + '</b></a></td></tr>');
-		if (this.exact) {
-		    row.find("b").css("color", "red");
-		}
+		var row = $('<div class="sr"><a class="purl" href="/inv/' + this.id64 + '"><img class="avatar" src="' + this.avatarurl + '"/>' + this.persona + '</a></div>').button();
+		if (this.exact)
+		    row.find("a").css("color", "#6d89d5");
 		row.appendTo(output);
 	    });
-	    if (data.length <= 0) {
+	    if (data.length <= 0)
 		output.prepend("No results found");
-	    }
+	    searchButton.show();
+	    $("#loading-txt").remove();
+	    field.removeAttr("disabled");
+	    output.fadeIn("slow");
 	});
 
 	return false;

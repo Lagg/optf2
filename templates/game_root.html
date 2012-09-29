@@ -7,7 +7,17 @@ $var title: $game_label
 <div id="content">
   <div class="box" style="width: 500px; margin: 0 auto 0 auto;">
     <div class="titlebar">$project_name - $game_label</div>
-    <h2>Welcome! Use the section links above to get started, or view a player's inventory with the search box.</h2>
+    <h2>Welcome! Use the search box below to quickly find a profile.</h2>
+    <form method="get" id="rp-form" action="$markup.generate_root_url(subroot = 'inv')">
+      <fieldset>
+	<input type="text" id="rp-input" name="user"/>
+	<button type="submit" id="rp-submit">Search</button>
+      </fieldset>
+    </form>
+  </div>
+  <div id="rp-results" class="box" style="width: 750px; margin: 0 auto 0 auto; margin-top: 2em; ">
+  </div>
+  <div id="game-summaries" class="box" style="display: none; border: 0; background: none; width: 750px; margin: 0 auto 0 auto; margin-top: 2em; ">
   </div>
   <div style="width: 500px; min-height: 400px; margin: 30px auto 0 auto; position: relative;">
   $if showcase_item:

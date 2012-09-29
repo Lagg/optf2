@@ -35,6 +35,9 @@ def _(thestring):
 def hilo_to_ugcid64(hi, lo):
     return (int(hi) << 32) | int(lo)
 
+inv_graylist = map(operator.itemgetter(0), config.ini.items("inv-graylist"))
+virtual_root = config.ini.get("resources", "virtual-root")
+
 qualitydict = {"unique": "The",
                "normal": ""}
 
@@ -299,6 +302,8 @@ class cache:
 
         if pack.get("items"):
             self.update_recent_pack_list(prof)
+
+        web.ctx.navlinks = [(c["name"], "{0}{1[appid]}/user/{2}".format(virtual_root, c, id64)) for c in (self._get_inv_context(id64) or []) if str(c["appid"]) not in inv_graylist]
 
         return prof, pack
 

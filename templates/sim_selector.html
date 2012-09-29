@@ -11,11 +11,11 @@ $var description: List of $user['persona']'s inventories
       $ appid = str(ctx['appid'])
       $ url = markup.generate_root_url('user/{0}'.format(user['id64']), inv_app_graylist.get(appid, appid))
       <a href="$url"><img src="$ctx['inventory_logo']" alt="logo"/></a><br/>
-      <a href="$ctx['link']" target="_blank">Store page</a>
       <table style="text-align: left; margin: 0 auto 0 auto;" cellpadding="4" cellspacing="4">
 	$for id, cat in ctx["rgContexts"].iteritems():
 	  <tr><th><a href="${url + '#page-' + cat['name']}">$cat["name"]:</a></th><td>$cat["asset_count"]</td></tr>
 	<tr><th>Trade permissions:</th><td>$ctx["trade_permissions"]</td></tr>
       </table>
+      <a href="$ctx['link']" style="position: absolute; right: 5px; bottom: 10px;" target="_blank">Store</a>
     </div>
 </div>

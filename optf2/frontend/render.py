@@ -3,6 +3,7 @@ import web
 import os
 import random
 import sys
+import operator
 
 from optf2.backend import log
 from optf2.backend import config
@@ -10,7 +11,7 @@ from optf2 import app
 
 virtual_root = config.ini.get("resources", "virtual-root")
 static_prefix = config.ini.get("resources", "static-prefix")
-valid_modes = [op[0] for op in config.ini.items("modes")]
+valid_modes = map(operator.itemgetter(0), config.ini.items("modes"))
 default_cvars = {"vRoot": virtual_root,
                  "staticPrefix": static_prefix,
                  "cellsPerRow": 10}
@@ -21,7 +22,6 @@ def urlr(exp):
 urls = (
     virtual_root + "api", app.api.subapplication,
     urlr("inv/(?:user/)?(.+)"), app.sim.selector,
-    urlr("inv"), app.sim.main,
     urlr("about"), app.static.about,
     urlr("(\w+)/items"), app.schema_list.items,
     urlr("(\w+)/attributes/?(\d*)"), app.schema_list.attributes,

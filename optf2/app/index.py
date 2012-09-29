@@ -42,6 +42,7 @@ class game_root:
                 pass
 
         init_theme(app)
+        web.ctx.notopsearch = True
 
         # Last packs
         packs = cache.get_recent_pack_list()

@@ -41,20 +41,26 @@ $ defaultdesc = "View backpacks and inventories of your favorite games including
               </ul>
 	    </div>
 	  </li>
-      <li><a href="${virtual_root}inv$navlink"><b style="color: #f5c433; font-size: 1.05em;">Op</b>en <b style="color: #fbb040; font-size: 1.05em;">Inv</b>itation</a></li>
+      $ extralinks = instance.get("navlinks")
+      $if extralinks:
+        $for label, url in extralinks:
+          $ extra = None
+	  $if str(instance.path) == str(url): $ extra = ' class="focused"'
+          <li$:extra><a href="$url">$label</a></li>
       <li><a href="${virtual_root}about">Credits</a></li>
     </ul>
     $ motd = instance.get("motd")
     $if motd: <div class="motd">$:motd</div>
-    <div id="search-form-container">
-      <form method="get" id="search-form" action="$markup.generate_root_url(subroot = nav_node)">
-	<fieldset>
-	  <input type="text" id="search-field" name="user"/><button type="submit" id="search-button"><span class="ui-icon ui-icon-search"></span></button>
-	  $ formdest = conf.get("formDest")
-	  $if formdest: <input type="hidden" name="formdest" value="$formdest"/>
-	</fieldset>
-      </form>
-    </div>
+    $if not instance.get("notopsearch"):
+      <div id="search-form-container">
+	<form method="get" id="search-form" action="$markup.generate_root_url(nav_node)">
+	  <fieldset>
+	    <input type="text" id="search-field" name="user"/><button type="submit" id="search-button"><span class="ui-icon ui-icon-search"></span></button>
+	    $ formdest = conf.get("formDest")
+	    $if formdest: <input type="hidden" name="formdest" value="$formdest"/>
+	  </fieldset>
+	</form>
+      </div>
     $:content
   </body>
 </html>
