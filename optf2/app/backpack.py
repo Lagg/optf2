@@ -74,6 +74,8 @@ class loadout:
             return templates.error("Profile error: {0}".format(E))
         except steam.base.HttpError as E:
             return templates.error("Couldn't connect to Steam (HTTP {0})".format(E))
+        except itemtools.ItemBackendUnimplemented:
+            return templates.error("No backend found to handle loadouts for these items")
 
     def __init__(self):
         # Slots that should be arranged in this order

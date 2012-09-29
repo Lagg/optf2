@@ -7,6 +7,8 @@ $ defaultdesc = "View backpacks and inventories of your favorite games including
   <head>
     <title>$project_name - $:content.title</title>
     <meta name="description" content="$:content.get('description', defaultdesc)"/>
+    $ conf = instance.get("_cvars", {})
+    $if conf: <script type="text/javascript"> var jsConf = $:json_dump(conf); </script>
     <link rel="stylesheet" type="text/css" href="${static_prefix}jquery/css/jquery-ui-1.8.23.custom.css"/>
     <link rel="stylesheet" type="text/css" href="${static_prefix}common.css"/>
     $for url in instance.get("css_extra", []):
@@ -14,8 +16,6 @@ $ defaultdesc = "View backpacks and inventories of your favorite games including
     <link rel="shortcut icon" type="image/png" href="${static_prefix}optf2_icon.png"/>
     $for title, url in instance.get("rss_feeds", []):
         <link rel="alternate" title="$title" href="$url" type="application/rss+xml"/>
-    $ conf = instance.get("_cvars", {})
-    $if conf: <script type="text/javascript"> var jsConf = $:json_dump(conf); </script>
     <script type="text/javascript" src="${static_prefix}jquery/js/jquery-1.8.0.min.js"></script>
     <script type="text/javascript" src="${static_prefix}jquery/js/jquery-ui-1.8.23.custom.min.js"></script>
     <script type="text/javascript" src="${static_prefix}optf2.js"></script>
