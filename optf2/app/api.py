@@ -69,17 +69,20 @@ class search_page_parser(HTMLParser):
     def handle_endtag(self, tag):
         stag, aclass = self._tagstack.pop()
         if aclass and aclass.find("resultItem") != -1:
-            self._results.append(self._obj)
+            if self._str != self._obj["id64"].lower() and self._str != str(self._prof.get("id64")):
+                self._results.append(self._obj)
             self._obj = {}
 
     def get_results(self):
         return self._results
 
-    def __init__(self, user):
+    def __init__(self, user, prof = None):
         self._obj = {}
         self._tagstack = []
         self._community_url = "http://steamcommunity.com/"
         self._results = []
+        self._prof = prof or {}
+        self._str = user.lower()
         search_url = self._community_url + "actions/Search?T=Account&K={0}".format(web.urlquote(user))
 
         HTMLParser.__init__(self)
@@ -101,6 +104,7 @@ def profile_search(user, greedy = False):
     if len(baseurl) > 0:
         user = baseurl[-1]
 
+    prof = None
     try:
         prof = database.cache().get_profile(user)
         prof["exact"] = True
@@ -111,7 +115,7 @@ def profile_search(user, greedy = False):
         pass
 
     try:
-        parser = search_page_parser(user)
+        parser = search_page_parser(user, prof)
         resultlist += parser.get_results()
     except:
         pass
