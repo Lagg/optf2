@@ -7,7 +7,6 @@ $var title: $game_label
 <div id="content">
   <div class="box" style="width: 500px; margin: 0 auto 0 auto;">
     <div class="titlebar">$project_name - $game_label</div>
-    <h2>Welcome! Use the search box below to quickly find a profile.</h2>
     <form method="get" id="rp-form" action="$markup.generate_root_url(subroot = 'inv')">
       <fieldset>
 	<input type="text" id="rp-input" name="user"/>
@@ -19,7 +18,7 @@ $var title: $game_label
   </div>
   <div id="game-summaries" class="box" style="display: none; border: 0; background: none; width: 750px; margin: 0 auto 0 auto; margin-top: 2em; ">
   </div>
-  <div style="width: 500px; min-height: 400px; margin: 30px auto 0 auto; position: relative;">
+  <div style="width: 500px; min-height: 350px; margin: 30px auto 0 auto; position: relative;">
   $if showcase_item:
       <div class="box" style="width: 220px; position: absolute; left: 0;">
 	<div class="titlebar">$mod.upper() item showcase</div>

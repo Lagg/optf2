@@ -145,12 +145,16 @@ $(document).ready(function(){
 	      });
     });
     $("#rp-submit").button({icons: {primary: "ui-icon-search"}});
+    var rpField = $("#rp-input"), rpFieldDefault = "Search Steam player profiles";
+    rpField.addClass("inactive");
+    rpField.val(rpFieldDefault);
+    rpField.click(function() { if(rpField.hasClass("inactive")) { rpField.val(''); rpField.removeClass("inactive"); } });
     $("#rp-form").submit(function() {
 	var output = $("#rp-results");
 	var field = $("#rp-input");
 	var val = field.val();
 
-	if (!val || field.attr("disabled")) return false;
+	if (!val || field.hasClass("inactive") || field.attr("disabled")) return false;
 
 	var searchButton = $("#rp-submit");
 	searchButton.hide();
@@ -158,7 +162,7 @@ $(document).ready(function(){
 	$('<b id="loading-txt">Searching...</b>').insertAfter(searchButton);
 	field.attr("disabled", "disabled");
 
-	$.getJSON("/api/profileSearch", {user: val}, function(data) {
+	$.getJSON(jsConf.vRoot + "api/profileSearch", {user: val}, function(data) {
 	    output.empty();
 	    $("#game-summaries").empty();
 	    $.each(data, function() {
@@ -176,6 +180,29 @@ $(document).ready(function(){
 	});
 
 	return false;
+    });
+
+    var flattery = ["Beautiful People", "Heroes", "Grizzled Veterans", "Meepros", "Kings of Men", "Mighty Warriors"];
+    var groupID = "officialoptf2";
+    var groupLink = "http://steamcommunity.com/groups/" + groupID;
+    $.getJSON(jsConf.vRoot + "api/groupStats/" + groupID, function(data) {
+	var badge = $('<div id="group-badge" class="box"></div>'),
+            flatter = flattery[Math.round(Math.random() * 100) % flattery.length];
+
+	badge.insertAfter("#rp-form");
+
+	badge.append('<div class="group-name"><b><a href="' + groupLink + '">' + data.name + '</a></b></div>' +
+		     '<div class="member-count"><b>' + data.memberCount + ' ' + flatter + '</b>' +
+		     ' - <a class="group-link" href="' +
+		     groupLink + '">Be #' + String(data.memberCount + 1) + '</a></div>');
+
+	var avatarList = $('<div class="member-list"></div>');
+	$(data.memberListShort.slice(0, 7)).each(function() {
+	    avatarList.append('<a href="' + this.profile + '"><img class="member-avatar" src="' + this.avatar + '"/></a>');
+	});
+	avatarList.appendTo(badge);
+
+	badge.append('<a href="' + groupLink + '"><img class="logo" src="' + data.logo + '"/></a>');
     });
 });
 

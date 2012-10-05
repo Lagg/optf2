@@ -2,6 +2,7 @@ import web
 import json
 import os
 import steam
+import re
 from HTMLParser import HTMLParser
 from optf2.backend import database
 from optf2.backend import config
@@ -92,6 +93,93 @@ class search_page_parser(HTMLParser):
 
         self.feed(req._download())
 
+class group_member_page_parser(HTMLParser):
+    _member_count_exp = re.compile("[\d,]+ - [\d,]+ of ([\d,]+) Members")
+
+    def handle_starttag(self, tag, attrs):
+        attr = dict(attrs)
+        aclass = attr.get("class", '').strip().split(' ')
+
+        self._tagstack.append((tag, aclass))
+
+        if tag == "img":
+            for tag, tclass in reversed(self._tagstack):
+                src = attr.get("src", '')
+                if "playerAvatar" in tclass:
+                    self._obj["avatar"] = src
+                    break
+                elif "grouppage_logo" in tclass:
+                    self._logo = src
+                    break
+        elif tag == "a" and "linkFriend" in aclass:
+            self._obj["profile"] = attr.get("href")
+
+    def handle_data(self, data):
+        mcount = self._member_count_exp.search(data)
+
+        try:
+            if mcount: self._member_count = int(mcount.group(1).replace(',', ''))
+        except TypeError:
+            pass
+
+        try:
+            stag, sclass = self._tagstack[-1]
+        except IndexError:
+            return
+
+        data = data.strip()
+        if stag == "a" and "linkFriend" in sclass:
+            self._obj["persona"] = data
+        elif "grouppage_header_name" in sclass and not self._name:
+            self._name = data
+        elif "grouppage_header_abbrev" in sclass and not self._abbrev:
+            self._abbrev = data
+
+    def handle_endtag(self, tag):
+        stag, sclass = self._tagstack.pop()
+
+        # For some reason the HTMLParser thinks member blocks aren't being closed
+        if "avatar" in self._obj and "profile" in self._obj and "persona" in self._obj:
+            self._members_short.append(self._obj)
+            self._obj = {}
+
+    def get_member_list_short(self):
+        return self._members_short
+
+    def get_member_count(self):
+        return self._member_count
+
+    def get_logo(self, size = ''):
+        if size: size = '_' + size
+
+        return self._logo.replace("_full", size)
+
+    def get_name(self):
+        return self._name
+
+    def get_abbreviation(self):
+        return self._abbrev
+
+    def __init__(self, group):
+        self._community_url = "http://steamcommunity.com/"
+        self._tagstack = []
+        self._member_count = 0
+        self._members_short = []
+        self._logo = ''
+        self._name = ''
+        self._abbrev = ''
+        self._obj = {}
+
+        url = "{0}groups/{1}/members".format(self._community_url, group)
+
+        HTMLParser.__init__(self)
+
+        req = steam.json_request(url, timeout = config.ini.getint("steam", "connect-timeout"),
+                                 data_timeout = config.ini.getint("steam", "download-timeout"))
+
+        data = req._download()
+        self.feed(data)
+
 def profile_search(user, greedy = False):
     """ If greedy it'll search even if the
     given string is exactly matched against
@@ -154,9 +242,34 @@ class persona:
         else:
             return callback + '(' + jsonobj + ');'
 
+class groupStats:
+    def GET(self, group):
+        obj = {}
+        try:
+            cache = database.cache()
+            memkey = "groupstats-" + str(group)
+            obj = cache.get(memkey)
+
+            if not obj:
+                parser = group_member_page_parser(group)
+                obj = {}
+                obj["memberCount"] = parser.get_member_count()
+                obj["memberListShort"] = parser.get_member_list_short()
+                obj["logo"] = parser.get_logo()
+                obj["name"] = parser.get_name()
+                obj["abbreviation"] = parser.get_abbreviation()
+
+                cache.set(memkey, obj, time = config.ini.getint("cache", "group-stats-expiry"))
+        except:
+            pass
+
+        web.header("Content-Type", jsonMimeType)
+        return json.dumps(obj)
+
 urls = (
     "/profileSearch", search_profile,
-    "/persona/(.+)", persona
+    "/persona/(.+)", persona,
+    "/groupStats/(\w+)", groupStats
     )
 
 subapplication = web.application(urls)
