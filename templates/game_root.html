@@ -2,6 +2,7 @@ $def with (mod, packs = [], showcase_item = None)
 $ game_label = game_modes.get(mod, "Main")
 $ game_logo_suffix = mod or "tf2"
 $var title: $game_label
+$var js_extra: ${static_prefix}js/profilesearch.js ${static_prefix}js/groupbadge.js
 <div id="header"><img id="logo" src="${static_prefix}logo_${game_logo_suffix}.png" alt="Logo"/></div>
 
 <div id="content">

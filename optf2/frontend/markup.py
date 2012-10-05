@@ -158,7 +158,7 @@ def get_top_nav_node(path = ""):
 
 def init_theme(theme):
     web.ctx.setdefault("css_extra", [])
-    web.ctx.css_extra.append(pathjoin(static_prefix, cssaliases.get(theme, theme) + ".css"))
+    web.ctx.css_extra.append(pathjoin(static_prefix, "theme", cssaliases.get(theme, theme) + ".css"))
     dims = get_page_sizes()
     web.ctx._cvars["cellsPerRow"] = dims.get(theme, dims["default"])["width"]
 

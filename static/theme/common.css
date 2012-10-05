@@ -325,7 +325,6 @@ tr.row-even { background-color: #1c1c1c; }
 .side-box table tr { text-align: left; }
 .side-box table td, .side-box table th { padding: 3px; }
 
-.ui-autocomplete-loading { background: white url('juicss/images/ui-anim_basic_16x16.gif') right center no-repeat; }
 .ui-dialog-titlebar { border-bottom-left-radius: 0; border-bottom-right-radius: 0; }
 .ui-dialog { padding: 0; }
 .ui-button { margin: 0 3px 0 3px; }
