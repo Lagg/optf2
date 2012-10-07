@@ -107,6 +107,11 @@ class group_member_page_parser(HTMLParser):
                 src = attr.get("src", '')
                 if "playerAvatar" in tclass:
                     self._obj["avatar"] = src
+                    # May not be reliable, but there's no
+                    # other source besides friendSmallText,
+                    # which seems even less reliable
+                    if len(tclass) > 1:
+                        self._obj["status"] = tclass[1]
                     break
                 elif "grouppage_logo" in tclass:
                     self._logo = src
