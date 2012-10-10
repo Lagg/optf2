@@ -369,7 +369,7 @@ function CellDataExport() {
     $(".backpack-page").each(function() {
 	var text = [];
 	var page = $(this);
-	var title = page.find(".page-label");
+	var title = page.attr("id").split('-')[1];
 	$(page.find(".item_cell").filter(":visible")).each(function() {
 	    var cell = $(this);
 	    var tt = cell.find(".tooltip");
@@ -399,7 +399,7 @@ function CellDataExport() {
 	});
 	if (text.length > 0) {
 	    text = text.sort().join('');
-	    outputText += "[b][size=185]" + title.html() + "[/size][/b]\n[list]\n" + text + "[/list]\n\n";
+	    outputText += "[b][size=185]" + title + "[/size][/b]\n[list]\n" + text + "[/list]\n\n";
 	}
     });
 
