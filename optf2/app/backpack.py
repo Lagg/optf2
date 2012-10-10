@@ -217,8 +217,11 @@ class feed:
             items = pack["items"].values()
             sorter = itemtools.sorting(items)
             items = sorter.sort(web.input().get("sort", sorter.byTime))
+            cap = config.ini.getint("rss", "inventory-max-items")
 
-            return renderer.inventory_feed(app, user, items[:config.ini.getint("rss", "inventory-max-items")])
+            if cap: items = items[:cap]
+
+            return renderer.inventory_feed(app, user, items)
 
         except (steam.user.ProfileError, steam.items.Error, steam.base.HttpError) as E:
             return renderer.inventory_feed(app, None, [], erritem = E)
