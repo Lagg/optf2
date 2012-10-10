@@ -405,7 +405,7 @@ def generate_class_icon_links(classes, ident, user = None, wiki_url = None):
     for ec in classi:
         cid, label = get_class_for_id(ec, ident)
         if user:
-            classlink = generate_root_url("loadout/{0}#{1}".format(user["id64"], label), ident)
+            classlink = generate_root_url("loadout/{0}/{1}".format(user["id64"], cid), ident)
         else:
             if wiki_url:
                 classlink = wiki_url + str(label)

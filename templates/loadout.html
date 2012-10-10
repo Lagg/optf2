@@ -1,11 +1,14 @@
-$def with (app, user, items, classmap, slotlist)
+$def with (app, user, items, classmap, slotlist, cidlink)
 $ persona = user["persona"]
 $ id = user["id64"]
-$var title: $persona's Loadout List
-$var description: List of classes and slots with equipped items owned by $persona
-<div id="header">
-  <h2 class="loadout-header"><a href="$markup.generate_root_url('user/{0}'.format(id), app)">$persona's</a> Loadouts</h2>
-</div>
+$ appname = str(app).upper()
+$ invurl = markup.generate_root_url("user/{0}".format(id), app)
+$ fullurl = markup.generate_root_url("loadout/{0}".format(id), app)
+$ style = ''
+$if cidlink: $ style = ' style="margin-top: 10%;"'
+$var title: $persona's $appname Loadout List
+$var description: List of classes and slots with equipped items owned by $persona in $appname
+<div id="header"$:style><a style="font-size: 1.5em;" href="$invurl">$persona</a></div>
 <div id="content">
   $if items:
       <div id="loadout" style="margin: 0 auto 0 auto; width: 90%;">
@@ -14,7 +17,7 @@ $var description: List of classes and slots with equipped items owned by $person
           <div class="autosize box" id="$lclass" style="margin: 30px auto 30px auto;">
             <div class="titlebar">
 	      $:markup.generate_class_sprite_img(cid, app)
-              <a href="#$lclass" style="margin-left: 10px;">$lclass</a>
+              <a href="$instance.path/$cid" style="margin-left: 10px;">$lclass</a>
             </div>
 	    $ citems = items[cid]
             $for slot in slotlist:
@@ -27,3 +30,4 @@ $var description: List of classes and slots with equipped items owned by $person
           </div>
       </div>
 </div>
+$if cidlink: <div id="footer"><a href="$fullurl">Full loadout list</a></div>

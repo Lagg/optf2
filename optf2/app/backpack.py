@@ -27,6 +27,7 @@ class loadout:
 
             for c in classes:
                 cid, name = markup.get_class_for_id(c, self._app)
+                if self._cid and str(cid) != str(self._cid): continue
                 loadout.setdefault(cid, {})
                 classmap.add((cid, name))
                 # WORKAROUND: There is one unique shotgun for all classes in TF2,
@@ -43,9 +44,9 @@ class loadout:
 
         return loadout, slotlist, classmap
 
-    def GET(self, app, user):
+    def GET(self, app, user, cid = None):
+        self._cid = cid
         markup.init_theme(app)
-        markup.set_navlink()
         try:
             cache = database.cache(mode = app)
 
@@ -55,6 +56,8 @@ class loadout:
             classmap = set()
             slotlist = []
             self._app = app
+
+            markup.set_navlink(markup.generate_root_url("loadout/{0}".format(userp["id64"]), app))
 
             # initial normal items
             try:
@@ -67,7 +70,7 @@ class loadout:
             # Real equipped items
             equippeditems, slotlist, classmap = self.build_loadout(items, equippeditems, slotlist, classmap)
 
-            return templates.loadout(app, userp, equippeditems, sorted(classmap), self._slots_sorted + sorted(slotlist))
+            return templates.loadout(app, userp, equippeditems, sorted(classmap), self._slots_sorted + sorted(slotlist), cid)
         except steam.items.Error as E:
             return templates.error("Backpack error: {0}".format(E))
         except steam.user.ProfileError as E:
@@ -78,6 +81,7 @@ class loadout:
             return templates.error("No backend found to handle loadouts for these items")
 
     def __init__(self):
+        self._cid = None
         # Slots that should be arranged in this order
         self._slots_sorted = ["Head", "Misc", "Primary", "Secondary", "Melee", "Pda", "Pda2", "Building", "Action"]
 

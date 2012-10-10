@@ -28,7 +28,7 @@ urls = (
     urlr("(\w+)/particles"), app.schema_list.particles,
     urlr("(\w+)/item/(-?\d+)"), app.backpack.item,
     urlr("(\w+)/item/(\w+)/(-?\d+)"), app.backpack.live_item,
-    urlr("(\w+)/loadout/(.+)"), app.backpack.loadout,
+    urlr("(\w+)/loadout/(\w+)/?(\d*)"), app.backpack.loadout,
     urlr("(\w+)/feed/(.+)"), app.backpack.feed,
     urlr("(\w+)/(?:user/)?(.+)"), app.backpack.fetch,
     urlr("(\w*)"), app.index.game_root
