@@ -313,18 +313,19 @@ class cache:
         sid = str(user)
         prof = None
         pack = None
+        perr = None
 
         if sid.isdigit():
             try:
                 return self._attempt_multi_bp(sid)
-            except steam.user.ProfileError:
-                pass
+            except steam.user.ProfileError as E:
+                perr = E
 
         try:
             vid = self.get_vanity(sid)
             return self._attempt_multi_bp(vid)
         except steam.user.VanityError as E:
-            raise steam.user.ProfileError(str(E))
+            raise steam.user.ProfileError(str(perr or E))
 
     def _get_backpack(self, id64):
         modulename = self._mod_id
