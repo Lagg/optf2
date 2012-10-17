@@ -113,7 +113,7 @@ class group_member_page_parser(HTMLParser):
                     if len(tclass) > 1:
                         self._obj["status"] = tclass[1]
                     break
-                elif "grouppage_logo" in tclass:
+                elif not self._logo and "grouppage_logo" in tclass:
                     self._logo = src
                     break
         elif tag == "a" and "linkFriend" in aclass:
