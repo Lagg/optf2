@@ -7,14 +7,6 @@ function makeToggleButton(label, id, callback, append) {
 }
 
 $(document).ready(function(){
-    $("img.item-image").one("error", function() {
-        this.src = invalidIconURL;
-    });
-
-    $('img.icon-particle').one("error", function() {
-        $(this).remove();
-    });
-
     $(document).on("mousedown", ".button, .ui-button", function() { return false; });
     $(".page-label").button();
     $("#feed-button").button({icons: {primary: "ui-icon-signal-diag"}});

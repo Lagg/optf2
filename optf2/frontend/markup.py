@@ -300,10 +300,9 @@ def generate_attribute_list(app, item, showlinks = False):
     if not item.get("craftable"): markup += '<li class="attr-negative">Uncraftable</li>'
 
     if not markup:
-        # XHTML compliance
-        markup = '<li></li>'
-
-    return (list_open + markup + list_close)
+        return ''
+    else:
+        return (list_open + markup + list_close)
 
 
 def generate_item_cell(app, item, invalid = False, show_equipped = True, user = None, pricestats = None):
@@ -328,18 +327,16 @@ def generate_item_cell(app, item, invalid = False, show_equipped = True, user = 
     style = ""
     coloroverride = item.get("namergb")
     if coloroverride:
-        style = ' style="border-color: #{0};"'.format(coloroverride)
+        style = 'border-color: #{0};'.format(coloroverride)
 
     pid = item.get("pid", '')
     if pid:
-        pid = '<img class="icon-particle" alt="picon" src="' + generate_particle_icon_url(pid, app) + '"/>'
+        pid = ",url('{0}')".format(generate_particle_icon_url(pid, app))
 
-    markup = ('<div class="{0} cell-{1}"{6} id="s{2}">' +
+    markup = ('<div class="{0} cell-{1}" id="s{2}" style="background-image: url(\'{6[image]}\'){5};{4}">' +
               '<a class="item-link" href="{3}">' +
-              '<img class="item-image small" src="{4}" alt="{5}"/>' +
-              '{7}' +
               '</a>'
-              ).format(cell_class, quality, itemid, item_link, item["image"], itemid, style, pid)
+              ).format(cell_class, quality, itemid, item_link, style, pid, item)
 
     contents = item.get("contents")
     series = item.get("series")
@@ -360,7 +357,7 @@ def generate_item_cell(app, item, invalid = False, show_equipped = True, user = 
     for cid, color in item.get("colors", []):
         sec = ''
         if cid != 0: sec = " secondary"
-        markup += '<span class="paint_splotch{0}" style="background: {1};">&nbsp;</span>'.format(sec, color)
+        markup += '<span class="paint_splotch{0}" style="background-color: {1};">&nbsp;</span>'.format(sec, color)
     if series:
         markup += '<span class="crate-series-icon">{0}</span>'.format(series)
     if craftno:

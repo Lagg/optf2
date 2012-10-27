@@ -1,4 +1,4 @@
-body { background: #0F0F0F; color: white; font-family: Arial, Helvetica, sans-serif; font-size: 11px; margin: 0; }
+body { background-color: #0F0F0F; color: white; font-family: Arial, Helvetica, sans-serif; font-size: 11px; margin: 0; }
 
 a { font-weight: bold; color: white; text-decoration: none; }
 a:hover { text-decoration: underline; }
@@ -19,7 +19,7 @@ a:visited { text-decoration: none; }
     border: 1px solid #454545;
     position: relative;
     padding-bottom: 1em;
-    background: #1a1a1a;
+    background-color: #1a1a1a;
     margin: 5px;
 }
 .box > :not(.titlebar) { margin: 0 5px 0 5px; }
@@ -28,7 +28,7 @@ a:visited { text-decoration: none; }
     text-align: left;
     width: 100%;
     border-radius: 10px 10px 0 0;
-    background: #454545;
+    background-color: #454545;
     font-weight: bold;
     padding: 0.5em 0 0.5em 0;
 }
@@ -69,7 +69,8 @@ a:visited { text-decoration: none; }
 .item_cell {
     border: 2px solid black;
     margin: 3px;
-    background: #303131;
+    background-color: #303131;
+    background-size: 96px 96px;
     width: 96px;
     height: 96px;
     text-align: center;
@@ -82,8 +83,8 @@ a:visited { text-decoration: none; }
 .slot-item { width: 99px; min-height: 99px; padding: 3px; }
 .slot-item .item_cell { margin: 0; }
 .slot-item .title { margin-bottom: 0.5em; font-weight: bold; }
-.item_cell.undropped { background: #302323; }
-.fade-overlay { z-index: 50; background: black; opacity: 0.70; position: absolute; top: 0; left: 0; border: 1px solid black; }
+.item_cell.undropped { background-color: #302323; }
+.fade-overlay { z-index: 50; background-color: black; opacity: 0.70; position: absolute; top: 0; left: 0; border: 1px solid black; }
 .ticker { z-index: 30; position: absolute; top: 40px; left: 40px; }
 
 .cell-unique { border-color: #ffd700; }
@@ -116,7 +117,7 @@ a:visited { text-decoration: none; }
 }
 
 .crate-series-icon {
-    background: #000000;
+    background-color: #000000;
     color: white;
     font-weight: bold;
     position: absolute;
@@ -134,7 +135,7 @@ a:visited { text-decoration: none; }
 .tooltip { display: none; cursor: default; overflow: hidden; word-wrap: break-word; }
 .tooltip div { padding: 4px; text-align: center; }
 .item_cell:hover {
-    background: #1c1c1c;
+    background-color: #1c1c1c;
     z-index: 25;
 }
 .item_cell:hover .tooltip {
@@ -146,7 +147,7 @@ a:visited { text-decoration: none; }
     top: 80px;
     left: -5.8em;
     width: 20em;
-    background: black;
+    background-color: black;
     margin: 10px;
     margin-left: 0;
     border-radius: 10px;
@@ -164,7 +165,7 @@ a:visited { text-decoration: none; }
 #content { height: 100%; text-align: center; }
 
 #search-form-container { position: absolute; right: 30px; top: 0; width: 219px; border-radius: 10px; height: 30px; }
-.motd { position: absolute; right: 270px; padding: 8px; top: 0; border-radius: 0 0 10px 10px; background: #1a1a1a; border: 1px solid #454545; }
+.motd { position: absolute; right: 270px; padding: 8px; top: 0; border-radius: 0 0 10px 10px; background-color: #1a1a1a; border: 1px solid #454545; }
 .motd *, .motd { color: white; }
 fieldset { border: 0; }
 #search-field, #search-button {
@@ -229,7 +230,7 @@ img { border: 0; }
     position: absolute;
     bottom: 2px;
     right: 2px;
-    background: #040011;
+    background-color: #040011;
     border-radius: 13px;
 }
 
@@ -290,7 +291,7 @@ tr.row-even { background-color: #1c1c1c; }
     border: 1px solid white;
     border-bottom: 0;
     display: none;
-    background: black;
+    background-color: black;
     padding: 0;
     margin: 0;
     position: absolute;
@@ -302,7 +303,7 @@ tr.row-even { background-color: #1c1c1c; }
     border-radius: 3px;
 }
 .dropdown-menu ul li { text-align: left; border-bottom: 1px solid white; }
-.dropdown-menu ul li:hover { background: #404040; }
+.dropdown-menu ul li:hover { background-color: #404040; }
 .dropdown-menu:hover ul { display: block; }
 .dropdown-menu ul li:first-child { border-radius: 3px 3px 0 0; }
 .dropdown-menu ul li:last-child  { border-radius: 0 0 3px 3px; }
@@ -314,8 +315,8 @@ tr.row-even { background-color: #1c1c1c; }
 .item-tools { padding: 5px; width: 1040px; text-align: left; margin: 0 auto 0 auto; }
 .item-tools .dropdown-menu { float: left; padding: 3px; margin: 3px; }
 
-.side-box { position: absolute; right: 0; top: 10px; background: #1a1a1a; border: 1px solid #454545; border-radius: 10px; width: 150px; padding-bottom: 5px; word-wrap: break-word; }
-.side-box .header { background: #454545; width: 100%; padding: 5px 0 5px 0; margin: 10px 0 10px 0; font-weight: bold; font-size: 1.1em; }
+.side-box { position: absolute; right: 0; top: 10px; background-color: #1a1a1a; border: 1px solid #454545; border-radius: 10px; width: 150px; padding-bottom: 5px; word-wrap: break-word; }
+.side-box .header { background-color: #454545; width: 100%; padding: 5px 0 5px 0; margin: 10px 0 10px 0; font-weight: bold; font-size: 1.1em; }
 .side-box .header:first-of-type { margin-top: 0; border-radius: 10px 10px 0 0; }
 .side-box .player-badge { min-height: 70px; padding: 4px; }
 .player-badge .valve { vertical-align: middle; margin-bottom: 1em; }
@@ -342,7 +343,7 @@ tr.row-even { background-color: #1c1c1c; }
 #rp-results .sr .loading { margin-left: 1.5em; }
 #rp-results .sr a { display: block; width: 100%; }
 #rp-form { margin-top: 2em; }
-#rp-input { background: #404040; width: 220px; color: white; border: 1px solid black; padding: 0.25em; border-radius: 4px; }
+#rp-input { background-color: #404040; width: 220px; color: white; border: 1px solid black; padding: 0.25em; border-radius: 4px; }
 #rp-input.inactive { color: #858585; }
 
 #group-badge { background-color: #101010; color: white; width: 300px; padding-top: 1em; margin: 1em auto 0 auto; text-align: left; }
