@@ -203,15 +203,6 @@ def build_page_object(items, pagesize = None, ignore_position = False):
     mapkeys = set(mkeys)
     for key in mapkeys: del imap[key][0]
 
-    try:
-        if imap:
-            lastpage = mkeys[-1]
-            secrange = set(range(1, lastpage + 1))
-            diff = secrange - mapkeys
-            for key in diff: imap[key] = [None] * pagesize
-    except TypeError:
-        pass
-
     return imap, displaced
 
 def get_stats(items):
