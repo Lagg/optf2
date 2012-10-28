@@ -61,7 +61,8 @@ a:visited { text-decoration: none; }
 .prefix-normal { color: #b2b2b2; }
 .prefix-selfmade { color: #70b04a; }
 .prefix-vintage { color: #476291; }
-.prefix-rarity4, .prefix-haunted, .prefix-unusual, .prefix-tournament { color: #8650ac; }
+.prefix-rarity4, .prefix-unusual, .prefix-tournament { color: #8650ac; }
+.prefix-haunted { color: #38f3ab; }
 .prefix-rarity1 { color: #4d7455; }
 .prefix-strange { color: #cf6a32; }
 .prefix-giftwrapped { color: #cf2700; }
@@ -93,7 +94,8 @@ a:visited { text-decoration: none; }
 .cell-normal { border-color: #b2b2b2; }
 .cell-selfmade { border-color: #70b04a; }
 .cell-vintage { border-color: #476291; }
-.cell-rarity4, .cell-haunted, .cell-unusual, .cell-tournament { border-color: #8650ac; }
+.cell-rarity4, .cell-unusual, .cell-tournament { border-color: #8650ac; }
+.cell-haunted { border-color: #38f3ab; }
 .cell-rarity1 { border-color: #4d7455; }
 .cell-strange { border-color: #cf6a32; }
 
@@ -204,7 +206,7 @@ fieldset { border: 0; }
 #status-offline { color: #808080; }
 #status-snooze, #status-away, #status-busy { color: #2fb3ff; }
 
-.navbar { text-align: left; height: 30px; padding: 0; margin: 0 0 50px 5px; position: relative; list-style: none; }
+.navbar { z-index: 100; text-align: left; height: 30px; padding: 0; margin: 0 0 50px 5px; position: relative; list-style: none; }
 .navbar > li { background-color: #505050; color: white; position: relative; float: left; height: 30px; margin: 0; padding: 0; border-right: 1px solid black; }
 .navbar > li:first-child { border-bottom-left-radius: 6px; } .navbar > li:last-child { border-bottom-right-radius: 6px; }
 .navbar a { display: block; height: 22px; padding: 8px 10px 0 10px; white-space: nowrap; text-decoration: none; }
