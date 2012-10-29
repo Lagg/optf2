@@ -17,6 +17,7 @@ $(document).ready(function(){
     cells.bindTooltipHandlers();
 
     dialogs.bindOpenOnClick();
+    dialogs.handleImgError("#content");
 
     var hashpage = URL.getHashStore("page");
 
@@ -568,6 +569,15 @@ function ItemDialog() {
 	}
     };
 
+    this.handleImgError = function (e) {
+	$(e).find("img.item-image").one("error", function() {
+	    this.src = invalidIconURL;
+	});
+	$(e).find('img.icon-particle').one("error", function() {
+	    $(this).remove();
+	});
+    };
+
     this.openSuccessEvent = function (data, status, xhr) {
 	var page = $(data);
 	var title = page.filter("#header").find("h1");
@@ -603,13 +613,7 @@ function ItemDialog() {
 	$(content).dialog({
             resize: self.resizeEvent,
             open: function(event, ui) {
-		var cellImage = $('#' + cellID + " .item-image");
-		$(event.target).find("img.item-image").one("error", function() {
-		    $(this).attr("src", invalidIconURL);
-		});
-		$(event.target).find('img.icon-particle').one("error", function() {
-		    $(this).remove();
-		});
+		self.handleImgError(event.target);
 		self.resizeEvent(event, ui);
             },
             title: title,

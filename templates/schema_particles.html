@@ -7,9 +7,9 @@ $var description: List of all particles (with preview images) in $app
 <div id="content">
   <div id="particle-list">
   $for k, particle in particles.iteritems():
-      <div class="item_cell">
-	$ url = markup.generate_particle_icon_url(particle['id'], app)
-        <a href="$url" target="_blank"><img class="item-image small" src="$url" alt="${particle['id']}"/></a>
+      $ url = markup.generate_particle_icon_url(particle['id'], app)
+      <div class="item_cell" style="background-image: url('$url');">
+        <a href="$url" target="_blank" class="item-link"></a>
         <div class="tooltip">
           <div class="item-name">$particle["name"]</div>
           <div class="attr-neutral">ID: $particle["id"]</div>
