@@ -212,7 +212,7 @@ class cache:
         vanity = self.get(vanitykey)
         if not vanity:
             vanity = steam.user.vanity_url(sid)
-            self.set(vanitykey, vanity.get_id64(), time = config.ini.getint("cache", "vanity-expiry"))
+            self.set(vanitykey, vanity.get_id64())
         return vanity
 
     def _load_profile(self, sid):
@@ -239,7 +239,7 @@ class cache:
             profile["valve"] = True
         if prof.get_visibility() != 3: profile["private"] = True
         if game: profile["game"] = (game.get("id"), game.get("extra"), game.get("server"))
-        self.set(memkey, profile, time = config.ini.getint("cache", "profile-expiry"))
+        self.set(memkey, profile)
 
         return profile
 
@@ -352,7 +352,7 @@ class cache:
     def _store_inv_context(self, id64, ctx):
         memkey = "invctx-{0}".format(id64)
         ctx = list(ctx)
-        self.set(memkey, ctx, time = config.ini.getint("cache", "inventory-list-expiry"))
+        self.set(memkey, ctx)
 
         return ctx
 
@@ -613,7 +613,7 @@ class cache:
                     url = self.get(memkey)
                     if not url:
                         url = steam.remote_storage.user_ugc(appid, ugcid).get_url()
-                        self.set(memkey, url, time = ugc_cache_expiry)
+                        self.set(memkey, url)
                     newitem["texture"] = url
             except steam.remote_storage.UGCError:
                 pass
