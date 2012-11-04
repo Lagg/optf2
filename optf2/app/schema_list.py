@@ -21,6 +21,7 @@ from optf2.backend import database
 from optf2.frontend import markup
 
 templates = template.template
+error_page = templates.errors
 
 class items:
     """ Dumps every item in the schema in a pretty way """
@@ -35,7 +36,7 @@ class items:
         try:
             items = [cache._build_processed_item(item) for item in cache.get_schema()]
         except database.CacheEmptyError as E:
-            return templates.error(E)
+            raise web.NotFound(error_page.generic(E))
 
         filters = itemtools.filtering(items)
         try:
@@ -86,7 +87,7 @@ class attributes:
             schema = cache.get_schema()
             attribs = schema.get_attributes()
         except database.CacheEmptyError as E:
-            return templates.error(E)
+            raise web.NotFound(error_page.generic(E))
 
         attribute = None
 
@@ -99,7 +100,7 @@ class attributes:
                     attribute = attr
                     break
             if not attribute:
-                return templates.error(attachment_check + ": No such attribute")
+                raise web.NotFound(error_page.generic(attachment_check + ": No such attribute"))
 
             for item in items:
                 if attr.get_id() in item:
@@ -119,4 +120,4 @@ class particles:
 
             return templates.schema_particles(app, particles)
         except database.CacheEmptyError as E:
-            return templates.error(E)
+            raise web.NotFound(error_page.generic(E))

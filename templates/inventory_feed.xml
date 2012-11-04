@@ -1,4 +1,4 @@
-$def with (app, user, items, erritem = None)
+$def with (app, user, items)
 <?xml version="1.0" encoding="UTF-8"?>
 
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
@@ -16,11 +16,6 @@ $def with (app, user, items, erritem = None)
       <url>$markup.absolute_url(static_prefix + "optf2_icon.png")</url>
       <title>$channel_title</title>
     </image>
-  $if erritem:
-      <item>
-	<title>Error</title>
-	<description>$erritem</description>
-      </item>
   $for item in items:
       $if not item:
           $continue

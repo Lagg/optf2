@@ -8,6 +8,13 @@ from optf2.backend import log
 from optf2.frontend import markup
 
 templates = template.template
+error_page = templates.errors
+
+class rssNotFound(web.HTTPError):
+    def __init__(self, message = None):
+        status = "404 Not Found"
+        headers = {"Content-Type": "application/rss+xml"}
+        web.HTTPError.__init__(self, status, headers, message)
 
 class loadout:
     """ User loadout lists """
@@ -72,13 +79,13 @@ class loadout:
 
             return templates.loadout(app, userp, equippeditems, sorted(classmap), self._slots_sorted + sorted(slotlist), cid)
         except steam.items.Error as E:
-            return templates.error("Backpack error: {0}".format(E))
+            raise web.NotFound(error_page.generic("Backpack error: {0}".format(E)))
         except steam.user.ProfileError as E:
-            return templates.error("Profile error: {0}".format(E))
+            raise web.NotFound(error_page.generic("Profile error: {0}".format(E)))
         except steam.base.HttpError as E:
-            return templates.error("Couldn't connect to Steam (HTTP {0})".format(E))
+            raise web.NotFound(error_page.generic("Couldn't connect to Steam (HTTP {0})".format(E)))
         except itemtools.ItemBackendUnimplemented:
-            return templates.error("No backend found to handle loadouts for these items")
+            raise web.NotFound(error_page.generic("No backend found to handle loadouts for these items"))
 
     def __init__(self):
         self._cid = None
@@ -101,15 +108,15 @@ class item:
                 if contents:
                     item = contents
         except steam.base.HttpError as E:
-            return templates.error("Couldn't connect to Steam (HTTP {0})".format(E))
+            raise web.NotFound(error_page.generic("Couldn't connect to Steam (HTTP {0})".format(E)))
         except steam.items.Error as E:
-            return templates.error("Couldn't open schema: {0}".format(E))
+            raise web.NotFound(error_page.generic("Couldn't open schema: {0}".format(E)))
         except KeyError:
-            return templates.item_error_notfound(iid)
+            raise web.NotFound(templates.item_error_notfound(iid))
         except database.CacheEmptyError as E:
-            return templates.error(E)
+            raise web.NotFound(error_page.generic(E))
         except itemtools.ItemBackendUnimplemented:
-            return templates.error("No backend found to handle the given item, this could mean that the item has no available associated schema (yet)")
+            raise web.NotFound(error_page.generic("No backend found to handle the given item, this could mean that the item has no available associated schema (yet)"))
 
         caps = markup.get_capability_strings(itemtools.get_present_capabilities([item]))
 
@@ -135,13 +142,13 @@ class live_item:
                 if contents:
                     item = contents
         except steam.base.HttpError as E:
-            return templates.error("Couldn't connect to Steam (HTTP {0})".format(E))
+            raise web.NotFound(error_page.generic("Couldn't connect to Steam (HTTP {0})".format(E)))
         except steam.user.ProfileError as E:
-            return templates.error("Can't retrieve user profile data: {0}".format(E))
+            raise web.NotFound(error_page.generic("Can't retrieve user profile data: {0}".format(E)))
         except steam.items.Error as E:
-            return templates.error("Couldn't open backpack: {0}".format(E))
+            raise web.NotFound(error_page.generic("Couldn't open backpack: {0}".format(E)))
         except KeyError:
-            return templates.item_error_notfound(iid)
+            raise web.NotFound(templates.item_error_notfound(iid))
         return templates.item(app, user, item)
 
 class fetch:
@@ -150,7 +157,7 @@ class fetch:
         if len(sid) > 0: sid = sid[-1]
 
         if not sid:
-            return templates.error("Need an ID")
+            raise web.NotFound(error_page.generic("Need an ID"))
 
         query = web.input()
         sortby = query.get("sort")
@@ -193,13 +200,13 @@ class fetch:
             price_stats = itemtools.get_price_stats(sorted_items, cache)
 
         except steam.items.Error as E:
-            return templates.error("Failed to load backpack ({0})".format(E))
+            raise web.NotFound(error_page.generic("Failed to load backpack ({0})".format(E)))
         except steam.user.ProfileError as E:
-            return templates.error("Failed to load profile ({0})".format(E))
+            raise web.NotFound(error_page.generic("Failed to load profile ({0})".format(E)))
         except steam.base.HttpError as E:
-            return templates.error("Couldn't connect to Steam (HTTP {0})".format(E))
+            raise web.NotFound(error_page.generic("Couldn't connect to Steam (HTTP {0})".format(E)))
         except database.CacheEmptyError as E:
-            return templates.error(E)
+            raise web.NotFound(error_page.generic(E))
 
         web.ctx.rss_feeds = [("{0}'s Backpack".format(user["persona"].encode("utf-8")),
                               markup.generate_root_url("feed/" + str(user["id64"]), app))]
@@ -213,8 +220,6 @@ class feed:
         renderer = web.template.render(config.ini.get("resources", "template-dir"),
                                        globals = template.globals)
 
-        web.header("Content-Type", "application/rss+xml")
-
         try:
             cache = database.cache(mode = app)
             user, pack = cache.get_backpack(sid)
@@ -225,11 +230,11 @@ class feed:
 
             if cap: items = items[:cap]
 
+            web.header("Content-Type", "application/rss+xml")
             return renderer.inventory_feed(app, user, items)
 
         except (steam.user.ProfileError, steam.items.Error, steam.base.HttpError) as E:
-            return renderer.inventory_feed(app, None, [], erritem = E)
-
+            raise rssNotFound()
         except Exception as E:
             log.main.error(str(E))
-            return renderer.inventory_feed(app, None, [], erritem = E)
+            raise rssNotFound()

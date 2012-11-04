@@ -7,6 +7,7 @@ from optf2.frontend.markup import generate_root_url
 import api
 
 templates = template.template
+error_page = templates.errors
 
 class selector:
     def GET(self, user):
@@ -23,10 +24,10 @@ class selector:
 
             return templates.sim_selector(uid, ctx)
         except steam.items.Error as E:
-            return templates.error("Failed to load backpack ({0})".format(E))
+            raise web.NotFound(error_page.generic("Failed to load backpack ({0})".format(E)))
         except steam.user.ProfileError as E:
-            return templates.error("Failed to load profile ({0})".format(E))
+            raise web.NotFound(error_page.generic("Failed to load profile ({0})".format(E)))
         except steam.base.HttpError as E:
-            return templates.error("Couldn't connect to Steam (HTTP {0})".format(E))
+            raise web.NotFound(error_page.generic("Couldn't connect to Steam (HTTP {0})".format(E)))
         except database.CacheEmptyError as E:
-            return templates.error(E)
+            raise web.NotFound(error_page.generic(E))
