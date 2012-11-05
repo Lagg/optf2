@@ -206,7 +206,7 @@ fieldset { border: 0; }
 #status-offline { color: #808080; }
 #status-snooze, #status-away, #status-busy { color: #2fb3ff; }
 
-.navbar { z-index: 100; text-align: left; height: 30px; padding: 0; margin: 0 0 50px 5px; position: relative; list-style: none; }
+.navbar { text-align: left; height: 30px; padding: 0; margin: 0 0 50px 5px; position: relative; list-style: none; }
 .navbar > li { background-color: #505050; color: white; position: relative; float: left; height: 30px; margin: 0; padding: 0; border-right: 1px solid black; }
 .navbar > li:first-child { border-bottom-left-radius: 6px; } .navbar > li:last-child { border-bottom-right-radius: 6px; }
 .navbar a { display: block; height: 22px; padding: 8px 10px 0 10px; white-space: nowrap; text-decoration: none; }
