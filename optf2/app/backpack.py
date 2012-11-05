@@ -133,22 +133,33 @@ class live_item:
     def GET(self, app, user, iid):
         cache = database.cache(mode = app)
         markup.init_theme(app)
+
         try:
             user, items = cache.get_backpack(user)
-            item = items["items"][long(iid)]
-
-            if web.input().get("contents"):
-                contents = item.get("contents")
-                if contents:
-                    item = contents
         except steam.base.HttpError as E:
             raise web.NotFound(error_page.generic("Couldn't connect to Steam (HTTP {0})".format(E)))
         except steam.user.ProfileError as E:
             raise web.NotFound(error_page.generic("Can't retrieve user profile data: {0}".format(E)))
         except steam.items.Error as E:
             raise web.NotFound(error_page.generic("Couldn't open backpack: {0}".format(E)))
+
+        item = None
+        try:
+            item = items["items"][long(iid)]
         except KeyError:
-            raise web.NotFound(templates.item_error_notfound(iid))
+            for cid, bpitem in items["items"].iteritems():
+                oid = bpitem.get("oid")
+                if oid == long(iid):
+                    item = bpitem
+                    break
+            if not item:
+                raise web.NotFound(templates.item_error_notfound(iid))
+
+        if web.input().get("contents"):
+            contents = item.get("contents")
+            if contents:
+                item = contents
+
         return templates.item(app, user, item)
 
 class fetch:
