@@ -298,6 +298,7 @@ def get_price_stats(items, cache):
         except KeyError: continue
         costs.append((item, asset))
         for k, v in asset.iteritems():
+            currencysymbols.setdefault(k, '')
             if k not in worth:
                 worth[k] = v
             else:
