@@ -168,6 +168,8 @@ class cache:
                             map(operator.itemgetter("prettystr"), qualities)))
         self.set(self._quality_key, qmap)
 
+        self.get_processed_schema_items(schema)
+
         # TODO: Stop this whole get_generic_aco crap
         return schema
 
@@ -391,6 +393,28 @@ class cache:
                                  avatar = profilerecord["avatarurl"]))
         self.set(lastpackskey, lastpacks[:10])
 
+
+    def get_processed_schema_items(self, schema = None):
+        key = "schema-items-{0}-{1}".format(self.get_mod_id(), self.get_language())
+        cachepath = os.path.join(config.ini.get("resources", "cache-dir"), key)
+
+        try:
+            if not schema:
+                return pickle.load(open(cachepath))
+        except IOError:
+            pass
+
+        if not schema:
+            schema = self.get_schema()
+
+        sitems = {"items": {}}
+
+        for item in schema:
+            sitems["items"][item.get_schema_id()] = self._build_processed_item(item)
+
+        pickle.dump(sitems, open(cachepath, "wb"), pickle.HIGHEST_PROTOCOL)
+
+        return sitems
 
     def _build_processed_item(self, item):
         if not item: return None

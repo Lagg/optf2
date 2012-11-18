@@ -68,8 +68,8 @@ class loadout:
 
             # initial normal items
             try:
-                schema = cache.get_schema()
-                normalitems = itemtools.filtering([cache._build_processed_item(item) for item in schema]).byQuality("normal")
+                sitems = cache.get_processed_schema_items()["items"].values()
+                normalitems = itemtools.filtering(sitems).byQuality("normal")
                 equippeditems, slotlist, classmap = self.build_loadout(normalitems, equippeditems, slotlist, classmap)
             except database.CacheEmptyError:
                 pass
@@ -100,8 +100,8 @@ class item:
         markup.init_theme(app)
 
         try:
-            schema = cache.get_schema()
-            item = cache._build_processed_item(schema[long(iid)])
+            sitems = cache.get_processed_schema_items()["items"]
+            item = sitems[long(iid)]
 
             if web.input().get("contents"):
                 contents = item.get("contents")

@@ -31,10 +31,9 @@ class game_root:
         showcase = cache.get(ckey)
         if not showcase:
             try:
-                schema = cache.get_schema(stale = usestale)
-                items = list(schema)
-                if len(items) > 0:
-                    item = cache._build_processed_item(random.choice(items))
+                sitems = cache.get_processed_schema_items()["items"].values()
+                if len(sitems) > 0:
+                    item = random.choice(sitems)
                     showcase = generate_item_cell(app, item)
                     # May want to add an option for showcase expiration to config later
                     cache.set(ckey, showcase, time = 600)

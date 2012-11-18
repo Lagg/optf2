@@ -34,7 +34,8 @@ class items:
         markup.set_navlink()
 
         try:
-            items = [cache._build_processed_item(item) for item in cache.get_schema()]
+            sitems = cache.get_processed_schema_items()
+            items = sitems["items"].values()
         except database.CacheEmptyError as E:
             raise web.NotFound(error_page.generic(E))
 
@@ -92,7 +93,7 @@ class attributes:
         attribute = None
 
         if attachment_check:
-            items = schema
+            items = cache.get_processed_schema_items()["items"]
             attached_items = []
 
             for attr in attribs:
@@ -102,11 +103,11 @@ class attributes:
             if not attribute:
                 raise web.NotFound(error_page.generic(attachment_check + ": No such attribute"))
 
-            for item in items:
+            for item in cache.get_schema():
                 if attr.get_id() in item:
-                    attached_items.append(item)
+                    attached_items.append(items[item.get_schema_id()])
 
-            return templates.attribute_attachments(app, [cache._build_processed_item(item) for item in attached_items], attribute)
+            return templates.attribute_attachments(app, attached_items, attribute)
         else:
             return templates.schema_attributes(attribs)
 

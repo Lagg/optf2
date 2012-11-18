@@ -253,7 +253,7 @@ def generate_item_price_string(item, stats):
 
 def generate_attribute_list(app, item, showlinks = False):
     contents = item.get("contents")
-    markup = ''
+    markup = u''
     list_open = '<ul class="attribute-list">'
     list_close = '</ul>'
     eater_fmt = '<li class="attr-positive">{0}</li>'
@@ -333,7 +333,7 @@ def generate_item_cell(app, item, invalid = False, show_equipped = True, user = 
     if pid:
         pid = ",url('{0}')".format(generate_particle_icon_url(pid, app))
 
-    markup = ('<div class="{0} cell-{1}" id="s{2}" style="background-image: url(\'{6[image]}\'){5};{4}">' +
+    markup = (u'<div class="{0} cell-{1}" id="s{2}" style="background-image: url(\'{6[image]}\'){5};{4}">' +
               '<a class="item-link" href="{3}">' +
               '</a>'
               ).format(cell_class, quality, itemid, item_link, style, pid, item)
@@ -374,7 +374,7 @@ def generate_item_cell(app, item, invalid = False, show_equipped = True, user = 
 
     if coloroverride: style = ' style="color: #{0};"'.format(coloroverride)
     quality = item.get("quality", "normal")
-    markup += '<div class="tooltip"><div class="prefix-{0} item-name"{1}>{2[mainname]}</div>'.format(quality, style, item)
+    markup += unicode('<div class="tooltip"><div class="prefix-{0} item-name"{1}>{2[mainname]}</div>'.format(quality, style, item), "utf-8")
 
     markup += generate_item_type_line(item)
 
