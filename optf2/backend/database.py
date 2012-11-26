@@ -241,7 +241,7 @@ class cache:
             profile["valve"] = True
         if prof.get_visibility() != 3: profile["private"] = True
         if game: profile["game"] = (game.get("id"), game.get("extra"), game.get("server"))
-        self.set(memkey, profile)
+        self.set(memkey, profile, time = config.ini.getint("cache", "profile-expiry"))
 
         return profile
 
@@ -354,7 +354,7 @@ class cache:
     def _store_inv_context(self, id64, ctx):
         memkey = "invctx-{0}".format(id64)
         ctx = list(ctx)
-        self.set(memkey, ctx)
+        self.set(memkey, ctx, time = config.ini.getint("cache", "inventory-list-expiry"))
 
         return ctx
 
@@ -427,7 +427,6 @@ class cache:
         try: appid = getattr(steam, mod)._APP_ID
         except AttributeError: pass
         ugc_key = "ugc-{0}"
-        ugc_cache_expiry = self._ugc_lifetime
         iid = item.get_id()
         oid = item.get_original_id()
         pos = item.get_position()
@@ -668,6 +667,5 @@ class cache:
         self._recent_packs_key = "lastpacks-" + self._mod_id
         self._resource_prefix = config.ini.get("resources", "static-prefix")
         self._bp_lifetime = config.ini.getint("cache", "backpack-expiry")
-        self._ugc_lifetime = config.ini.getint("cache", "ugc-expiry")
         self._compress_len = config.ini.getint("cache", "compress-len")
         self._quality_key = str("qualities" + self._language + self._mod_id)
