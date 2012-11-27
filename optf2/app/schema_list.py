@@ -36,7 +36,7 @@ class items:
         try:
             sitems = cache.get_processed_schema_items()
             items = sitems["items"].values()
-        except database.CacheEmptyError as E:
+        except (database.CacheEmptyError, itemtools.ItemBackendUnimplemented) as E:
             raise web.NotFound(error_page.generic(E))
 
         filters = itemtools.filtering(items)
@@ -87,7 +87,7 @@ class attributes:
         try:
             schema = cache.get_schema()
             attribs = schema.get_attributes()
-        except database.CacheEmptyError as E:
+        except (database.CacheEmptyError, itemtools.ItemBackendUnimplemented) as E:
             raise web.NotFound(error_page.generic(E))
 
         attribute = None
@@ -120,5 +120,5 @@ class particles:
             particles = schema.get_particle_systems()
 
             return templates.schema_particles(app, particles)
-        except database.CacheEmptyError as E:
+        except (database.CacheEmptyError, itemtools.ItemBackendUnimplemented) as E:
             raise web.NotFound(error_page.generic(E))
