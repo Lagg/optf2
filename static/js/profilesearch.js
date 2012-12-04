@@ -2,6 +2,7 @@ $(document).ready(function() {
     $("#rp-results").on("click", ".sr", function(e) {
 	e.preventDefault();
 	var resdiv = $(this);
+	if (resdiv.find(".purl .loading").length > 0) return;
 	resdiv.find(".purl").append(' <img class="loading" src="' + jsConf.staticPrefix + 'loading.gif"/>');
 	$.get(resdiv.find("a").attr("href"),
 	      function(data) {
