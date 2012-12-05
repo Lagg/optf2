@@ -339,11 +339,10 @@ tr.row-even { background-color: #1c1c1c; }
 .recent-inv td:last-child { word-wrap: break-word; }
 
 #rp-results { display: none; padding-top: 1em; }
-#rp-results .sr { margin: 0.6em; width: 230px; text-align: left; float: left; font-size: 0.8em; }
-#rp-results .sr img { vertical-align: middle; }
-#rp-results .sr .avatar { width: 24px; height: 24px; margin-right: 1em; }
-#rp-results .sr .loading { margin-left: 1.5em; }
-#rp-results .sr a { display: block; width: 100%; }
+#rp-results .sr { margin: 0.6em; }
+.sr { display: block; width: 230px; text-align: left; float: left; font-size: 0.8em; }
+.sr .avatar { vertical-align: middle; width: 24px; height: 24px; margin-right: 1em; }
+.sr-slot .sr { float: none; margin: 1em auto 0 auto; }
 #rp-form { margin-top: 2em; }
 #rp-input { background-color: #404040; width: 220px; color: white; border: 1px solid black; padding: 0.25em; border-radius: 4px; }
 #rp-input.inactive { color: #858585; }
@@ -354,3 +353,5 @@ tr.row-even { background-color: #1c1c1c; }
 #group-badge .member-avatar { margin-left: 5px; border-radius: 5px; border: 2px solid #353535; width: 32px; height: 32px; }
 #group-badge .logo { position: absolute; right: 10px; top: 10px; width: 32px; height: 32px; }
 #group-badge .member-count, #group-badge .member-list { margin-top: 1em; }
+
+.ui-icon.ui-icon-loading { background-image: url(../loading.gif); }

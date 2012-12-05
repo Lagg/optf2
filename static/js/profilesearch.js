@@ -1,25 +1,27 @@
 $(document).ready(function() {
     $("#rp-results").on("click", ".sr", function(e) {
 	e.preventDefault();
-	var resdiv = $(this);
-	if (resdiv.find(".purl .loading").length > 0) return;
-	resdiv.find(".purl").append(' <img class="loading" src="' + jsConf.staticPrefix + 'loading.gif"/>');
-	$.get(resdiv.find("a").attr("href"),
+	var resdiv = $(this).button();
+	var url = resdiv.attr("href");
+
+	if (resdiv.button("option", "icons").secondary == "ui-icon-loading") return;
+	resdiv.button("option", "icons", {secondary: "ui-icon-loading"});
+	$.get(url,
 	      function(data) {
-		  resdiv.find(".loading").remove();
 		  var boxes = $(data).filter("#content").children(".box");
-		  if (boxes.length <= 0) {
-		      resdiv.button("disable");
-		      resdiv.css("border", "1px solid red");
-		      return;
-		  }
 		  $("#rp-results").fadeOut("fast");
 		  $("#game-summaries").fadeIn("slow");
 		  boxes.width(350)
 		  boxes.css("margin", "1em");
 		  boxes.css("float", "left");
+		  $(".sr-slot").empty().append(resdiv.button("option", "icons", {secondary: "ui-icon-link"}));
+		  resdiv.removeClass("ui-state-hover ui-state-focus");
 		  boxes.appendTo("#game-summaries");
-	      });
+	      })
+	.error(function() {
+	    resdiv.button("option", {icons: {secondary: null }, disabled: true});
+	    resdiv.css("border", "1px solid red");
+	});
     });
     $("#rp-submit").button({icons: {primary: "ui-icon-search"}});
     var rpField = $("#rp-input"), rpFieldDefault = "Search Steam player profiles";
@@ -43,9 +45,9 @@ $(document).ready(function() {
 	    output.empty();
 	    $("#game-summaries").empty();
 	    $.each(data, function() {
-		var row = $('<div class="sr"><a class="purl" href="/inv/' + this.id64 + '"><img class="avatar" src="' + this.avatarurl + '"/>' + this.persona + '</a></div>').button();
+		var row = $('<a class="sr" href="/inv/' + this.id64 + '"><img class="avatar" src="' + this.avatarurl + '"/>' + this.persona + '</a>').button();
 		if (this.exact)
-		    row.find("a").css("color", "#6d89d5");
+		    row.css("color", "#6d89d5");
 		row.appendTo(output);
 	    });
 	    if (data.length <= 0)
