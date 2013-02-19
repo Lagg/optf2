@@ -732,7 +732,7 @@ var Cookie = {
 var URL = {
     deserializeHashStore: function() {
 	var values = {};
-	var hashStores = location.hash.substr(1).split(';');
+	var hashStores = window.location.hash.substr(1).split(';');
 
 	for (var i = 0; i < hashStores.length; i++) {
 	    var elem = hashStores[i];
@@ -786,7 +786,7 @@ var URL = {
 	var hashes = this.deserializeHashStore();
 	hashes[key] = val;
 
-	location.hash = this.serializeHashStore(hashes);
+	window.location.replace(window.location + '#' + this.serializeHashStore(hashes));
 
 	return true;
     },
@@ -796,7 +796,7 @@ var URL = {
 
 	delete hashes[key];
 
-	location.hash = this.serializeHashStore(hashes);
+	window.location.replace(window.location + '#' + this.serializeHashStore(hashes));
 
 	return true;
     }
