@@ -28,7 +28,7 @@ import steam
 from optf2.backend import config
 from optf2.backend import log
 import items as itemtools
-from optf2.frontend.markup import absolute_url
+from urlparse import urljoin
 
 def _(thestring):
     return web.utils.safestr(thestring)
@@ -251,8 +251,10 @@ class cache(object):
                     raw_rgb != 0):
                     paintcan_url = "{0}item_icons/Paint_Can_{1}.png".format(STATIC_PREFIX,
                                                                             item_color[1:])
-                    newitem["image"] = absolute_url(paintcan_url)
-                    newitem["imagelarge"] = absolute_url(paintcan_url)
+
+                    full_paintcan_url = urljoin(STATIC_PREFIX, paintcan_url)
+                    newitem["image"] = full_paintcan_url
+                    newitem["imagelarge"] = full_paintcan_url
 
                 filtered = True
 
