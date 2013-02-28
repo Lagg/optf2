@@ -228,7 +228,7 @@ function BackpackPager (container, initialpage) {
     this.modeFull = function() {
 	this.activePages.show();
 	jSwitcher.detach();
-	URL.removeHashStore("page");
+	URL.setHashStore("page");
     };
 
     this.modePaged = function() {
@@ -784,19 +784,21 @@ var URL = {
 
     setHashStore: function(key, val) {
 	var hashes = this.deserializeHashStore();
-	hashes[key] = val;
 
-	window.location.replace(window.location + '#' + this.serializeHashStore(hashes));
+        if (val != undefined) {
+            hashes[key] = val;
+        } else {
+            delete hashes[key];
+        }
 
-	return true;
-    },
+        var hashOut = '#' + this.serializeHashStore(hashes);
 
-    removeHashStore: function(key) {
-	var hashes = this.deserializeHashStore();
+        if (window.history && window.history.replaceState) {
+            window.history.replaceState({}, document.title, hashOut);
+        } else {
+            window.location.replace(hashOut);
+        }
 
-	delete hashes[key];
-
-	window.location.replace(window.location + '#' + this.serializeHashStore(hashes));
 
 	return true;
     }
