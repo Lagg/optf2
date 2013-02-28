@@ -27,11 +27,11 @@ class game_root:
 
         cache = database.cache(mode = app)
 
-        ckey = str("scrender-" + app + "-" + cache.get_language()).encode("ascii")
+        ckey = str("scrender-" + app + "-" + cache.lang).encode("ascii")
         showcase = cache.get(ckey)
         if not showcase:
             try:
-                sitems = cache.get_processed_schema_items()["items"].values()
+                sitems = database.schema(cache).processed_items.values()
                 if len(sitems) > 0:
                     item = random.choice(sitems)
                     showcase = generate_item_cell(app, item)
@@ -44,6 +44,6 @@ class game_root:
         web.ctx.notopsearch = True
 
         # Last packs
-        packs = cache.get_recent_pack_list()
+        packs = database.recent_inventories(cache)
 
         return template.template.game_root(app, (packs or []), showcase)

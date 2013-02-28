@@ -121,7 +121,7 @@ def get_capability_strings(caps):
     return sorted([(capabilitydict.get(cap, cap), cap) for cap in caps])
 
 def get_quality_strings(q, cache):
-    qmap = cache.get(cache._quality_key, {})
+    qmap = cache._cache.get(cache._quality_key, {})
     return sorted([(qmap.get(k, k), k) for k in q])
 
 def absolute_url(relative_url):
@@ -374,7 +374,7 @@ def generate_item_cell(app, item, invalid = False, show_equipped = True, user = 
 
     if coloroverride: style = ' style="color: #{0};"'.format(coloroverride)
     quality = item.get("quality", "normal")
-    markup += unicode('<div class="tooltip"><div class="prefix-{0} item-name"{1}>{2[mainname]}</div>'.format(quality, style, item), "utf-8")
+    markup += u'<div class="tooltip"><div class="prefix-{0} item-name"{1}>{2[mainname]}</div>'.format(quality, style, item)
 
     markup += generate_item_type_line(item)
 

@@ -13,7 +13,14 @@ class webFilter(logging.Filter):
 
         return True
 
-main_handler = logging.FileHandler(os.path.join(config.ini.get("resources", "cache-dir"), "op.log"))
+cachedir = config.ini.get("resources", "cache-dir")
+
+try:
+    os.makedirs(cachedir)
+except OSError:
+    pass
+
+main_handler = logging.FileHandler(os.path.join(cachedir, "op.log"))
 path_formatter = logging.Formatter("%(asctime)-15s %(name)-5s %(levelname)-8s %(path)s - %(message)s",
                                    datefmt = "%m/%d %H:%M:%S")
 main = logging.getLogger(config.ini.get("misc", "project-name"))

@@ -22,7 +22,6 @@ import steam
 from optf2.frontend.markup import get_class_for_id
 from optf2.backend import config
 from optf2.backend import log
-import database
 
 # Russia, for the sake of OPTF2. Give real symbol.
 currencysymbols = {"USD": "$",
@@ -271,10 +270,10 @@ def get_present_qualities(items):
 
     return sorted(qualities)
 
-def get_price_stats(items, cache):
+def get_price_stats(items, assetcache):
     try:
-        assets = cache.get_assets(stale = True)
-    except database.CacheEmptyError:
+        assets = assetcache.price_map
+    except:
         assets = {}
 
     stats = {"assets": assets, "sym": currencysymbols, "worth": {}, "most-expensive": [], "avg": {}}

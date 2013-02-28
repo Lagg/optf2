@@ -16,6 +16,7 @@ OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 import web
 import template
+import operator
 from optf2.backend import items as itemtools
 from optf2.backend import database
 from optf2.frontend import markup
@@ -29,13 +30,14 @@ class items:
     def GET(self, app):
         query = web.input()
         cache = database.cache(mode = app)
+        schema = database.schema(cache)
 
         markup.init_theme(app)
         markup.set_navlink()
 
         try:
-            sitems = cache.get_processed_schema_items()
-            items = sitems["items"].values()
+            sitems = schema.processed_items
+            items = sitems.values()
         except (database.CacheEmptyError, itemtools.ItemBackendUnimplemented) as E:
             raise web.NotFound(error_page.generic(E))
 
@@ -47,7 +49,7 @@ class items:
             pass
 
         try:
-            filter_qualities = markup.get_quality_strings(itemtools.get_present_qualities(items), cache)
+            filter_qualities = markup.get_quality_strings(itemtools.get_present_qualities(items), schema)
             items = filters.byQuality(query["quality"])
         except KeyError:
             pass
@@ -65,7 +67,7 @@ class items:
             pass
 
         stats = itemtools.get_stats(items)
-        price_stats = itemtools.get_price_stats(items, cache)
+        price_stats = itemtools.get_price_stats(items, database.assets(cache))
 
         return templates.schema_items(app, items,
                                       sorter.get_sort_methods(),
@@ -85,15 +87,14 @@ class attributes:
         markup.set_navlink()
 
         try:
-            schema = cache.get_schema()
-            attribs = schema.get_attributes()
+            schema = database.schema(cache)
+            attribs = schema.attributes
         except (database.CacheEmptyError, itemtools.ItemBackendUnimplemented) as E:
             raise web.NotFound(error_page.generic(E))
 
         attribute = None
 
         if attachment_check:
-            items = cache.get_processed_schema_items()["items"]
             attached_items = []
 
             for attr in attribs:
@@ -103,9 +104,9 @@ class attributes:
             if not attribute:
                 raise web.NotFound(error_page.generic(attachment_check + ": No such attribute"))
 
-            for item in cache.get_schema():
-                if attr.get_id() in item:
-                    attached_items.append(items[item.get_schema_id()])
+            for item in schema.processed_items.values():
+                if attr.get_id() in map(operator.itemgetter("id"), item.get("attrs", [])):
+                    attached_items.append(item)
 
             return templates.attribute_attachments(app, attached_items, attribute)
         else:
@@ -116,8 +117,8 @@ class particles:
         markup.init_theme(app)
         markup.set_navlink()
         try:
-            schema = database.cache(mode = app).get_schema()
-            particles = schema.get_particle_systems()
+            schema = database.schema(database.cache(mode = app))
+            particles = schema.particle_systems
 
             return templates.schema_particles(app, particles)
         except (database.CacheEmptyError, itemtools.ItemBackendUnimplemented) as E:

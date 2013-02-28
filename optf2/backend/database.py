@@ -22,6 +22,7 @@ from binascii import crc32
 # For temporary schema object store
 import cPickle as pickle
 import os
+import json
 
 import steam
 from optf2.backend import config
@@ -46,8 +47,8 @@ memcached = pylibmc.Client([config.ini.get("cache", "memcached-address")], binar
                                         "ketama": True})
 memc = pylibmc.ThreadMappedPool(memcached)
 
-# Keeps track of connection times, until I think of a better way
-last_server_checks = {}
+STATIC_PREFIX = config.ini.get("resources", "static-prefix")
+CACHE_DIR = config.ini.get("resources", "cache-dir")
 
 class CacheError(Exception):
     def __init__(self, msg):
@@ -61,65 +62,8 @@ class CacheEmptyError(CacheError):
     def __init__(self, msg):
         CacheError.__init__(self, msg)
 
-class cache:
+class cache(object):
     """ Cache retrieval/setting functions """
-
-    def _get_generic_aco(self, baseclass, keyprefix, cachefilter = None, stale = False, appid = None, getlm = None, usepickle = False):
-        """ Initializes and caches Aggresively Cached Objects from steamodd """
-
-        modulename = self._mod_id
-        language = self._language
-        lm = None
-        ctime = int(time())
-        memkey = "{0}-{1}-{2}".format(keyprefix, modulename, language)
-        timeout = config.ini.getint("steam", "connect-timeout")
-        datatimeout = config.ini.getint("steam", "download-timeout")
-        cachepath = os.path.join(config.ini.get("resources", "cache-dir"), memkey)
-        oldobj = None
-
-        if usepickle:
-            try:
-                oldobj = pickle.load(open(cachepath))
-            except IOError:
-                pass
-        else:
-            oldobj = self.get(memkey)
-
-        if stale: return oldobj
-        if oldobj:
-            if (ctime - last_server_checks.get(memkey, 0)) < config.ini.getint("cache", keyprefix + "-check-interval"):
-                return oldobj
-
-            if getlm: lm = getlm(oldobj)
-
-        aco = oldobj
-        try:
-            result = None
-            if not appid: result = baseclass(lang = language, last_modified = lm, timeout = timeout, data_timeout = datatimeout)
-            else: result = baseclass(appid, lang = language, last_modified = lm, timeout = timeout, data_timeout = datatimeout)
-
-            if cachefilter:
-                aco = cachefilter(result)
-            else:
-                aco = result
-
-            if usepickle:
-                pickle.dump(aco, open(cachepath, "wb"), pickle.HIGHEST_PROTOCOL)
-            else:
-                self.set(memkey, aco)
-        except steam.base.HttpStale, pylibmc.Error:
-            pass
-        except Exception as E:
-            log.main.error("Cache refresh error: {0}".format(E))
-        finally:
-            if aco:
-                last_server_checks[memkey] = ctime
-            else:
-                errstr = "Cache record missing: {0}".format(memkey)
-                log.main.error(errstr)
-                raise CacheEmptyError(errstr)
-
-            return aco
 
     def get(self, value, default = None):
         value = str(value).encode("ascii")
@@ -133,6 +77,14 @@ class cache:
                 log.main.error(str(value) + ": " + str(E))
                 return default
 
+    @property
+    def scope(self):
+        return self._mod_id
+
+    @property
+    def lang(self):
+        return self._language
+
     def set(self, key, value, **kwargs):
         key = str(key).encode("ascii")
 
@@ -142,288 +94,14 @@ class cache:
         except pylibmc.Error as E:
             log.main.error(str(key) + ": " + str(E))
 
-    def _store_schema_minimaps(self, schema):
-        modulename = self._mod_id
-        language = self._language
-
-        pmap = {}
-        for item in schema:
-            if item._schema_item.get("name", "").find("Paint") != -1:
-                for attr in item:
-                    if attr.get_name().startswith("set item tint RGB"):
-                        pmap[int(attr.get_value())] = item.get_name()
-        self.set(str("paints-" + modulename + '-' + language), pmap)
-
-        particles = schema.get_particle_systems()
-        pmap = dict(zip(particles.keys(),
-                        map(operator.itemgetter("name"), particles.values())))
-        self.set(str("particles-" + modulename + '-' + language), pmap)
-
-        qualities = schema.get_qualities()
-        qmap = {}
-        if qualities:
-            qualities = qualities.values()
-
-            qmap = dict(zip(map(operator.itemgetter("str"), qualities),
-                            map(operator.itemgetter("prettystr"), qualities)))
-        self.set(self._quality_key, qmap)
-
-        self.get_processed_schema_items(schema)
-
-        # TODO: Stop this whole get_generic_aco crap
-        return schema
-
-    def get_schema(self, stale = False):
-        modulename = self._mod_id
-        language = self._language
-
-        try:
-            modclass = getattr(steam, modulename).item_schema
-        except AttributeError:
-            raise itemtools.ItemBackendUnimplemented("Backend couldn't give a schema for {0}".format(modulename))
-
-        return self._get_generic_aco(modclass, "schema", cachefilter = self._store_schema_minimaps, stale = stale, getlm = operator.methodcaller("get_last_modified"), usepickle = True)
-
-    def get_assets(self, stale = False):
-        modulename = self._mod_id
-        language = self._language
-        appid = None
-
-        def cb(result):
-            amap = dict([(int(asset.get_name()), asset.get_price())
-                         for asset in result])
-            amap["serverts"] = result.get_last_modified()
-
-            return amap
-
-        try:
-            mod = getattr(steam, modulename)
-            modclass = mod.assets
-        except AttributeError:
-            try:
-                modclass = steam.items.assets
-                appid = mod._APP_ID
-            except:
-                return None
-
-        return self._get_generic_aco(modclass, "assets", cachefilter = cb, stale = stale, appid = appid, getlm = operator.itemgetter("serverts"))
-
-    def get_vanity(self, sid):
-        # Use hash to avoid weird character problems
-        vanitykey = "vanity-" + str(crc32(sid))
-        vanity = self.get(vanitykey)
-        if not vanity:
-            vanity = steam.user.vanity_url(sid)
-            self.set(vanitykey, vanity.get_id64())
-        return vanity
-
-    def _load_profile(self, sid):
-        profile = self._get_profile(sid)
-        if not profile:
-            prof = steam.user.profile(sid)
-            profile = self._store_profile(prof)
-        return profile
-
-    def _get_profile(self, sid):
-        memkey = "profile-" + str(sid)
-        return self.get(memkey)
-
-    def _store_profile(self, prof):
-        memkey = "profile-" + str(prof.get_id64())
-
-        game = prof.get_current_game()
-        profile = {"id64": prof.get_id64(),
-                   "realname": prof.get_real_name(),
-                   "persona": prof.get_persona(),
-                   "avatarurl": prof.get_avatar_url(prof.AVATAR_MEDIUM),
-                   "status": prof.get_status()}
-        if str(prof.get_primary_group()) == config.ini.get("steam", "valve-group-id"):
-            profile["valve"] = True
-        if prof.get_visibility() != 3: profile["private"] = True
-        if game: profile["game"] = (game.get("id"), game.get("extra"), game.get("server"))
-        self.set(memkey, profile, time = config.ini.getint("cache", "profile-expiry"))
-
-        return profile
-
-    def get_profile(self, sid):
-        sid = str(sid)
-
-        if sid.isdigit():
-            try:
-                return self._load_profile(sid)
-            except steam.user.ProfileError:
-                pass
-
-        try:
-            return self._load_profile(self.get_vanity(sid))
-        except steam.user.VanityError as E:
-            raise steam.user.ProfileError(str(E))
-
-    def _attempt_multi_bp(self, id64):
-        prof = None
-        pack = None
-        ctx = None
-        multi = steam.json_request_multi()
-
-        try:
-            pclass = getattr(steam, self._mod_id).backpack
-            schema = self.get_schema(stale = True)
-            pack = self._get_backpack(id64)
-
-            if not pack:
-                multi.add(pclass(id64, schema = schema))
-        except AttributeError:
-            pclass = steam.sim.backpack
-            ctx = self._get_inv_context(id64)
-            if not ctx:
-                multi.add(steam.sim.backpack_context(id64))
-
-        prof = self._get_profile(id64)
-        if not prof:
-            multi.add(steam.user.profile(id64))
-
-        results = multi.download()
-        for res in results:
-            if isinstance(res, steam.user.profile):
-                prof = self._store_profile(res)
-            elif isinstance(res, pclass):
-                pack = self._store_backpack(id64, res)
-            elif isinstance(res, steam.sim.backpack_context):
-                ctx = self._store_inv_context(id64, res)
-
-        if ctx:
-            appctx = None
-            for c in ctx:
-                if str(self._mod_id) == str(c["appid"]):
-                    appctx = c
-                    break
-
-            pack = self._get_backpack(id64)
-            if not pack:
-                pack = self._store_backpack(id64, pclass(id64, appctx))
-
-        if pack.get("items"):
-            self.update_recent_pack_list(prof)
-
-        web.ctx.navlinks = [(c["name"], "{0}{1[appid]}/user/{2}".format(virtual_root, c, id64)) for c in (self._get_inv_context(id64) or []) if str(c["appid"]) not in inv_graylist]
-
-        return prof, pack
-
-    def get_backpack(self, user):
-        """ Uses multi request to get profile and backpack
-        concurrently """
-        sid = str(user)
-        prof = None
-        pack = None
-        perr = None
-
-        if sid.isdigit():
-            try:
-                return self._attempt_multi_bp(sid)
-            except steam.user.ProfileError as E:
-                perr = E
-
-        try:
-            vid = self.get_vanity(sid)
-            return self._attempt_multi_bp(vid)
-        except steam.user.VanityError as E:
-            raise steam.user.ProfileError(str(perr or E))
-
-    def _get_backpack(self, id64):
-        modulename = self._mod_id
-        memkey = "backpack-{0}-{1}".format(modulename, id64)
-        return self.get(memkey)
-
-    def _store_backpack(self, id64, bp):
-        modulename = self._mod_id
-        memkey = "backpack-{0}-{1}".format(modulename, id64)
-        pack = {"items": {},
-                "cells": bp.get_total_cells()}
-
-        for item in bp:
-            pack["items"][item.get_id()] = self._build_processed_item(item)
-
-        self.set(memkey, pack, time = self._bp_lifetime)
-
-        return pack
-
-    def _get_inv_context(self, id64):
-        memkey = "invctx-{0}".format(id64)
-        return self.get(memkey)
-
-    def _store_inv_context(self, id64, ctx):
-        memkey = "invctx-{0}".format(id64)
-        ctx = list(ctx)
-        self.set(memkey, ctx, time = config.ini.getint("cache", "inventory-list-expiry"))
-
-        return ctx
-
-    def get_inv_context(self, user):
-        id64 = user["id64"]
-        ctx = self._get_inv_context(id64)
-        if not ctx:
-            ctxr = steam.sim.backpack_context(id64)
-            ctx = self._store_inv_context(id64, ctxr)
-
-        return ctx
-
-    def get_mod_id(self):
-        return self._mod_id
-
-    def get_language(self):
-        return self._language
-
-    def get_recent_pack_list(self):
-        return self.get(self._recent_packs_key)
-
-    def update_recent_pack_list(self, profilerecord):
-        lastpackskey = self._recent_packs_key
-        lastpacks = self.get(lastpackskey)
-        id64 = profilerecord["id64"]
-
-        if not lastpacks:
-            lastpacks = []
-        else:
-            for p in lastpacks:
-                if p["id"] == id64:
-                    lastpacks.remove(p)
-                    break
-
-        lastpacks.insert(0, dict(id = id64, persona = profilerecord["persona"],
-                                 avatar = profilerecord["avatarurl"]))
-        self.set(lastpackskey, lastpacks[:10])
-
-
-    def get_processed_schema_items(self, schema = None):
-        key = "schema-items-{0}-{1}".format(self.get_mod_id(), self.get_language())
-        cachepath = os.path.join(config.ini.get("resources", "cache-dir"), key)
-
-        try:
-            if not schema:
-                return pickle.load(open(cachepath))
-        except IOError:
-            pass
-
-        if not schema:
-            schema = self.get_schema()
-
-        sitems = {"items": {}}
-
-        for item in schema:
-            sitems["items"][item.get_schema_id()] = self._build_processed_item(item)
-
-        pickle.dump(sitems, open(cachepath, "wb"), pickle.HIGHEST_PROTOCOL)
-
-        return sitems
-
     def _build_processed_item(self, item):
         if not item: return None
 
-        default_cell_image = self._resource_prefix + "item_icons/Invalid_icon.png";
+        default_cell_image = STATIC_PREFIX + "item_icons/Invalid_icon.png";
         newitem = dict(sid = item.get_schema_id())
         appid = None
-        mod = self.get_mod_id()
-        language = self.get_language()
+        mod = self.scope
+        language = self.lang
         try: appid = getattr(steam, mod)._APP_ID
         except AttributeError: pass
         ugc_key = "ugc-{0}"
@@ -469,7 +147,7 @@ class cache:
         if qty > 1: newitem["qty"] = qty
         if quality_str: newitem["quality"] = quality_str
         # May need string->ID swapper
-        if equipable: newitem["equipable"] = [itemtools.get_class_for_id(c, self._mod_id)[0] for c in equipable]
+        if equipable: newitem["equipable"] = [itemtools.get_class_for_id(c, mod)[0] for c in equipable]
         # Certain items will be part of a category system, this is used for advanced paging
         if category: newitem["cat"] = category
         newitem["image"] = imgsmall or default_cell_image
@@ -571,7 +249,7 @@ class cache:
                 if ((colori == 0) and
                     item._schema_item.get("name", "").startswith("Paint Can") and
                     raw_rgb != 0):
-                    paintcan_url = "{0}item_icons/Paint_Can_{1}.png".format(self._resource_prefix,
+                    paintcan_url = "{0}item_icons/Paint_Can_{1}.png".format(STATIC_PREFIX,
                                                                             item_color[1:])
                     newitem["image"] = absolute_url(paintcan_url)
                     newitem["imagelarge"] = absolute_url(paintcan_url)
@@ -653,19 +331,575 @@ class cache:
 
         return newitem
 
-    def __init__(self, mode = None, language = None):
+    def __init__(self, mode = "tf2", language = None):
         """ modid and language will be set to their respective values in web.ctx if not given """
 
-        clang = language or web.ctx.language
+        clang = language or web.ctx.get("language", "en_US")
 
         try: code, name = steam.get_language(clang)
         except steam.LangErrorUnsupported: code, name = steam.get_language()
 
         self._language = code
-        self._language_name = name
         self._mod_id = str(mode)
-        self._recent_packs_key = "lastpacks-" + self._mod_id
-        self._resource_prefix = config.ini.get("resources", "static-prefix")
-        self._bp_lifetime = config.ini.getint("cache", "backpack-expiry")
         self._compress_len = config.ini.getint("cache", "compress-len")
-        self._quality_key = str("qualities" + self._language + self._mod_id)
+
+class assets(object):
+    def __init__(self, cache):
+        self._cache = cache
+        self._app = cache.scope
+        self._lang = cache.lang
+        self._assets_cache = "assets-{0}-{1}".format(self._app, self._lang)
+        self._assets = None
+
+    def dump(self):
+        try:
+            mod = getattr(steam, self._app)
+            assetlist = mod.assets(lang = self._lang)
+        except AttributeError:
+            try:
+                appid = mod._APP_ID
+                assetlist = steam.items.assets(appid, lang = self._lang)
+            except:
+                return None
+
+        try:
+            self._assets = dict([(int(asset.get_name()), asset.get_price())
+                                 for asset in assetlist])
+
+            self._cache.set(self._assets_cache, self._assets)
+        except Exception as E:
+            log.main.error("Error loading assets: {0}".format(E))
+
+        return self._assets
+
+    def load(self):
+        ass = self._cache.get(self._assets_cache)
+        if not ass:
+            ass = self.dump()
+
+        self._assets = ass
+
+        return self._assets
+
+    @property
+    def price_map(self):
+        return self.load()
+
+class schema(object):
+    def __init__(self, cache):
+        self._cache = cache
+        self._app = cache.scope
+        self._lang = cache.lang
+        app = self._app
+        lang = self._lang
+
+        self._cdir = CACHE_DIR
+        self._items_cache = "schema-items-{0}-{1}".format(app, lang)
+        self._schema_cache = "schema-{0}-{1}".format(app, lang)
+        self._client_schema_cache = "client-schema-{0}".format(app)
+        self._particle_key = "particles-{0}-{1}".format(app, lang)
+        self._quality_key = "qualities-{0}-{1}".format(app, lang)
+        self._paints_key = "paints-{0}-{1}".format(app, lang)
+        self._schema = None
+
+    def _build_client_schema_specials(self):
+        if not self._schema:
+            schema = self.load()
+        else:
+            schema = self._schema
+
+        cs = schema.get_client_schema_url()
+        special = {}
+
+        if not cs:
+            return special
+
+        # TODO: Make VDF specific handler in steamodd, and generic handler
+        req = steam.json_request(str(cs), timeout = 3, data_timeout = 5)
+
+        try:
+            clients = steam.vdf.loads(req._download())["items_game"]
+        except:
+            return special
+
+        prefabs = clients.get("prefabs", {})
+        colors = clients.get("colors", {})
+        csitems = clients.get("items", {})
+
+        for sitem in schema:
+            sid = sitem.get_schema_id()
+            item = csitems.get(str(sid))
+            clientstuff = {}
+
+            if not item:
+                continue
+
+            prefab = item.get("prefab", {})
+            if prefab:
+                prefab = prefabs.get(prefab, {})
+
+            item = dict(prefab.items() + item.items())
+
+            rarity_name = item.get("item_rarity", '')
+            rarity = colors.get("desc_" + rarity_name)
+            if rarity:
+                tpl = rarity.get("hex_color")
+                clientstuff["rarity"] = rarity_name
+                if tpl and tpl.startswith('#'): tpl = tpl[1:]
+                clientstuff["rarity_color"] = tpl
+
+            slot = item.get("item_slot")
+            if slot and not sitem.get_slot():
+                clientstuff["slot"] = slot
+
+            usedby = item.get("used_by_heroes", item.get("used_by_classes", {}))
+            if usedby and not sitem.get_equipable_classes():
+                clientstuff["used_by"] = usedby.keys()
+
+            if clientstuff:
+                special[sid] = clientstuff
+
+        json.dump(special, open(os.path.join(self._cdir, self._client_schema_cache), "w"))
+        return special
+
+    @property
+    def client_schema_specials(self):
+        """ TODO: Temporary, because ugly """
+        try:
+            specials = json.load(open(os.path.join(self._cdir, self._client_schema_cache), "r"))
+        except IOError:
+            specials = self._build_client_schema_specials()
+
+        return specials
+
+    def _build_item_store(self):
+        if not self._schema:
+            schema = self.load()
+        else:
+            schema = self._schema
+
+        sitems = {}
+        for item in (schema or []):
+            sitems[item.get_schema_id()] = self._cache._build_processed_item(item)
+
+        json.dump(sitems, open(os.path.join(self._cdir, self._items_cache), "wb"))
+
+        return sitems
+
+    def _build_paint_store(self):
+        if not self._schema:
+            schema = self.load()
+        else:
+            schema = self._schema
+
+        pmap = {}
+        for item in schema:
+            if item._schema_item.get("name", "").find("Paint") != -1:
+                for attr in item:
+                    if attr.get_name().startswith("set item tint RGB"):
+                        pmap[int(attr.get_value())] = item.get_name()
+        self._cache.set(str(self._paints_key), pmap)
+
+        return pmap
+
+    def _build_particle_store(self):
+        if not self._schema:
+            schema = self.load()
+        else:
+            schema = self._schema
+
+        particles = schema.get_particle_systems()
+        pmap = dict([(k, v["name"]) for k, v in particles.iteritems()])
+        self._cache.set(str(self._particle_key), pmap)
+
+        return pmap
+
+    def _build_quality_store(self):
+        if not self._schema:
+            schema = self.load()
+        else:
+            schema = self._schema
+
+        qualities = schema.get_qualities() or {}
+        qmap = dict([(q["str"], q["prettystr"]) for q in qualities.values()])
+        self._cache.set(self._quality_key, qmap)
+
+        return qmap
+
+    def dump(self):
+        try:
+            schema = getattr(steam, str(self._app)).item_schema(lang = self._lang)
+        except AttributeError:
+            schema = steam.items.schema(self._app, lang = self._lang)
+
+        self._schema = schema
+
+        try:
+            self._build_paint_store()
+            self._build_particle_store()
+            self._build_quality_store()
+            self._build_item_store()
+        except Exception as E:
+            log.main.error("Error loading schema: {0}".format(E))
+            self._schema = None
+            schema = None
+
+        if schema:
+            pickle.dump(schema, open(os.path.join(self._cdir, self._schema_cache), "wb"), pickle.HIGHEST_PROTOCOL)
+
+        return schema
+
+    def load(self):
+        try:
+            schema = pickle.load(open(os.path.join(self._cdir, self._schema_cache)))
+        except:
+            schema = self.dump()
+
+        self._schema = schema
+        return schema
+
+    @property
+    def attributes(self):
+        return self.load().get_attributes()
+
+    @property
+    def particle_systems(self):
+        return self.load().get_particle_systems()
+
+    @property
+    def paints(self):
+        p = self._cache.get(self._paints_key)
+        if not p:
+            return self._build_paint_store()
+
+    @property
+    def particles(self):
+        p = self._cache.get(self._particle_key)
+        if not p:
+            return self._build_particle_store()
+
+    @property
+    def processed_items(self):
+        try:
+            return json.load(open(os.path.join(self._cdir, self._items_cache)))
+        except IOError:
+            return self._build_item_store()
+
+    @property
+    def qualities(self):
+        q = self._cache.get(self._quality_key)
+        if not q:
+            return self._build_quality_store()
+
+class inventory(object):
+    @property
+    def _cached_backpack(self):
+        if not self._deserialized:
+            self._deserialized = self._cache.get(self._cache_key)
+
+        return self._deserialized
+
+    @property
+    def _cache_key(self):
+        return "backpack-{0}-{1[id64]}".format(self._cache.scope, self.owner)
+
+    def _commit_to_cache(self, inventory):
+        self._cache.set(self._cache_key, inventory, time = self._cache_time)
+
+        if inventory.get("items"):
+            recent_packs = recent_inventories(self._cache)
+            recent_packs.update(self.owner)
+
+    #@staticmethod
+    def build_processed(self, inv):
+        pack = {"items": {},
+                "cells": inv.get_total_cells()}
+
+        for item in inv:
+            pitem = self._cache._build_processed_item(item)
+            pack["items"][item.get_id()] = pitem
+
+        return pack
+
+    def dump(self):
+        scope = self._cache.scope
+        owner = self.owner
+        bp = None
+
+        try:
+            pack_class = getattr(steam, scope).backpack
+            item_schema = schema(self._cache).load()
+            bp = pack_class(owner["id64"], schema = item_schema)
+        except AttributeError:
+            raise itemtools.ItemBackendUnimplemented(scope)
+
+        inventory = self.build_processed(bp)
+
+        self._commit_to_cache(inventory)
+
+        return inventory
+
+    def load(self):
+        return self._cached_backpack or self.dump()
+
+    @property
+    def owner(self):
+        """ Returns the user dict associated with this inventory """
+        try:
+            return self._user.load()
+        except AttributeError:
+            return self._user
+
+    def _store(self, bp):
+        modulename = self._cache.scope
+
+        return pack
+
+    def __init__(self, cache, prof):
+        self._user = prof
+        self._cache = cache
+        self._deserialized = None
+        self._cache_time = config.ini.getint("cache", "backpack-expiry")
+
+class sim_context(object):
+    def __init__(self, cache, prof):
+        try:
+            self._user = prof["id64"]
+        except:
+            try:
+                self._user = prof.id64
+            except:
+                self._user = str(prof)
+
+        self._cache_key = "invctx-" + str(self._user)
+        self._cache_lifetime = config.ini.getint("cache", "inventory-list-expiry")
+        self._deserialized = None
+        self._cache = cache
+
+    def __iter__(self):
+        cl = self.load()
+
+        i = 0
+        while i < len(cl):
+            j = i
+            i += 1
+            yield cl[j]
+
+    def _populate_navlinks(self, context):
+        try:
+            web.ctx.navlinks = [
+                        (c["name"], "{0}{1[appid]}/user/{2}".format(virtual_root, c, self._user))
+                        for c in (context or [])
+                        if str(c["appid"]) not in inv_graylist
+                    ]
+        except:
+            pass
+
+    def dump(self):
+        context = list(steam.sim.backpack_context(self._user))
+        self._cache.set(self._cache_key, context, time = self._cache_lifetime)
+
+        self._deserialized = context
+
+        return context
+
+    def load(self):
+        if self._deserialized:
+            self._populate_navlinks(self._deserialized)
+            return self._deserialized
+
+        context = self._cache.get(self._cache_key)
+
+        if not context:
+            context = self.dump()
+
+        self._populate_navlinks(context)
+        return context
+
+    @property
+    def user_id(self):
+        return self._user
+
+class sim_inventory(inventory):
+    """ Inventories sourced from the steam inventory manager """
+    def __init__(self, cache, user_or_id):
+        super(sim_inventory, self).__init__(cache, user_or_id)
+
+        if not isinstance(user_or_id, sim_context):
+            self._context = sim_context(cache, self._user)
+        else:
+            self._context = user_or_id
+
+    def dump(self):
+        mid = str(self._cache.scope)
+        inv = None
+
+        appctx = None
+        for c in self._context:
+            if mid == str(c["appid"]):
+                appctx = c
+                break
+
+        if not appctx:
+            raise itemtools.ItemBackendUnimplemented(mid)
+
+        try:
+            inv = steam.sim.backpack(self._context.user_id, appctx)
+        except:
+            raise steam.items.BackpackError("SIM inventory not found or unavailable")
+
+        self._deserialized = self.build_processed(inv)
+
+        self._commit_to_cache(self._deserialized)
+
+        return self._deserialized
+
+class user(object):
+    def __init__(self, cache, sid):
+        self._cache = cache
+        self._sid = sid
+        self._true_id = None
+        self._vanity_key = "vanity-" + str(crc32(self._sid))
+        self._deserialized = None
+        self._valve_group_id64 = config.ini.get("steam", "valve-group-id")
+
+    @property
+    def __profile(self):
+        if self._deserialized:
+            return self._deserialized
+        else:
+            return self.load()
+
+    @property
+    def avatar(self):
+        return self.__profile.get("avatarurl")
+
+    @property
+    def group_id64(self):
+        return self.__profile.get("group")
+
+    @property
+    def id64(self):
+        return self.__profile.get("id64")
+
+    @property
+    def name(self):
+        return self.__profile.get("realname")
+
+    @property
+    def persona(self):
+        return self.__profile.get("persona")
+
+    @property
+    def status(self):
+        return self.__profile.get("status")
+
+    @property
+    def valve_employee(self):
+        return str(self.group_id64) == self._valve_group_id64
+
+    @staticmethod
+    def load_from_profile(prof, cacheobj = None):
+        game = prof.get_current_game()
+        profile = {"id64": prof.get_id64(),
+                   "realname": prof.get_real_name(),
+                   "persona": prof.get_persona(),
+                   "avatarurl": prof.get_avatar_url(prof.AVATAR_MEDIUM),
+                   "status": prof.get_status(),
+                   "group": prof.get_primary_group()}
+        if prof.get_visibility() != 3: profile["private"] = True
+        if game: profile["game"] = (game.get("id"), game.get("extra"), game.get("server"))
+
+        memkey = "profile-{0[id64]}".format(profile)
+        (cacheobj or cache()).set(memkey, profile, time = config.ini.getint("cache", "profile-expiry"))
+
+        return profile
+
+    def resolve_id(self):
+        """ Resolves the ID given at instantiation to
+        a valid ID64 if one exists """
+        if self._true_id: return self._true_id
+
+        # Hashing due do non-ASCII names
+        vanitykey = "vanity-" + str(crc32(self._sid))
+        self._true_id = self._cache.get(vanitykey)
+        if not self._true_id:
+            vanity = steam.user.vanity_url(self._sid)
+            self._true_id = vanity.get_id64()
+            self._cache.set(vanitykey, self._true_id)
+
+        return self._true_id
+
+    def load(self):
+        sid = self._sid
+        memkey = "profile-" + str(sid)
+
+        profile = self._deserialized
+        if not profile:
+            return self.dump()
+        else:
+            self._true_id = profile["id64"]
+            return profile
+
+    def dump(self):
+        sid = str(self._sid)
+        prof = None
+
+        if sid.isdigit():
+            try:
+                prof = steam.user.profile(sid)
+            except steam.user.ProfileError:
+                pass
+
+        if not prof:
+            try:
+                prof = steam.user.profile(self.resolve_id())
+            except steam.user.VanityError as E:
+                raise steam.user.ProfileError(str(E))
+
+        profile = self.load_from_profile(prof)
+
+        self._deserialized = profile
+        self._true_id = profile["id64"]
+
+        return profile
+
+class recent_inventories(object):
+    def __init__(self, cache):
+        self._cache = cache
+        self._recent_packs_key = "lastpacks-" + self._cache.scope
+        self._inv_list = []
+
+    def __iter__(self):
+        return self.next()
+
+    def next(self):
+        if not self._inv_list:
+            self._inv_list = self._cache.get(self._recent_packs_key, [])
+
+        i = 0
+        while i < len(self._inv_list):
+            j = i
+            i += 1
+            yield self._inv_list[j]
+
+    def update(self, profile, maxsize = 10):
+        try:
+            userp = profile.load()
+        except AttributeError:
+            userp = profile
+
+        lastpackskey = self._recent_packs_key
+        lastpacks = self._cache.get(lastpackskey, [])
+        id64 = userp["id64"]
+
+        for p in lastpacks:
+            if p["id"] == id64:
+                lastpacks.remove(p)
+                break
+
+        lastpacks.insert(0, dict(id = id64, persona = userp["persona"],
+                                 avatar = userp["avatarurl"]))
+
+        self._inv_list = lastpacks[:maxsize]
+        self._cache.set(lastpackskey, self._inv_list)

@@ -56,8 +56,8 @@ class loadout:
         markup.init_theme(app)
         try:
             cache = database.cache(mode = app)
-
-            userp, pack = cache.get_backpack(user)
+            userp = database.user(cache, user).load()
+            pack = database.inventory(cache, userp).load()
             items = pack["items"].values()
             equippeditems = {}
             classmap = set()
@@ -68,7 +68,7 @@ class loadout:
 
             # initial normal items
             try:
-                sitems = cache.get_processed_schema_items()["items"].values()
+                sitems = database.schema(cache).processed_items.values()
                 normalitems = itemtools.filtering(sitems).byQuality("normal")
                 equippeditems, slotlist, classmap = self.build_loadout(normalitems, equippeditems, slotlist, classmap)
             except database.CacheEmptyError:
@@ -100,8 +100,8 @@ class item:
         markup.init_theme(app)
 
         try:
-            sitems = cache.get_processed_schema_items()["items"]
-            item = sitems[long(iid)]
+            sitems = database.schema(cache).processed_items
+            item = sitems[str(iid)]
 
             if web.input().get("contents"):
                 contents = item.get("contents")
@@ -121,7 +121,7 @@ class item:
         caps = markup.get_capability_strings(itemtools.get_present_capabilities([item]))
 
         try:
-            assets = cache.get_assets()
+            assets = database.assets(cache).price_map
             price = markup.generate_item_price_string(item, assets)
         except database.CacheEmptyError:
             price = None
@@ -135,7 +135,11 @@ class live_item:
         markup.init_theme(app)
 
         try:
-            user, items = cache.get_backpack(user)
+            user = database.user(cache, user).load()
+            try:
+                items = database.inventory(cache, user).load()
+            except itemtools.ItemBackendUnimplemented:
+                items = database.sim_inventory(cache, user).load()
         except steam.base.HttpError as E:
             raise web.NotFound(error_page.generic("Couldn't connect to Steam (HTTP {0})".format(E)))
         except steam.user.ProfileError as E:
@@ -185,13 +189,20 @@ class fetch:
 
         try:
             cache = database.cache(mode = app)
-            user, pack = cache.get_backpack(sid)
+            user = database.user(cache, sid).load()
+
+            try:
+                pack = database.inventory(cache, user).load()
+            except itemtools.ItemBackendUnimplemented:
+                pack = database.sim_inventory(cache, user).load()
+
             cell_count = pack["cells"]
             items = pack["items"].values()
+            schema = database.schema(cache)
 
             filters = itemtools.filtering(items)
             filter_classes = markup.sorted_class_list(itemtools.get_equippable_classes(items, cache), app)
-            filter_qualities = markup.get_quality_strings(itemtools.get_present_qualities(items), cache)
+            filter_qualities = markup.get_quality_strings(itemtools.get_present_qualities(items), schema)
             if len(filter_classes) <= 1: filter_classes = None
             if len(filter_qualities) <= 1: filter_qualities = None
 
@@ -208,7 +219,7 @@ class fetch:
             baditems = []
             (items, baditems) = itemtools.build_page_object(sorted_items, pagesize = pagesize, ignore_position = sortby)
 
-            price_stats = itemtools.get_price_stats(sorted_items, cache)
+            price_stats = itemtools.get_price_stats(sorted_items, database.assets(cache))
 
         except steam.items.Error as E:
             raise web.NotFound(error_page.generic("Failed to load backpack ({0})".format(E)))
@@ -233,7 +244,13 @@ class feed:
 
         try:
             cache = database.cache(mode = app)
-            user, pack = cache.get_backpack(sid)
+            user = database.user(cache, sid).load()
+
+            try:
+                pack = database.inventory(cache, user).load()
+            except itemtools.ItemBackendUnimplemented:
+                pack = database.sim_inventory(cache, user).load()
+
             items = pack["items"].values()
             sorter = itemtools.sorting(items)
             items = sorter.sort(web.input().get("sort", sorter.byTime))

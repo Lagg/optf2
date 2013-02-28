@@ -199,7 +199,8 @@ def profile_search(user, greedy = False):
 
     prof = None
     try:
-        prof = database.cache().get_profile(user)
+        cache = database.cache()
+        prof = database.user(cache, user).load()
         prof["exact"] = True
         resultlist.append(prof)
         if not greedy:
@@ -234,7 +235,7 @@ class persona:
         cache = database.cache()
 
         try:
-            user = cache.get_profile(uid)
+            user = database.user(cache, uid).load()
             # JS is bad at numbers
             user["id64"] = str(user["id64"])
         except: pass

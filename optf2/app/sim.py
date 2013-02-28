@@ -19,10 +19,10 @@ class selector:
         if not user: raise steam.items.BackpackError("Need an ID")
 
         try:
-            uid = cache.get_profile(user)
-            ctx = cache.get_inv_context(uid)
+            prof = database.user(cache, user).load()
+            ctx = database.sim_context(cache, prof).load()
 
-            return templates.sim_selector(uid, ctx)
+            return templates.sim_selector(prof, ctx)
         except steam.items.Error as E:
             raise web.NotFound(error_page.generic("Failed to load backpack ({0})".format(E)))
         except steam.user.ProfileError as E:
