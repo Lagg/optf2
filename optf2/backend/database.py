@@ -484,7 +484,8 @@ class schema(object):
         for item in (schema or []):
             sitems[item.get_schema_id()] = self._cache._build_processed_item(item)
 
-        json.dump(sitems, open(os.path.join(self._cdir, self._items_cache), "wb"))
+        if sitems:
+            json.dump(sitems, open(os.path.join(self._cdir, self._items_cache), "wb"))
 
         return sitems
 
