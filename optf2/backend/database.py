@@ -49,6 +49,7 @@ memc = pylibmc.ThreadMappedPool(memcached)
 
 STATIC_PREFIX = config.ini.get("resources", "static-prefix")
 CACHE_DIR = config.ini.get("resources", "cache-dir")
+STEAM_TIMEOUT = config.ini.getfloat("steam", "connect-timeout")
 
 class CacheError(Exception):
     def __init__(self, msg):
@@ -531,9 +532,9 @@ class schema(object):
 
     def dump(self):
         try:
-            schema = getattr(steam, str(self._app)).item_schema(lang = self._lang)
+            schema = getattr(steam, str(self._app)).item_schema(lang = self._lang, timeout = STEAM_TIMEOUT)
         except AttributeError:
-            schema = steam.items.schema(self._app, lang = self._lang)
+            schema = steam.items.schema(self._app, lang = self._lang, timeout = STEAM_TIMEOUT)
 
         self._schema = schema
 
@@ -635,7 +636,7 @@ class inventory(object):
         try:
             pack_class = getattr(steam, scope).backpack
             item_schema = schema(self._cache).load()
-            bp = pack_class(owner["id64"], schema = item_schema)
+            bp = pack_class(owner["id64"], schema = item_schema, timeout = STEAM_TIMEOUT)
         except AttributeError:
             raise itemtools.ItemBackendUnimplemented(scope)
 
@@ -702,7 +703,7 @@ class sim_context(object):
             pass
 
     def dump(self):
-        context = list(steam.sim.backpack_context(self._user))
+        context = list(steam.sim.backpack_context(self._user, timeout = STEAM_TIMEOUT))
         self._cache.set(self._cache_key, context, time = self._cache_lifetime)
 
         self._deserialized = context
@@ -750,7 +751,7 @@ class sim_inventory(inventory):
             raise itemtools.ItemBackendUnimplemented(mid)
 
         try:
-            inv = steam.sim.backpack(self._context.user_id, appctx)
+            inv = steam.sim.backpack(self._context.user_id, appctx, timeout = STEAM_TIMEOUT)
         except:
             raise steam.items.BackpackError("SIM inventory not found or unavailable")
 
