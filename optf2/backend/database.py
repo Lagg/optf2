@@ -542,6 +542,9 @@ class schema(object):
             self._build_particle_store()
             self._build_quality_store()
             self._build_item_store()
+        except steam.HttpError:
+            self._schema = None
+            schema = None
         except Exception as E:
             log.main.error("Error loading schema: {0}".format(E))
             self._schema = None
