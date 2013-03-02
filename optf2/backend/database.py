@@ -748,7 +748,7 @@ class sim_inventory(inventory):
                 break
 
         if not appctx:
-            raise itemtools.ItemBackendUnimplemented(mid)
+            raise steam.items.BackpackError("Can't find inventory for SIM:" + str(mid) + " in this backpack.")
 
         try:
             inv = steam.sim.backpack(self._context.user_id, appctx, timeout = STEAM_TIMEOUT)
