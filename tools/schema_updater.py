@@ -15,7 +15,10 @@ ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
 OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 """
 
+pool_size = 5
+
 import os, sys
+import threading, Queue
 
 try:
     sys.path += sys.argv[1:]
@@ -27,9 +30,30 @@ from optf2.backend import database, config
 
 steam.set_api_key(config.ini.get("steam", "api-key"))
 
+inq = Queue.Queue()
+
+class DumpThread(threading.Thread):
+    def __init__(self, iq):
+        self.iq = iq
+        threading.Thread.__init__(self)
+
+    def run(self):
+        while True:
+            input, name = self.iq.get()
+
+            input.dump()
+
+            self.iq.task_done()
+
+for i in range(pool_size):
+    t = DumpThread(inq)
+    t.setDaemon(True) # How many people still run pythons older than 2.6 anyway?
+    t.start()
+
 if __name__ == "__main__":
     updatepairs = set()
 
+    # Iterate cache dir and gather names to dump (not a perfect method, I know)
     for cachefile in os.listdir(database.CACHE_DIR):
         if not cachefile.startswith("schema-"):
             continue
@@ -46,5 +70,6 @@ if __name__ == "__main__":
         dbcache = database.cache(mode = scope, language = lang)
         schema = database.schema(dbcache)
 
-        print(scope + ' ' + lang)
-        schema.dump()
+        inq.put((schema, scope + '-' + lang))
+
+    inq.join()
