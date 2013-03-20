@@ -15,10 +15,8 @@ ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
 OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 """
 
-pool_size = 5
-
 import os, sys
-import threading, Queue
+import threading
 
 try:
     sys.path += sys.argv[1:]
@@ -30,25 +28,18 @@ from optf2.backend import database, config
 
 steam.set_api_key(config.ini.get("steam", "api-key"))
 
-inq = Queue.Queue()
-
 class DumpThread(threading.Thread):
-    def __init__(self, iq):
-        self.iq = iq
+    def __init__(self, scope, language):
         threading.Thread.__init__(self)
+        self.scope = scope
+        self.language = language
 
     def run(self):
-        while True:
-            input, name = self.iq.get()
+        dbcache = database.cache(mode = self.scope, language = self.language)
+        schema = database.schema(dbcache)
 
-            input.dump()
-
-            self.iq.task_done()
-
-for i in range(pool_size):
-    t = DumpThread(inq)
-    t.setDaemon(True) # How many people still run pythons older than 2.6 anyway?
-    t.start()
+        schema.dump()
+        print("{0}-{1}: Finished".format(self.scope, self.language))
 
 if __name__ == "__main__":
     updatepairs = set()
@@ -67,9 +58,7 @@ if __name__ == "__main__":
 
     # Update loop
     for scope, lang in updatepairs:
-        dbcache = database.cache(mode = scope, language = lang)
-        schema = database.schema(dbcache)
+        t = DumpThread(scope, lang)
 
-        inq.put((schema, scope + '-' + lang))
-
-    inq.join()
+        print("{0}-{1}: Starting".format(scope, lang))
+        t.start()
