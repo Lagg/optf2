@@ -273,7 +273,8 @@ def generate_attribute_list(app, item, showlinks = False):
         if color: style = ' style="color: #{0};"'.format(color)
         markup += '<li class="attr-{0}"{1}>'.format(atype, style)
 
-        if contents and desc.startswith("Contains: "):
+        # 194 == referenced item def
+        if contents and attr["id"] == 194:
             markup += desc + morestr.format(web.http.changequery(contents = 1))
         else:
             if atype != "html": desc = web.websafe(desc)

@@ -208,7 +208,8 @@ class cache(object):
                 newitem["accounts"][attrid] = account_info
             filtered = theattr.is_hidden()
 
-            if attrname == "referenced item def":
+            # referenced item def
+            if attrid == 194:
                 desc = "Contains: "
                 if not giftcontents:
                     giftcontents = int(theattr.get_value())
