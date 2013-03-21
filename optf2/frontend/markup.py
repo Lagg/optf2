@@ -267,14 +267,18 @@ def generate_attribute_list(app, item, showlinks = False):
         acct = item.get("accounts", {}).get(attr["id"])
         color = attr.get("color")
         atype = attr.get("type", "neutral")
+        aid = attr["id"]
 
         if not desc: continue
 
         if color: style = ' style="color: #{0};"'.format(color)
         markup += '<li class="attr-{0}"{1}>'.format(atype, style)
 
+        # TODO: This is getting increasingly ugly
         # 194 == referenced item def
-        if contents and attr["id"] == 194:
+        # 192 == referenced item id low
+        # 193 == referenced item id high
+        if contents and (aid == 194 or aid == 192 or aid == 193):
             markup += desc + morestr.format(web.http.changequery(contents = 1))
         else:
             if atype != "html": desc = web.websafe(desc)

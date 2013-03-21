@@ -176,6 +176,7 @@ class cache(object):
         max_level = item.get_max_level()
         pb_level = item.get_level()
         giftcontents = item.get_contents()
+        contents_line_rendered = False
 
         if pb_level != None:
             newitem["level"] = str(pb_level)
@@ -209,7 +210,7 @@ class cache(object):
             filtered = theattr.is_hidden()
 
             # referenced item def
-            if attrid == 194:
+            if not contents_line_rendered and (attrid == 194 or attrid == 192 or attrid == 193):
                 desc = "Contains: "
                 if not giftcontents:
                     giftcontents = int(theattr.get_value())
@@ -219,6 +220,7 @@ class cache(object):
                                                                          web.websafe(giftcontents.get_full_item_name(prefixes = qualitydict)))
                 attrdesc = desc
                 filtered = False
+                contents_line_rendered = True
 
             elif attrname.startswith("set item tint RGB"):
                 raw_rgb = int(theattr.get_value())
