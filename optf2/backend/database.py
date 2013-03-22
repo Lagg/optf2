@@ -331,7 +331,7 @@ class cache(object):
 
         newitem["ownedname"] = _(possessive_item_name)
 
-        newitem["mainname"] = _(normal_item_name)
+        newitem["mainname"] = _(normal_item_name).decode("utf-8")
 
         newitem["basename"] = basename
 
@@ -409,10 +409,7 @@ class schema(object):
         self._schema = None
 
     def _build_client_schema_specials(self):
-        if not self._schema:
-            schema = self.load()
-        else:
-            schema = self._schema
+        schema = self.load()
 
         cs = schema.get_client_schema_url()
         special = {}
@@ -420,8 +417,7 @@ class schema(object):
         if not cs:
             return special
 
-        # TODO: Make VDF specific handler in steamodd, and generic handler
-        req = steam.json_request(str(cs), timeout = 3, data_timeout = 5)
+        req = steam.http_request(str(cs), timeout = STEAM_TIMEOUT)
 
         try:
             clients = steam.vdf.loads(req._download())["items_game"]
