@@ -201,10 +201,10 @@ def generate_item_type_line(item, classic = True):
     # Add space to prefix for rank
     if rank: levelprefix += ' '
 
-    return '<div class="item-level">{0}{1} {2}{3}</div>'.format(levelprefix,
-                                                                web.websafe(rank),
-                                                                web.websafe(itype),
-                                                                web.websafe(origin_name))
+    return u'<div class="item-level">{0}{1} {2}{3}</div>'.format(levelprefix,
+                                                                 web.websafe(rank),
+                                                                 web.websafe(itype),
+                                                                 web.websafe(origin_name))
 
 
 def generate_item_url(app, item, user = None):
@@ -236,9 +236,9 @@ def generate_item_paint_line(item):
 
     paintcan = item.get("paint_name")
     if paintcan:
-        return '<div class="attr-positive">{0} with {1}</div>'.format(painted, web.websafe(paintcan))
+        return u'<div class="attr-positive">{0} with {1}</div>'.format(painted, web.websafe(paintcan))
     else:
-        return ''
+        return u''
 
 def generate_item_price_string(item, stats):
     assets = None
@@ -296,7 +296,7 @@ def generate_attribute_list(app, item, showlinks = False):
 
     # available styles
     styles = item.get("styles")
-    if styles: markup += '<li class="attr-neutral">Styles: {0}</li>'.format(', '.join(styles))
+    if styles: markup += u'<li class="attr-neutral">Styles: {0}</li>'.format(', '.join(styles))
 
     quantity = item.get("qty")
     if quantity: markup += '<li class="attr-neutral">Quantity: {0}</li>'.format(quantity)
