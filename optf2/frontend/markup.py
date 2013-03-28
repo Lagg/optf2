@@ -120,8 +120,8 @@ def get_capability_strings(caps):
 
     return sorted([(capabilitydict.get(cap, cap), cap) for cap in caps])
 
-def get_quality_strings(q, cache):
-    qmap = cache._cache.get(cache._quality_key, {})
+def get_quality_strings(q, schema):
+    qmap = schema.qualities
     return sorted([(qmap.get(k, k), k) for k in q])
 
 def absolute_url(relative_url):

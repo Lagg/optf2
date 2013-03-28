@@ -35,8 +35,7 @@ class DumpThread(threading.Thread):
         self.language = language
 
     def run(self):
-        dbcache = database.cache(mode = self.scope, language = self.language)
-        schema = database.schema(dbcache)
+        schema = database.schema(scope = self.scope, lang = self.language)
 
         schema.dump()
         print("{0}-{1}: Finished".format(self.scope, self.language))

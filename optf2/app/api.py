@@ -6,6 +6,7 @@ import re
 from HTMLParser import HTMLParser
 from optf2.backend import database
 from optf2.backend import config
+cache = database.cache
 
 # Subapplication and URLs defined after classes
 # TODO: Well defined error objects for when this is
@@ -199,8 +200,7 @@ def profile_search(user, greedy = False):
 
     prof = None
     try:
-        cache = database.cache()
-        prof = database.user(cache, user).load()
+        prof = database.user(user).load()
         prof["exact"] = True
         resultlist.append(prof)
         if not greedy:
@@ -232,10 +232,9 @@ class persona:
     def GET(self, uid):
         user = {}
         callback = web.input().get("jsonp")
-        cache = database.cache()
 
         try:
-            user = database.user(cache, uid).load()
+            user = database.user(uid).load()
             # JS is bad at numbers
             user["id64"] = str(user["id64"])
         except: pass
@@ -252,7 +251,6 @@ class groupStats:
     def GET(self, group):
         obj = {}
         try:
-            cache = database.cache()
             memkey = "groupstats-" + str(group)
             obj = cache.get(memkey)
 

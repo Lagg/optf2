@@ -55,9 +55,8 @@ class loadout:
         self._cid = cid
         markup.init_theme(app)
         try:
-            cache = database.cache(mode = app)
-            userp = database.user(cache, user).load()
-            pack = database.inventory(cache, userp).load()
+            userp = database.user(user).load()
+            pack = database.inventory(userp, scope = app).load()
             items = pack["items"].values()
             equippeditems = {}
             classmap = set()
@@ -68,7 +67,7 @@ class loadout:
 
             # initial normal items
             try:
-                sitems = database.schema(cache).processed_items.values()
+                sitems = database.schema(scope = app).processed_items.values()
                 normalitems = itemtools.filtering(sitems).byQuality("normal")
                 equippeditems, slotlist, classmap = self.build_loadout(normalitems, equippeditems, slotlist, classmap)
             except database.CacheEmptyError:
@@ -94,13 +93,12 @@ class loadout:
 
 class item:
     def GET(self, app, iid):
-        cache = database.cache(mode = app)
         user = None
 
         markup.init_theme(app)
 
         try:
-            sitems = database.schema(cache).processed_items
+            sitems = database.schema(scope = app).processed_items
             item = sitems[str(iid)]
 
             if web.input().get("contents"):
@@ -121,7 +119,7 @@ class item:
         caps = markup.get_capability_strings(itemtools.get_present_capabilities([item]))
 
         try:
-            assets = database.assets(cache).price_map
+            assets = database.assets(scope = app).price_map
             price = markup.generate_item_price_string(item, assets)
         except database.CacheEmptyError:
             price = None
@@ -131,15 +129,14 @@ class item:
 class live_item:
     """ More or less temporary until database stuff is sorted """
     def GET(self, app, user, iid):
-        cache = database.cache(mode = app)
         markup.init_theme(app)
 
         try:
-            user = database.user(cache, user).load()
+            user = database.user(user).load()
             try:
-                items = database.inventory(cache, user).load()
+                items = database.inventory(user, scope = app).load()
             except itemtools.ItemBackendUnimplemented:
-                items = database.sim_inventory(cache, user).load()
+                items = database.sim_inventory(user, scope = app).load()
         except steam.base.HttpError as E:
             raise web.NotFound(error_page.generic("Couldn't connect to Steam (HTTP {0})".format(E)))
         except steam.user.ProfileError as E:
@@ -188,20 +185,20 @@ class fetch:
         markup.set_navlink()
 
         try:
-            cache = database.cache(mode = app)
-            user = database.user(cache, sid).load()
+            user = database.user(sid).load()
+            schema = None
 
             try:
-                pack = database.inventory(cache, user).load()
+                pack = database.inventory(user, scope = app).load()
+                schema = database.schema(scope = app)
             except itemtools.ItemBackendUnimplemented:
-                pack = database.sim_inventory(cache, user).load()
+                pack = database.sim_inventory(user, scope = app).load()
 
             cell_count = pack["cells"]
             items = pack["items"].values()
-            schema = database.schema(cache)
 
             filters = itemtools.filtering(items)
-            filter_classes = markup.sorted_class_list(itemtools.get_equippable_classes(items, cache), app)
+            filter_classes = markup.sorted_class_list(itemtools.get_equippable_classes(items), app)
             filter_qualities = markup.get_quality_strings(itemtools.get_present_qualities(items), schema)
             if len(filter_classes) <= 1: filter_classes = None
             if len(filter_qualities) <= 1: filter_qualities = None
@@ -219,7 +216,7 @@ class fetch:
             baditems = []
             (items, baditems) = itemtools.build_page_object(sorted_items, pagesize = pagesize, ignore_position = sortby)
 
-            price_stats = itemtools.get_price_stats(sorted_items, database.assets(cache))
+            price_stats = itemtools.get_price_stats(sorted_items, database.assets(scope = app))
 
         except steam.items.Error as E:
             raise web.NotFound(error_page.generic("Failed to load backpack ({0})".format(E)))
@@ -243,13 +240,12 @@ class feed:
                                        globals = template.globals)
 
         try:
-            cache = database.cache(mode = app)
-            user = database.user(cache, sid).load()
+            user = database.user(sid).load()
 
             try:
-                pack = database.inventory(cache, user).load()
+                pack = database.inventory(user, scope = app).load()
             except itemtools.ItemBackendUnimplemented:
-                pack = database.sim_inventory(cache, user).load()
+                pack = database.sim_inventory(user, scope = app).load()
 
             items = pack["items"].values()
             sorter = itemtools.sorting(items)

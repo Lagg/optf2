@@ -11,7 +11,6 @@ error_page = templates.errors
 
 class selector:
     def GET(self, user):
-        cache = database.cache(mode = "inv")
         baseurl = user.strip('/').split('/')
         if len(baseurl) > 0:
             user = baseurl[-1]
@@ -19,8 +18,8 @@ class selector:
         if not user: raise steam.items.BackpackError("Need an ID")
 
         try:
-            prof = database.user(cache, user).load()
-            ctx = database.sim_context(cache, prof).load()
+            prof = database.user(user).load()
+            ctx = database.sim_context(prof).load()
 
             return templates.sim_selector(prof, ctx)
         except steam.items.Error as E:

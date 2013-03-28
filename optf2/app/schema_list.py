@@ -29,8 +29,7 @@ class items:
 
     def GET(self, app):
         query = web.input()
-        cache = database.cache(mode = app)
-        schema = database.schema(cache)
+        schema = database.schema(scope = app)
 
         markup.init_theme(app)
         markup.set_navlink()
@@ -43,7 +42,7 @@ class items:
 
         filters = itemtools.filtering(items)
         try:
-            filter_classes = markup.sorted_class_list(itemtools.get_equippable_classes(items, cache), app)
+            filter_classes = markup.sorted_class_list(itemtools.get_equippable_classes(items), app)
             items = filters.byClass(markup.get_class_for_id(query["cls"], app)[0])
         except KeyError:
             pass
@@ -67,7 +66,7 @@ class items:
             pass
 
         stats = itemtools.get_stats(items)
-        price_stats = itemtools.get_price_stats(items, database.assets(cache))
+        price_stats = itemtools.get_price_stats(items, database.assets(scope = app))
 
         return templates.schema_items(app, items,
                                       sorter.get_sort_methods(),
@@ -81,13 +80,11 @@ class attributes:
     """ Dumps all schema attributes in a pretty way """
 
     def GET(self, app, attachment_check = None):
-        cache = database.cache(mode = app)
-
         markup.init_theme(app)
         markup.set_navlink()
 
         try:
-            schema = database.schema(cache)
+            schema = database.schema(scope = app)
             attribs = schema.attributes
         except (database.CacheEmptyError, itemtools.ItemBackendUnimplemented) as E:
             raise web.NotFound(error_page.generic(E))
@@ -117,7 +114,7 @@ class particles:
         markup.init_theme(app)
         markup.set_navlink()
         try:
-            schema = database.schema(database.cache(mode = app))
+            schema = database.schema(scope = app)
             particles = schema.particle_systems
 
             return templates.schema_particles(app, particles)

@@ -240,7 +240,7 @@ def get_stats(items):
 
     return stats
 
-def get_equippable_classes(items, cache):
+def get_equippable_classes(items):
     """ Returns a set of classes that can equip the listed items """
     if not items: return []
     classes = set()

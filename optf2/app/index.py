@@ -6,6 +6,8 @@ import api
 import template
 import random
 
+cache = database.cache
+
 class game_root:
     def GET(self, app = None):
         usestale = True
@@ -25,13 +27,11 @@ class game_root:
             # Probably temporary until I write new main home page
             web.ctx._cvars["formDest"] = app
 
-        cache = database.cache(mode = app)
-
-        ckey = str("scrender-" + app + "-" + cache.lang).encode("ascii")
+        ckey = str("scrender-" + app + "-" + database.verify_lang()).encode("ascii")
         showcase = cache.get(ckey)
         if not showcase:
             try:
-                sitems = database.schema(cache).processed_items.values()
+                sitems = database.schema(scope = app).processed_items.values()
                 if len(sitems) > 0:
                     item = random.choice(sitems)
                     showcase = generate_item_cell(app, item)
@@ -44,6 +44,6 @@ class game_root:
         web.ctx.notopsearch = True
 
         # Last packs
-        packs = database.recent_inventories(cache)
+        packs = database.recent_inventories()
 
         return template.template.game_root(app, (packs or []), showcase)
