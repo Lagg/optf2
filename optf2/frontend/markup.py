@@ -22,11 +22,13 @@ try: from collections import OrderedDict as odict
 except ImportError: odict = dict
 from urlparse import urljoin
 from optf2.backend import config
+from optf2.backend import log
 
 virtual_root = config.ini.get("resources", "virtual-root")
 static_prefix = config.ini.get("resources", "static-prefix")
 particles = dict(config.ini.items("particle-modes"))
 cssaliases = dict(config.ini.items("css-aliases"))
+appaliases = dict(config.ini.items("inv-graylist"))
 # TODO: Add exp for single tags like br
 htmldesc = re.compile("<(?P<tag>.+) ?.*>.+</(?P=tag)>")
 
@@ -121,8 +123,11 @@ def get_capability_strings(caps):
     return sorted([(capabilitydict.get(cap, cap), cap) for cap in caps])
 
 def get_quality_strings(q, schema):
-    qmap = schema.qualities
-    return sorted([(qmap.get(k, k), k) for k in q])
+    try:
+        qmap = schema.qualities
+        return sorted([(qmap.get(k, k), k) for k in q])
+    except:
+        return {}
 
 def absolute_url(relative_url):
     return urljoin(web.ctx.homedomain, relative_url)
@@ -424,7 +429,8 @@ def generate_class_sprite_img(c, ident, styleextra = ""):
     spritesize = 16
 
     try:
-        ident = aliasmap.get(ident, ident)
+        appscope = appaliases.get(ident, ident)
+        ident = aliasmap.get(appscope, appscope)
         spriteindex, name = get_class_for_id(c, ident)
 
         spriteindex *= spritesize
@@ -434,6 +440,9 @@ def generate_class_sprite_img(c, ident, styleextra = ""):
 
         style = "background: url('{0}') -{1}px -{2}px;".format(static_prefix + ident + "_class_icons.png", column, row)
     except (ValueError, KeyError):
-        style = ""
+        style = ''
+    except Exception as E:
+        style = ''
+        log.main.error("Failed class sprite img gen: " + repr(E))
 
     return '<img class="class-icon" src="{0}" style="{1}{2}" alt="{3}"/>'.format(static_prefix + "pixel.png", style, styleextra, c)
