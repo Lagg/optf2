@@ -132,11 +132,7 @@ class live_item:
         markup.init_theme(app)
 
         try:
-            user = database.user(user).load()
-            try:
-                items = database.inventory(user, scope = app).load()
-            except itemtools.ItemBackendUnimplemented:
-                items = database.sim_inventory(user, scope = app).load()
+            user, items = database.load_inventory(user, scope = app)
         except steam.base.HttpError as E:
             raise web.NotFound(error_page.generic("Couldn't connect to Steam (HTTP {0})".format(E)))
         except steam.user.ProfileError as E:
@@ -185,14 +181,13 @@ class fetch:
         markup.set_navlink()
 
         try:
-            user = database.user(sid).load()
+            user, pack = database.load_inventory(sid, app)
             schema = None
 
             try:
-                pack = database.inventory(user, scope = app).load()
                 schema = database.schema(scope = app)
             except itemtools.ItemBackendUnimplemented:
-                pack = database.sim_inventory(user, scope = app).load()
+                pass
 
             cell_count = pack["cells"]
             items = pack["items"].values()
@@ -240,13 +235,7 @@ class feed:
                                        globals = template.globals)
 
         try:
-            user = database.user(sid).load()
-
-            try:
-                pack = database.inventory(user, scope = app).load()
-            except itemtools.ItemBackendUnimplemented:
-                pack = database.sim_inventory(user, scope = app).load()
-
+            user, pack = database.load_inventory(sid, scope = app)
             items = pack["items"].values()
             sorter = itemtools.sorting(items)
             items = sorter.sort(web.input().get("sort", sorter.byTime))

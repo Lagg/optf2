@@ -261,7 +261,7 @@ def generate_attribute_list(app, item, showlinks = False):
     markup = u''
     list_open = '<ul class="attribute-list">'
     list_close = '</ul>'
-    eater_fmt = '<li class="attr-positive">{0}</li>'
+    eater_fmt = u'<li class="attr-positive">{0}</li>'
 
     morestr = ""
     if showlinks: morestr = ' <a href="{0}">(more)</a>'
@@ -293,7 +293,7 @@ def generate_attribute_list(app, item, showlinks = False):
 
         markup += '</li>'
 
-    markup += ''.join(map(eater_fmt.format, item.get("eaters", [])))
+    markup += u''.join(map(eater_fmt.format, item.get("eaters", [])))
 
     # current style
     style = item.get("style")

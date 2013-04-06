@@ -165,7 +165,7 @@ def dict_from_item(item, scope = "tf2", lang = None):
             newitem["level"] = str(min_level) + "-" + str(max_level)
 
     # Ordered kill eater attribute lines
-    linefmt = "{0[1]}: {0[2]}"
+    linefmt = u"{0[1]}: {0[2]}"
     eaters = item.get_kill_eaters()
     if eaters: newitem["eaters"] = map(linefmt.format, eaters)
 
@@ -596,23 +596,16 @@ class schema(object):
         return q
 
 class inventory(object):
-    @property
-    def _cached_backpack(self):
-        if not self._deserialized:
-            self._deserialized = cache.get(self._cache_key)
+    def __init__(self, prof, scope = "tf2", lang = None):
+        self._user = prof
+        self._lang = verify_lang(lang)
+        self._scope = scope
+        self._deserialized = None
+        self._cache_time = config.ini.getint("cache", "backpack-expiry")
+        self._cache_key = "backpack-{0}-{1}".format(self._scope, self.owner)
 
-        return self._deserialized
-
-    @property
-    def _cache_key(self):
-        return "backpack-{0}-{1[id64]}".format(self._scope, self.owner)
-
-    def _commit_to_cache(self, inventory):
+    def _cache_commit(self, inventory):
         cache.set(self._cache_key, inventory, time = self._cache_time)
-
-        if inventory.get("items"):
-            recent_packs = recent_inventories(self._scope)
-            recent_packs.update(self.owner)
 
     @staticmethod
     def build_processed(inv, scope = "tf2", lang = None):
@@ -633,33 +626,35 @@ class inventory(object):
         try:
             pack_class = getattr(steam, self._scope).backpack
             item_schema = schema(self._scope, self._lang).load()
-            bp = pack_class(owner["id64"], schema = item_schema, timeout = STEAM_TIMEOUT)
+            bp = pack_class(owner, schema = item_schema, timeout = STEAM_TIMEOUT)
         except AttributeError:
             raise itemtools.ItemBackendUnimplemented(self._scope)
 
         inventory = self.build_processed(bp, self._scope, self._lang)
 
-        self._commit_to_cache(inventory)
+        self._cache_commit(inventory)
 
         return inventory
 
     def load(self):
-        return self._cached_backpack or self.dump()
+        bp = cache.get(self._cache_key)
+        if not bp:
+            return self.dump()
+        else:
+            return bp
 
     @property
     def owner(self):
         """ Returns the user dict associated with this inventory """
         try:
-            return self._user.load()
+            self._user = self._user.load()
         except AttributeError:
-            return self._user
+            try:
+                self._user = self._user["id64"]
+            except:
+                pass
 
-    def __init__(self, prof, scope = "tf2", lang = None):
-        self._user = prof
-        self._lang = verify_lang(lang)
-        self._scope = scope
-        self._deserialized = None
-        self._cache_time = config.ini.getint("cache", "backpack-expiry")
+        return self._user
 
 class sim_context(object):
     def __init__(self, prof):
@@ -673,7 +668,6 @@ class sim_context(object):
 
         self._cache_key = "invctx-" + str(self._user)
         self._cache_lifetime = config.ini.getint("cache", "inventory-list-expiry")
-        self._deserialized = None
 
     def __iter__(self):
         cl = self.load()
@@ -684,8 +678,9 @@ class sim_context(object):
             i += 1
             yield cl[j]
 
-    def _populate_navlinks(self, context):
+    def _populate_navlinks(self):
         try:
+            context = cache.get(self._cache_key)
             web.ctx.navlinks = [
                         (c["name"], "{0}{1[appid]}/user/{2}".format(virtual_root, c, self._user))
                         for c in (context or [])
@@ -698,36 +693,30 @@ class sim_context(object):
         context = list(steam.sim.backpack_context(self._user, timeout = STEAM_TIMEOUT))
         cache.set(self._cache_key, context, time = self._cache_lifetime)
 
-        self._deserialized = context
-
         return context
 
     def load(self):
-        if self._deserialized:
-            self._populate_navlinks(self._deserialized)
-            return self._deserialized
-
         context = cache.get(self._cache_key)
 
         if not context:
             context = self.dump()
 
-        self._populate_navlinks(context)
+        self._populate_navlinks()
         return context
-
-    @property
-    def user_id(self):
-        return self._user
 
 class sim_inventory(inventory):
     """ Inventories sourced from the steam inventory manager """
     def __init__(self, user_or_id, scope = "tf2"):
+        self._context = None
+
+        if isinstance(user_or_id, sim_context):
+            self._context = user_or_id
+            user_or_id = self._context._user
+
         super(sim_inventory, self).__init__(user_or_id, scope)
 
-        if not isinstance(user_or_id, sim_context):
-            self._context = sim_context(self._user)
-        else:
-            self._context = user_or_id
+        if not self._context:
+            self._context = sim_context(self.owner)
 
     def dump(self):
         mid = str(self._scope)
@@ -743,58 +732,21 @@ class sim_inventory(inventory):
             raise steam.items.BackpackError("Can't find inventory for SIM:" + str(mid) + " in this backpack.")
 
         try:
-            inv = steam.sim.backpack(self._context.user_id, appctx, timeout = STEAM_TIMEOUT)
+            inv = steam.sim.backpack(self.owner, appctx, timeout = STEAM_TIMEOUT)
         except:
             raise steam.items.BackpackError("SIM inventory not found or unavailable")
 
-        self._deserialized = self.build_processed(inv, self._scope, self._lang)
+        output = self.build_processed(inv, self._scope, self._lang)
 
-        self._commit_to_cache(self._deserialized)
+        self._cache_commit(output)
 
-        return self._deserialized
+        return output
 
 class user(object):
     def __init__(self, sid):
         self._sid = sid
-        self._true_id = None
         self._vanity_key = "vanity-" + str(crc32(self._sid))
-        self._deserialized = None
         self._valve_group_id64 = config.ini.get("steam", "valve-group-id")
-
-    @property
-    def __profile(self):
-        if self._deserialized:
-            return self._deserialized
-        else:
-            return self.load()
-
-    @property
-    def avatar(self):
-        return self.__profile.get("avatarurl")
-
-    @property
-    def group_id64(self):
-        return self.__profile.get("group")
-
-    @property
-    def id64(self):
-        return self.__profile.get("id64")
-
-    @property
-    def name(self):
-        return self.__profile.get("realname")
-
-    @property
-    def persona(self):
-        return self.__profile.get("persona")
-
-    @property
-    def status(self):
-        return self.__profile.get("status")
-
-    @property
-    def valve_employee(self):
-        return str(self.group_id64) == self._valve_group_id64
 
     @staticmethod
     def load_from_profile(prof):
@@ -813,30 +765,31 @@ class user(object):
 
         return profile
 
-    def resolve_id(self):
+    @staticmethod
+    def resolve_id(id):
         """ Resolves the ID given at instantiation to
         a valid ID64 if one exists """
-        if self._true_id: return self._true_id
+        resolved = None
 
         # Hashing due do non-ASCII names
-        vanitykey = "vanity-" + str(crc32(self._sid))
-        self._true_id = cache.get(vanitykey)
-        if not self._true_id:
-            vanity = steam.user.vanity_url(self._sid)
-            self._true_id = vanity.get_id64()
-            cache.set(vanitykey, self._true_id)
+        vanitykey = "vanity-" + str(crc32(id))
+        resolved = cache.get(vanitykey)
+        if not resolved:
+            vanity = steam.user.vanity_url(id)
+            resolved = vanity.get_id64()
+            cache.set(vanitykey, resolved)
 
-        return self._true_id
+        return resolved
 
     def load(self):
         sid = self._sid
         memkey = "profile-" + str(sid)
 
-        profile = self._deserialized
+        profile = cache.get(memkey)
+
         if not profile:
             return self.dump()
         else:
-            self._true_id = profile["id64"]
             return profile
 
     def dump(self):
@@ -851,14 +804,12 @@ class user(object):
 
         if not prof:
             try:
-                prof = steam.user.profile(self.resolve_id())
+                prof = steam.user.profile(self.resolve_id(sid))
             except steam.user.VanityError as E:
                 raise steam.user.ProfileError(str(E))
 
         profile = self.load_from_profile(prof)
-
-        self._deserialized = profile
-        self._true_id = profile["id64"]
+        self._sid = profile["id64"]
 
         return profile
 
@@ -900,3 +851,21 @@ class recent_inventories(object):
 
         self._inv_list = lastpacks[:maxsize]
         cache.set(lastpackskey, self._inv_list)
+
+def load_inventory(sid, scope):
+    profile = user(sid).load()
+
+    try:
+        pack = inventory(profile, scope = scope).load()
+    except itemtools.ItemBackendUnimplemented:
+        pack = sim_inventory(profile, scope = scope).load()
+
+    # TODO: This is just to update the navbar if applicable, could be better
+    try:
+        sim_context(profile)._populate_navlinks()
+    except:
+        pass
+
+    recent_inventories(scope).update(profile)
+
+    return profile, pack
