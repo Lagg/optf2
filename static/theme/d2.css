@@ -1,4 +1,4 @@
-.item_cell { background-size: 102px 68px; width: 102px; height: 68px; border-radius: 0; margin: 5px; }
+.item_cell { background-size: 102px 68px; width: 102px; height: 68px; border-radius: 0; margin: 5px; border-width: 1px; }
 .slot-item { width: 107px; min-height: 73px; padding: 5px; }
 .slot-item .item_cell { margin: 0; }
 .item-image.small { width: 102px; height: 68px; border-radius: 0; }
