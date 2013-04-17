@@ -44,6 +44,6 @@ class game_root:
         web.ctx.notopsearch = True
 
         # Last packs
-        packs = database.recent_inventories()
+        packs = database.recent_inventories(scope = app)
 
         return template.template.game_root(app, (packs or []), showcase)
