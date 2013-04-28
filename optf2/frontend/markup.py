@@ -339,9 +339,11 @@ def generate_item_cell(app, item, invalid = False, show_equipped = True, user = 
     if coloroverride:
         style = 'border-color: #{0};'.format(coloroverride)
 
-    pid = item.get("pid", '')
-    if pid:
+    pid = item.get("pid")
+    if pid != None:
         pid = ",url('{0}')".format(generate_particle_icon_url(pid, app))
+    else:
+        pid = ''
 
     markup = (u'<div class="{0} cell-{1}" id="s{2}" style="background-image: url(\'{6[image]}\'){5};{4}">' +
               '<a class="item-link" href="{3}">' +
