@@ -15,8 +15,6 @@ $var description: List of all attributes for a given title, including those that
       $for attr in attribs:
         $ type = attr.get_type()
         $ valtype = attr.get_value_type()
-        $ minfval = attr.get_value_formatted(attr.get_value_min())
-        $ maxfval = attr.get_value_formatted(attr.get_value_max())
         $ name = attr.get_name()
         $ desc = attr.get_description()
         $ aid = attr.get_id()
@@ -27,7 +25,7 @@ $var description: List of all attributes for a given title, including those that
           </td>
           <td>
             $if desc:
-              $ mmstr = " {0}-{1} ".format(minfval, maxfval)
+              $ mmstr = "<{0}>".format(valtype)
               $desc.replace("\n", "\\n").replace("%s1", mmstr)
           </td>
 	  <td>
