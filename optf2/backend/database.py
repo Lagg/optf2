@@ -73,6 +73,8 @@ def dict_from_item(item, scope = 440, lang = None):
     if not item:
         return None
 
+    scope = app_aliases.get(scope, scope)
+
     default_cell_image = STATIC_PREFIX + "item_icons/Invalid_icon.png";
     newitem = dict(sid = item.schema_id)
     appid = scope
@@ -335,7 +337,7 @@ class cache(object):
 
 class assets(object):
     def __init__(self, scope = 440, lang = None):
-        self._scope = scope
+        self._scope = app_aliases.get(scope, scope)
         self._lang = verify_lang(lang)
         self._assets_cache = "assets-{0}-{1}".format(self._scope, self._lang)
         self._assets = None
@@ -368,7 +370,7 @@ class assets(object):
 
 class schema(object):
     def __init__(self, scope = 440, lang = None):
-        self._scope = scope
+        self._scope = app_aliases.get(scope, scope)
         self._lang = verify_lang(lang)
         app = self._scope
         lang = self._lang
@@ -579,7 +581,7 @@ class inventory(object):
     def __init__(self, prof, scope = 440, lang = None):
         self._user = prof
         self._lang = verify_lang(lang)
-        self._scope = scope
+        self._scope = app_aliases.get(scope, scope)
         self._deserialized = None
         self._cache_time = config.ini.getint("cache", "backpack-expiry")
         self._cache_key = "backpack-{0}-{1}".format(self._scope, self.owner)
@@ -792,7 +794,7 @@ class user(object):
 
 class recent_inventories(object):
     def __init__(self, scope = 440):
-        self._recent_packs_key = "lastpacks-" + str(scope)
+        self._recent_packs_key = "lastpacks-" + str(app_aliases.get(scope, scope))
         self._inv_list = []
 
     def __iter__(self):
@@ -831,6 +833,7 @@ class recent_inventories(object):
 
 def load_inventory(sid, scope):
     profile = user(sid).load()
+    scope = app_aliases.get(scope, scope)
 
     try:
         pack = inventory(profile, scope = scope).load()

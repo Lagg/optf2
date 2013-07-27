@@ -21,8 +21,8 @@ from os.path import join as pathjoin
 try: from collections import OrderedDict as odict
 except ImportError: odict = dict
 from urlparse import urljoin
-from optf2.backend import config
-from optf2.backend import log
+from optf2.backend import config, log
+from optf2.backend.database import app_aliases
 
 virtual_root = config.ini.get("resources", "virtual-root")
 static_prefix = config.ini.get("resources", "static-prefix")
@@ -164,6 +164,7 @@ def get_top_nav_node(path = ""):
 
 def init_theme(theme):
     theme = str(theme)
+    theme = app_aliases.get(theme, theme)
     web.ctx.setdefault("css_extra", [])
     web.ctx.css_extra.append(pathjoin(static_prefix, "theme", cssaliases.get(theme, theme) + ".css"))
     dims = get_page_sizes()
@@ -171,6 +172,7 @@ def init_theme(theme):
 
 def generate_particle_icon_url(pid, ident):
     ident = str(ident)
+    ident = app_aliases.get(ident, ident)
 
     return static_prefix + "particles/" + particles.get(ident, ident) + '/' + str(pid) + ".png"
 
@@ -426,6 +428,7 @@ def generate_class_icon_links(classes, ident, user = None, wiki_url = None):
 
 def generate_class_sprite_img(c, ident, styleextra = ""):
     ident = str(ident)
+    ident = app_aliases.get(ident, ident)
     aliasmap = {
         "520": "440",
         "205790": "570"

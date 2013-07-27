@@ -52,6 +52,7 @@ class loadout:
         return loadout, slotlist, classmap
 
     def GET(self, app, user, cid = None):
+        app = database.app_aliases.get(app, app)
         self._cid = cid
         markup.init_theme(app)
         try:
@@ -175,6 +176,7 @@ class live_item:
 
 class fetch:
     def GET(self, app, sid):
+        app = database.app_aliases.get(app, app)
         sid = sid.strip('/').split('/')
         if len(sid) > 0: sid = sid[-1]
 

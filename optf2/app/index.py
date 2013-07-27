@@ -17,6 +17,7 @@ class game_root:
             from optf2.frontend import render
             app = render.valid_modes[0]
 
+        app = database.app_aliases.get(app, app)
         user = web.input().get("user")
         profile = api.profile_search(user)
         if profile:
