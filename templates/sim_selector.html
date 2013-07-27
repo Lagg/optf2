@@ -9,7 +9,7 @@ $var description: List of $user['persona']'s inventories
 	$ctx["name"] - $ctx["asset_count"] items
       </div>
       $ appid = str(ctx['appid'])
-      $ url = markup.generate_root_url('user/{0}'.format(user['id64']), inv_app_graylist.get(appid, appid))
+      $ url = markup.generate_root_url('user/{0}'.format(user['id64']), appid)
       <a href="$url"><img src="$ctx['inventory_logo']" alt="logo"/></a><br/>
       <table style="text-align: left; margin: 0 auto 0 auto;" cellpadding="4" cellspacing="4">
 	$for id, cat in ctx["rgContexts"].iteritems():

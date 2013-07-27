@@ -36,11 +36,8 @@ def _(thestring):
 def hilo_to_ugcid64(hi, lo):
     return (int(hi) << 32) | int(lo)
 
-inv_graylist = map(operator.itemgetter(0), config.ini.items("inv-graylist"))
 virtual_root = config.ini.get("resources", "virtual-root")
-
-qualitydict = {"unique": "The",
-               "normal": ""}
+app_aliases = dict(config.ini.items("app-aliases"))
 
 memcached = pylibmc.Client([config.ini.get("cache", "memcached-address")], binary = True,
                            behaviors = {"tcp_nodelay": True,
@@ -65,50 +62,47 @@ class CacheEmptyError(CacheError):
         CacheError.__init__(self, msg)
 
 def verify_lang(code = None):
-    if not code:
-        code = web.ctx.get("language", "en_US")
-
-    try: code, name = steam.get_language(code)
-    except steam.LangErrorUnsupported: code, name = steam.get_language()
+    try:
+        code = steam.loc.language(code).code
+    except steam.loc.LangErrorUnsupported:
+        code = "en_US"
 
     return code
 
-def dict_from_item(item, scope = "tf2", lang = None):
-    if not item: return None
+def dict_from_item(item, scope = 440, lang = None):
+    if not item:
+        return None
 
     default_cell_image = STATIC_PREFIX + "item_icons/Invalid_icon.png";
-    newitem = dict(sid = item.get_schema_id())
-    appid = None
-    mod = scope
+    newitem = dict(sid = item.schema_id)
+    appid = scope
     language = verify_lang(lang)
-    try: appid = getattr(steam, mod)._APP_ID
-    except AttributeError: pass
     ugc_key = "ugc-{0}"
-    iid = item.get_id()
-    oid = item.get_original_id()
-    pos = item.get_position()
-    equipped = item.get_equipped_slots()
-    equipable = item.get_equipable_classes()
-    slot = item.get_slot()
-    caps = item.get_capabilities()
-    rank = (item.get_rank() or {}).get("name")
-    itype = item.get_type()
-    cdesc = item.get_custom_description()
-    desc = item.get_description()
-    cname = item.get_custom_name()
-    qty = item.get_quantity()
-    quality_str = item.get_quality()["str"]
-    iclass = item.get_class() or ''
+    iid = item.id
+    oid = item.original_id
+    pos = item.position
+    equipped = item.equipped
+    equipable = item.equipable_classes
+    slot = item.slot_name
+    caps = item.capabilities
+    rank = (item.rank or {}).get("name")
+    itype = item.type
+    cdesc = item.custom_description
+    desc = item.description
+    cname = item.custom_name
+    qty = item.quantity
+    quality_str = item.quality[1]
+    iclass = item.cvar_class or ''
     category = None
-    try: category = item.get_category_name()
+    try: category = item.category
     except AttributeError: pass
-    imgsmall = item.get_image(item.ITEM_IMAGE_SMALL)
-    imglarge = item.get_image(item.ITEM_IMAGE_LARGE)
-    untradable = item.is_untradable()
-    uncraftable = item.is_uncraftable()
-    styles = item.get_styles()
-    style = item.get_current_style_name()
-    origin = item.get_origin_name()
+    imgsmall = item.icon
+    imglarge = item.image
+    untradable = not item.tradable
+    uncraftable = not item.craftable
+    styles = item.available_styles
+    style = item.style
+    origin = item.origin
     gift_giver = None
 
     if iid != None: newitem["id"] = iid
@@ -126,7 +120,7 @@ def dict_from_item(item, scope = "tf2", lang = None):
     if qty > 1: newitem["qty"] = qty
     if quality_str: newitem["quality"] = quality_str
     # May need string->ID swapper
-    if equipable: newitem["equipable"] = [itemtools.get_class_for_id(c, mod)[0] for c in equipable]
+    if equipable: newitem["equipable"] = [itemtools.get_class_for_id(c, appid)[0] for c in equipable]
     # Certain items will be part of a category system, this is used for advanced paging
     if category: newitem["cat"] = category
     newitem["image"] = imgsmall or default_cell_image
@@ -144,16 +138,16 @@ def dict_from_item(item, scope = "tf2", lang = None):
     custom_texture_lo = None
     custom_texture_hi = None
 
-    attrs = item.get_attributes()
+    attrs = item.attributes
     try:
-        namecolor = item.get_name_color()
+        namecolor = item.name_color
         if namecolor:
             newitem["namergb"] = namecolor
     except AttributeError: pass
-    min_level = item.get_min_level()
-    max_level = item.get_max_level()
-    pb_level = item.get_level()
-    giftcontents = item.get_contents()
+    min_level = item.min_level
+    max_level = item.max_level
+    pb_level = item.level
+    giftcontents = item.contents
     contents_line_rendered = False
 
     if pb_level != None:
@@ -166,18 +160,17 @@ def dict_from_item(item, scope = "tf2", lang = None):
 
     # Ordered kill eater attribute lines
     linefmt = u"{0[1]}: {0[2]}"
-    eaters = item.get_kill_eaters()
+    eaters = item.kill_eaters
     if eaters: newitem["eaters"] = map(linefmt.format, eaters)
 
     for theattr in attrs:
-        attrname = theattr.get_name()
-        attrid = theattr.get_id()
-        attrvaluetype = theattr.get_value_type()
-        attrdesc = theattr.get_description_formatted()
-        attrvalue = theattr.get_value_formatted()
-        newattr = dict(id = attrid, val = attrvalue,
-                       type = theattr.get_type())
-        account_info = theattr.get_account_info()
+        attrname = theattr.name
+        attrid = theattr.id
+        attrvaluetype = theattr.value_type
+        attrdesc = theattr.formatted_description
+        attrvalue = theattr.formatted_value
+        newattr = {"id": attrid, "val": attrvalue, "type": theattr.type}
+        account_info = theattr.account_info
         if account_info:
             if attrname == "gifter account id":
                 gift_giver = account_info
@@ -185,26 +178,26 @@ def dict_from_item(item, scope = "tf2", lang = None):
 
             newitem.setdefault("accounts", {})
             newitem["accounts"][attrid] = account_info
-        filtered = theattr.is_hidden()
+        filtered = theattr.hidden
 
         # referenced item def
         if not contents_line_rendered and (attrid == 194 or attrid == 192 or attrid == 193):
             desc = "Contains: "
             if not giftcontents:
-                giftcontents = int(theattr.get_value())
+                giftcontents = int(theattr.value)
                 desc += "Schema item " + str(giftcontents)
             else:
-                desc += '<span class="prefix-{0}">{1}</span>'.format(giftcontents.get_quality()["str"],
-                                                                     web.websafe(giftcontents.get_full_item_name(prefixes = qualitydict)))
+                desc += '<span class="prefix-{0}">{1}</span>'.format(giftcontents.quality[1],
+                                                                     web.websafe(giftcontents.full_name.decode("utf-8")))
             attrdesc = desc
             filtered = False
             contents_line_rendered = True
 
         elif attrname.startswith("set item tint RGB"):
-            raw_rgb = int(theattr.get_value())
+            raw_rgb = int(theattr.value)
             newitem.setdefault("colors", [])
             nthcolor = attrname[attrname.rfind(' ') + 1:]
-            paint_map = cache.get(str("paints-" + mod + '-' + language), {})
+            paint_map = cache.get("paints-{0}-{1}".format(appid, language), {})
 
             try: colori = int(nthcolor)
             except ValueError: colori = 0
@@ -241,8 +234,8 @@ def dict_from_item(item, scope = "tf2", lang = None):
             filtered = True
 
         elif attrname.startswith("attach particle effect"):
-            particle_map = cache.get(str("particles-" + mod + '-' + language), {})
-            particleid = int(theattr.get_value())
+            particle_map = cache.get("particles-{0}-{1}".format(appid, language), {})
+            particleid = int(theattr.value)
             default = "unknown particle ({0})".format(particleid)
             pname = particle_map.get(particleid, default)
 
@@ -250,7 +243,7 @@ def dict_from_item(item, scope = "tf2", lang = None):
             attrdesc = "Effect: " + pname
 
         elif attrname == "unique craft index":
-            value = int(theattr.get_value())
+            value = int(theattr.value)
             newitem["craftno"] = value
             attrdesc = "Craft number: " + str(value)
             filtered = False
@@ -259,16 +252,16 @@ def dict_from_item(item, scope = "tf2", lang = None):
             filtered = False
 
         elif attrname == "set supply crate series":
-            newitem["series"] = int(theattr.get_value())
+            newitem["series"] = int(theattr.value)
 
         elif attrname == "custom texture lo":
-            custom_texture_lo = theattr.get_value()
+            custom_texture_lo = theattr.value
 
         elif attrname == "custom texture hi":
-            custom_texture_hi = theattr.get_value()
+            custom_texture_hi = theattr.value
 
         if attrvaluetype == "account_id" and account_info:
-            attrdesc = _(theattr.get_description().replace("%s1", account_info["persona"]))
+            attrdesc = _(theattr.description.replace("%s1", account_info["persona"]))
             filtered = False
 
         if not filtered:
@@ -277,7 +270,7 @@ def dict_from_item(item, scope = "tf2", lang = None):
             continue
 
         try:
-            attrcolor = theattr.get_description_color()
+            attrcolor = theattr.description_color
             if attrcolor: newattr["color"] = attrcolor
         except AttributeError: pass
 
@@ -297,17 +290,14 @@ def dict_from_item(item, scope = "tf2", lang = None):
                 memkey = ugc_key.format(str(ugcid))
                 url = cache.get(memkey)
                 if not url:
-                    url = steam.remote_storage.user_ugc(appid, ugcid).get_url()
+                    url = steam.remote_storage.ugc_file(appid, ugcid).url
                     cache.set(memkey, url)
                 newitem["texture"] = url
         except steam.remote_storage.UGCError:
             pass
 
-    normal_item_name = web.websafe(item.get_full_item_name(prefixes = qualitydict))
-    possessive_item_name = web.websafe(item.get_full_item_name({"normal": None, "unique": None}))
-    basename = item.get_name()
-
-    newitem["ownedname"] = _(possessive_item_name)
+    normal_item_name = web.websafe(item.full_name)
+    basename = item.name
 
     newitem["mainname"] = _(normal_item_name).decode("utf-8")
 
@@ -344,25 +334,17 @@ class cache(object):
             log.main.error(str(key) + ": " + str(E))
 
 class assets(object):
-    def __init__(self, scope = "tf2", lang = None):
+    def __init__(self, scope = 440, lang = None):
         self._scope = scope
         self._lang = verify_lang(lang)
         self._assets_cache = "assets-{0}-{1}".format(self._scope, self._lang)
         self._assets = None
 
     def dump(self):
-        try:
-            mod = getattr(steam, self._scope)
-            assetlist = mod.assets(lang = self._lang)
-        except AttributeError:
-            try:
-                appid = mod._APP_ID
-                assetlist = steam.items.assets(appid, lang = self._lang)
-            except:
-                return None
+        assetlist = steam.items.assets(self._scope, lang = self._lang)
 
         try:
-            self._assets = dict([(int(asset.get_name()), asset.get_price())
+            self._assets = dict([(int(asset.name), asset.price)
                                  for asset in assetlist])
 
             cache.set(self._assets_cache, self._assets)
@@ -385,7 +367,7 @@ class assets(object):
         return self.load()
 
 class schema(object):
-    def __init__(self, scope = "tf2", lang = None):
+    def __init__(self, scope = 440, lang = None):
         self._scope = scope
         self._lang = verify_lang(lang)
         app = self._scope
@@ -403,16 +385,16 @@ class schema(object):
     def _build_client_schema_specials(self):
         schema = self.load()
 
-        cs = schema.get_client_schema_url()
+        cs = schema.client_url
         special = {}
 
         if not cs:
             return special
 
-        req = steam.http_request(str(cs), timeout = STEAM_TIMEOUT)
+        req = steam.api.http_downloader(str(cs), timeout = STEAM_TIMEOUT)
 
         try:
-            clients = steam.vdf.loads(req._download())["items_game"]
+            clients = steam.vdf.loads(req.download())["items_game"]
         except:
             return special
 
@@ -421,7 +403,7 @@ class schema(object):
         csitems = clients.get("items", {})
 
         for sitem in schema:
-            sid = sitem.get_schema_id()
+            sid = sitem.schema_id
             item = csitems.get(str(sid))
             clientstuff = {}
 
@@ -443,11 +425,11 @@ class schema(object):
                 clientstuff["rarity_color"] = tpl
 
             slot = item.get("item_slot")
-            if slot and not sitem.get_slot():
+            if slot and not sitem.slot_name:
                 clientstuff["slot"] = slot
 
             usedby = item.get("used_by_heroes", item.get("used_by_classes", {}))
-            if usedby and not sitem.get_equipable_classes():
+            if usedby and not sitem.equipable_classes:
                 clientstuff["used_by"] = usedby.keys()
 
             if clientstuff:
@@ -474,7 +456,7 @@ class schema(object):
 
         sitems = {}
         for item in (schema or []):
-            sitems[item.get_schema_id()] = dict_from_item(item, self._scope, self._lang)
+            sitems[item.schema_id] = dict_from_item(item, self._scope, self._lang)
 
         if sitems:
             json.dump(sitems, open(os.path.join(self._cdir, self._items_cache), "wb"))
@@ -489,10 +471,12 @@ class schema(object):
 
         pmap = {}
         for item in schema:
-            if item._schema_item.get("name", "").find("Paint") != -1:
+            # Look at tool metadata to determine if this is a paint can
+            metadata = item.tool_metadata
+            if metadata and metadata.get("type") == "paint_can":
                 for attr in item:
-                    if attr.get_name().startswith("set item tint RGB"):
-                        pmap[int(attr.get_value())] = item.get_name()
+                    if attr.name.startswith("set item tint RGB"):
+                        pmap[int(attr.value)] = item.name
         cache.set(str(self._paints_key), pmap)
 
         return pmap
@@ -503,7 +487,7 @@ class schema(object):
         else:
             schema = self._schema
 
-        particles = schema.get_particle_systems()
+        particles = schema.particle_systems
         pmap = dict([(k, v["name"]) for k, v in particles.iteritems()])
         cache.set(str(self._particle_key), pmap)
 
@@ -515,18 +499,14 @@ class schema(object):
         else:
             schema = self._schema
 
-        qualities = schema.get_qualities() or {}
-        qmap = dict([(q["str"], q["prettystr"]) for q in qualities.values()])
+        qualities = schema.qualities or {}
+        qmap = dict([(strn, locn) for id, strn, locn in qualities.values()])
         cache.set(self._quality_key, qmap)
 
         return qmap
 
     def dump(self):
-        try:
-            schema = getattr(steam, str(self._scope)).item_schema(lang = self._lang, timeout = STEAM_TIMEOUT)
-        except AttributeError:
-            schema = steam.items.schema(self._scope, lang = self._lang, timeout = STEAM_TIMEOUT)
-
+        schema = steam.items.schema(self._scope, lang = self._lang, timeout = STEAM_TIMEOUT)
         self._schema = schema
 
         try:
@@ -534,7 +514,7 @@ class schema(object):
             self._build_particle_store()
             self._build_quality_store()
             self._build_item_store()
-        except steam.HttpError:
+        except steam.api.HTTPError:
             self._schema = None
             schema = None
         except Exception as E:
@@ -562,11 +542,11 @@ class schema(object):
 
     @property
     def attributes(self):
-        return self.load().get_attributes()
+        return self.load().attributes
 
     @property
     def particle_systems(self):
-        return self.load().get_particle_systems()
+        return self.load().particle_systems
 
     @property
     def paints(self):
@@ -596,7 +576,7 @@ class schema(object):
         return q
 
 class inventory(object):
-    def __init__(self, prof, scope = "tf2", lang = None):
+    def __init__(self, prof, scope = 440, lang = None):
         self._user = prof
         self._lang = verify_lang(lang)
         self._scope = scope
@@ -608,27 +588,21 @@ class inventory(object):
         cache.set(self._cache_key, inventory, time = self._cache_time)
 
     @staticmethod
-    def build_processed(inv, scope = "tf2", lang = None):
+    def build_processed(inv, scope = 440, lang = None):
         lang = verify_lang(lang)
         pack = {"items": {},
-                "cells": inv.get_total_cells()}
+                "cells": inv.cells_total}
 
         for item in inv:
             pitem = dict_from_item(item, scope, lang)
-            pack["items"][item.get_id()] = pitem
+            pack["items"][item.id] = pitem
 
         return pack
 
     def dump(self):
         owner = self.owner
-        bp = None
-
-        try:
-            pack_class = getattr(steam, self._scope).backpack
-            item_schema = schema(self._scope, self._lang).load()
-            bp = pack_class(owner, schema = item_schema, timeout = STEAM_TIMEOUT)
-        except AttributeError:
-            raise itemtools.ItemBackendUnimplemented(self._scope)
+        item_schema = schema(self._scope, self._lang).load()
+        bp = steam.items.inventory(self._scope, owner, schema = item_schema, timeout = STEAM_TIMEOUT)
 
         inventory = self.build_processed(bp, self._scope, self._lang)
 
@@ -684,13 +658,12 @@ class sim_context(object):
             web.ctx.navlinks = [
                         (c["name"], "{0}{1[appid]}/user/{2}".format(virtual_root, c, self._user))
                         for c in (context or [])
-                        if str(c["appid"]) not in inv_graylist
                     ]
         except:
             pass
 
     def dump(self):
-        context = list(steam.sim.backpack_context(self._user, timeout = STEAM_TIMEOUT))
+        context = list(steam.sim.inventory_context(self._user, timeout = STEAM_TIMEOUT))
         cache.set(self._cache_key, context, time = self._cache_lifetime)
 
         return context
@@ -706,7 +679,7 @@ class sim_context(object):
 
 class sim_inventory(inventory):
     """ Inventories sourced from the steam inventory manager """
-    def __init__(self, user_or_id, scope = "tf2"):
+    def __init__(self, user_or_id, scope = 440):
         self._context = None
 
         if isinstance(user_or_id, sim_context):
@@ -729,12 +702,12 @@ class sim_inventory(inventory):
                 break
 
         if not appctx:
-            raise steam.items.BackpackError("Can't find inventory for SIM:" + str(mid) + " in this backpack.")
+            raise steam.items.InventoryError("Can't find inventory for SIM:" + str(mid) + " in this backpack.")
 
         try:
-            inv = steam.sim.backpack(self.owner, appctx, timeout = STEAM_TIMEOUT)
+            inv = steam.sim.inventory(appctx, self.owner, timeout = STEAM_TIMEOUT)
         except:
-            raise steam.items.BackpackError("SIM inventory not found or unavailable")
+            raise steam.items.InventoryError("SIM inventory not found or unavailable")
 
         output = self.build_processed(inv, self._scope, self._lang)
 
@@ -750,15 +723,19 @@ class user(object):
 
     @staticmethod
     def load_from_profile(prof):
-        game = prof.get_current_game()
-        profile = {"id64": prof.get_id64(),
-                   "realname": prof.get_real_name(),
-                   "persona": prof.get_persona(),
-                   "avatarurl": prof.get_avatar_url(prof.AVATAR_MEDIUM),
-                   "status": prof.get_status(),
-                   "group": prof.get_primary_group()}
-        if prof.get_visibility() != 3: profile["private"] = True
-        if game: profile["game"] = (game.get("id"), game.get("extra"), game.get("server"))
+        profile = {"id64": prof.id64,
+                   "realname": prof.real_name,
+                   "persona": prof.persona,
+                   "avatarurl": prof.avatar_medium,
+                   "status": prof.status,
+                   "group": prof.primary_group}
+
+        if prof.visibility != 3:
+            profile["private"] = True
+
+        # If app ID is set
+        if prof.current_game[0]:
+            profile["game"] = prof.current_game
 
         memkey = "profile-{0[id64]}".format(profile)
         cache.set(memkey, profile, time = config.ini.getint("cache", "profile-expiry"))
@@ -776,7 +753,7 @@ class user(object):
         resolved = cache.get(vanitykey)
         if not resolved:
             vanity = steam.user.vanity_url(id)
-            resolved = vanity.get_id64()
+            resolved = vanity.id64
             cache.set(vanitykey, resolved)
 
         return resolved
@@ -814,7 +791,7 @@ class user(object):
         return profile
 
 class recent_inventories(object):
-    def __init__(self, scope = "tf2"):
+    def __init__(self, scope = 440):
         self._recent_packs_key = "lastpacks-" + str(scope)
         self._inv_list = []
 

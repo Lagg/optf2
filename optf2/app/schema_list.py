@@ -61,7 +61,7 @@ class items:
 
         sorter = itemtools.sorting(items)
         try:
-            items = sorter.sort(query["sort"])
+            items = sorter.sort(query.get("sort", "SchemaID"))
         except KeyError:
             pass
 
@@ -95,14 +95,14 @@ class attributes:
             attached_items = []
 
             for attr in attribs:
-                if str(attr.get_id()) == attachment_check:
+                if str(attr.id) == attachment_check:
                     attribute = attr
                     break
             if not attribute:
                 raise web.NotFound(error_page.generic(attachment_check + ": No such attribute"))
 
             for item in schema.processed_items.values():
-                if attr.get_id() in map(operator.itemgetter("id"), item.get("attrs", [])):
+                if attr.id in map(operator.itemgetter("id"), item.get("attrs", [])):
                     attached_items.append(item)
 
             return templates.attribute_attachments(app, attached_items, attribute)

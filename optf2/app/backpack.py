@@ -77,11 +77,11 @@ class loadout:
             equippeditems, slotlist, classmap = self.build_loadout(items, equippeditems, slotlist, classmap)
 
             return templates.loadout(app, userp, equippeditems, sorted(classmap), self._slots_sorted + sorted(slotlist), cid)
-        except steam.items.Error as E:
+        except steam.items.InventoryError as E:
             raise web.NotFound(error_page.generic("Backpack error: {0}".format(E)))
         except steam.user.ProfileError as E:
             raise web.NotFound(error_page.generic("Profile error: {0}".format(E)))
-        except steam.base.HttpError as E:
+        except steam.api.HTTPError as E:
             raise web.NotFound(error_page.generic("Couldn't connect to Steam (HTTP {0})".format(E)))
         except itemtools.ItemBackendUnimplemented:
             raise web.NotFound(error_page.generic("No backend found to handle loadouts for these items"))
@@ -105,9 +105,9 @@ class item:
                 contents = item.get("contents")
                 if contents:
                     item = contents
-        except steam.base.HttpError as E:
+        except steam.api.HTTPError as E:
             raise web.NotFound(error_page.generic("Couldn't connect to Steam (HTTP {0})".format(E)))
-        except steam.items.Error as E:
+        except steam.items.SchemaError as E:
             raise web.NotFound(error_page.generic("Couldn't open schema: {0}".format(E)))
         except KeyError:
             raise web.NotFound(templates.item_error_notfound(iid))
@@ -124,6 +124,13 @@ class item:
         except database.CacheEmptyError:
             price = None
 
+        # Strip off quality prefix for possessive name
+        itemname = item["mainname"]
+        if itemname.startswith("The "):
+            item["ownedname"] = itemname[4:]
+        else:
+            item["ownedname"] = itemname
+
         return templates.item(app, user, item, price = price, caps = caps)
 
 class live_item:
@@ -133,11 +140,11 @@ class live_item:
 
         try:
             user, items = database.load_inventory(user, scope = app)
-        except steam.base.HttpError as E:
+        except steam.api.HTTPError as E:
             raise web.NotFound(error_page.generic("Couldn't connect to Steam (HTTP {0})".format(E)))
         except steam.user.ProfileError as E:
             raise web.NotFound(error_page.generic("Can't retrieve user profile data: {0}".format(E)))
-        except steam.items.Error as E:
+        except steam.items.InventoryError as E:
             raise web.NotFound(error_page.generic("Couldn't open backpack: {0}".format(E)))
 
         item = None
@@ -156,6 +163,13 @@ class live_item:
             contents = item.get("contents")
             if contents:
                 item = contents
+
+        # Strip off quality prefix for possessive name
+        itemname = item["mainname"]
+        if itemname.startswith("The "):
+            item["ownedname"] = itemname[4:]
+        else:
+            item["ownedname"] = itemname
 
         return templates.item(app, user, item)
 
@@ -213,11 +227,11 @@ class fetch:
 
             price_stats = itemtools.get_price_stats(sorted_items, database.assets(scope = app))
 
-        except steam.items.Error as E:
+        except steam.items.InventoryError as E:
             raise web.NotFound(error_page.generic("Failed to load backpack ({0})".format(E)))
         except steam.user.ProfileError as E:
             raise web.NotFound(error_page.generic("Failed to load profile ({0})".format(E)))
-        except steam.base.HttpError as E:
+        except steam.api.HTTPError as E:
             raise web.NotFound(error_page.generic("Couldn't connect to Steam (HTTP {0})".format(E)))
         except database.CacheEmptyError as E:
             raise web.NotFound(error_page.generic(E))
@@ -246,7 +260,7 @@ class feed:
             web.header("Content-Type", "application/rss+xml")
             return renderer.inventory_feed(app, user, items)
 
-        except (steam.user.ProfileError, steam.items.Error, steam.base.HttpError) as E:
+        except (steam.user.ProfileError, steam.items.InventoryError, steam.api.HTTPError) as E:
             raise rssNotFound()
         except Exception as E:
             log.main.error(str(E))

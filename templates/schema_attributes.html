@@ -13,11 +13,11 @@ $var description: List of all attributes for a given title, including those that
     </thead>
     <tbody>
       $for attr in attribs:
-        $ type = attr.get_type()
-        $ valtype = attr.get_value_type()
-        $ name = attr.get_name()
-        $ desc = attr.get_description()
-        $ aid = attr.get_id()
+        $ type = attr.type
+        $ valtype = attr.value_type
+        $ name = attr.name
+        $ desc = attr.description
+        $ aid = attr.id
         <tr class="row-$loop.parity">
           <td>$aid</td>
           <td>
@@ -29,11 +29,11 @@ $var description: List of all attributes for a given title, including those that
               $desc.replace("\n", "\\n").replace("%s1", mmstr)
           </td>
 	  <td>
-	    $if attr.is_hidden(): Yes
+	    $if attr.hidden: Yes
 	    $else: No
 	  </td>
           <td>$valtype</td>
-          <td>$attr.get_class()</td>
+          <td>$attr.cvar_class</td>
 	</tr>
     </tbody>
   </table>

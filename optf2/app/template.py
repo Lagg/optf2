@@ -9,8 +9,6 @@ wikimap = {}
 for mode, wiki in config.items("wiki"):
     wikimap[mode] = map(str.strip, wiki.split(':', 1))
 
-inv_graylist = dict(config.items("inv-graylist"))
-
 # Using this from web.template, don't want to import entire __builtin__
 # module (i.e. eval) so this will do
 TEMPLATE_BUILTIN_NAMES = [
@@ -40,8 +38,7 @@ globals = {"virtual_root": config.get("resources", "virtual-root"),
            "pagesizes": markuptools.get_page_sizes(),
            "json_dump": json.dumps,
            "json_load": json.loads,
-           "f2p_check": config.getlist("misc", "f2p-check-modes"),
-           "inv_app_graylist": inv_graylist
+           "f2p_check": config.getlist("misc", "f2p-check-modes")
            }
 
 template = web.template.render(config.get("resources", "template-dir"), base = "base",

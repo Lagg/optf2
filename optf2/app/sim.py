@@ -15,18 +15,18 @@ class selector:
         if len(baseurl) > 0:
             user = baseurl[-1]
 
-        if not user: raise steam.items.BackpackError("Need an ID")
+        if not user: raise steam.items.InventoryError("Need an ID")
 
         try:
             prof = database.user(user).load()
             ctx = database.sim_context(prof).load()
 
             return templates.sim_selector(prof, ctx)
-        except steam.items.Error as E:
+        except steam.items.InventoryError as E:
             raise web.NotFound(error_page.generic("Failed to load backpack ({0})".format(E)))
         except steam.user.ProfileError as E:
             raise web.NotFound(error_page.generic("Failed to load profile ({0})".format(E)))
-        except steam.base.HttpError as E:
+        except steam.api.HTTPError as E:
             raise web.NotFound(error_page.generic("Couldn't connect to Steam (HTTP {0})".format(E)))
         except database.CacheEmptyError as E:
             raise web.NotFound(error_page.generic(E))

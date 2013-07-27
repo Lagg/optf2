@@ -26,7 +26,7 @@ except IndexError:
 import steam
 from optf2.backend import database, config
 
-steam.set_api_key(config.ini.get("steam", "api-key"))
+steam.api.key.set(config.ini.get("steam", "api-key"))
 
 class DumpThread(threading.Thread):
     def __init__(self, scope, language):

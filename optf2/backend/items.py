@@ -18,7 +18,6 @@ import web
 import re
 import time
 import operator
-import steam
 from optf2.frontend.markup import get_class_for_id
 from optf2.backend import config
 from optf2.backend import log

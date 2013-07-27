@@ -89,10 +89,9 @@ class search_page_parser(HTMLParser):
 
         HTMLParser.__init__(self)
 
-        req = steam.json_request(search_url, timeout = config.ini.getint("steam", "connect-timeout"),
-                                 data_timeout = config.ini.getint("steam", "download-timeout"))
+        req = steam.api.http_downloader(search_url, timeout = config.ini.getint("steam", "connect-timeout"))
 
-        self.feed(req._download())
+        self.feed(req.download())
 
 class group_member_page_parser(HTMLParser):
     _member_count_exp = re.compile("[\d,]+ - [\d,]+ of ([\d,]+) Members")
@@ -180,10 +179,9 @@ class group_member_page_parser(HTMLParser):
 
         HTMLParser.__init__(self)
 
-        req = steam.json_request(url, timeout = config.ini.getint("steam", "connect-timeout"),
-                                 data_timeout = config.ini.getint("steam", "download-timeout"))
+        req = steam.api.http_downloader(url, timeout = config.ini.getint("steam", "connect-timeout"))
 
-        data = req._download()
+        data = req.download()
         self.feed(data)
 
 def profile_search(user, greedy = False):

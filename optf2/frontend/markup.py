@@ -28,7 +28,6 @@ virtual_root = config.ini.get("resources", "virtual-root")
 static_prefix = config.ini.get("resources", "static-prefix")
 particles = dict(config.ini.items("particle-modes"))
 cssaliases = dict(config.ini.items("css-aliases"))
-appaliases = dict(config.ini.items("inv-graylist"))
 # TODO: Add exp for single tags like br
 htmldesc = re.compile("<(?P<tag>.+) ?.*>.+</(?P=tag)>")
 
@@ -57,7 +56,7 @@ capabilitydict = {"can_gift_wrap": "Gift wrappable",
                   "paintable_unusual": "Allows Unusual paints"}
 
 classoverrides = {
-    "tf2": odict([
+    "440": odict([
             (1, "Scout"),
             (3, "Soldier"),
             (7, "Pyro"),
@@ -68,23 +67,24 @@ classoverrides = {
             (2, "Sniper"),
             (8, "Spy")
             ]),
-    "p2": odict([
+    "620": odict([
             (1, "P-body"),
             (2, "Atlas")
             ]),
-    "d2": {
+    "570": {
         1000: "Multi-hero"
         }
     }
 overridealiases = {
-    "tf2b": "tf2",
-    "d2b": "d2"
+    "520": "440",
+    "205790": "570"
 }
 reverrides = {}
 for k, v in classoverrides.iteritems(): reverrides[k + "_swap"] = dict(zip(v.values(), v.keys()))
 classoverrides.update(reverrides)
 
 def get_class_for_id(cid, ident):
+    ident = str(ident)
     overrides, swapped_overrides = get_class_overrides(ident)
     try: realcid = int(cid)
     except ValueError: realcid = str(cid)
@@ -99,6 +99,7 @@ def get_class_for_id(cid, ident):
         return (realcid, cid)
 
 def get_class_overrides(ident):
+    ident = str(ident)
     ident = overridealiases.get(ident, ident)
 
     if ident not in classoverrides: return {}, {}
@@ -162,15 +163,16 @@ def get_top_nav_node(path = ""):
     else: return None
 
 def init_theme(theme):
+    theme = str(theme)
     web.ctx.setdefault("css_extra", [])
     web.ctx.css_extra.append(pathjoin(static_prefix, "theme", cssaliases.get(theme, theme) + ".css"))
     dims = get_page_sizes()
     web.ctx._cvars["cellsPerRow"] = dims.get(theme, dims["default"])["width"]
 
 def generate_particle_icon_url(pid, ident):
-    ident = particles.get(ident, ident)
+    ident = str(ident)
 
-    return static_prefix + ident + "_particle_icons/" + str(pid) + ".png"
+    return static_prefix + "particles/" + particles.get(ident, ident) + '/' + str(pid) + ".png"
 
 def generate_item_description(item):
     desc = item.get("desc", '')
@@ -423,16 +425,16 @@ def generate_class_icon_links(classes, ident, user = None, wiki_url = None):
     return markup
 
 def generate_class_sprite_img(c, ident, styleextra = ""):
+    ident = str(ident)
     aliasmap = {
-        "tf2b": "tf2",
-        "d2b": "d2"
+        "520": "440",
+        "205790": "570"
         }
     sheetwidth = 512
     spritesize = 16
 
     try:
-        appscope = appaliases.get(ident, ident)
-        ident = aliasmap.get(appscope, appscope)
+        ident = aliasmap.get(ident, ident)
         spriteindex, name = get_class_for_id(c, ident)
 
         spriteindex *= spritesize
@@ -440,7 +442,7 @@ def generate_class_sprite_img(c, ident, styleextra = ""):
         row *= spritesize
         column = x
 
-        style = "background: url('{0}') -{1}px -{2}px;".format(static_prefix + ident + "_class_icons.png", column, row)
+        style = "background: url('{0}') -{1}px -{2}px;".format(static_prefix + "class_icons/" + ident + ".png", column, row)
     except (ValueError, KeyError):
         style = ''
     except Exception as E:

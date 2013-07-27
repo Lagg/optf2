@@ -29,7 +29,7 @@ from optf2.frontend import render
 
 # Configuration specific initialization
 
-steam.set_api_key(config.ini.get("steam", "api-key"))
+steam.api.key.set(config.ini.get("steam", "api-key"))
 
 web.config.debug = config.ini.getboolean("cgi", "web-debug-mode")
 
