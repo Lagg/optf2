@@ -37,6 +37,7 @@ def hilo_to_ugcid64(hi, lo):
     return (int(hi) << 32) | int(lo)
 
 virtual_root = config.ini.get("resources", "virtual-root")
+app_modes = dict(config.ini.items("modes"))
 app_aliases = dict(config.ini.items("app-aliases"))
 
 memcached = pylibmc.Client([config.ini.get("cache", "memcached-address")], binary = True,
@@ -659,7 +660,7 @@ class sim_context(object):
             context = cache.get(self._cache_key)
             web.ctx.navlinks = [
                         (c["name"], "{0}{1[appid]}/user/{2}".format(virtual_root, c, self._user))
-                        for c in (context or [])
+                        for c in (context or []) if str(c["appid"]) not in app_modes
                     ]
         except:
             pass
