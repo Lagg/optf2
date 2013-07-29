@@ -354,4 +354,8 @@ tr.row-even { background-color: #1c1c1c; }
 #group-badge .logo { position: absolute; right: 10px; top: 10px; width: 32px; height: 32px; }
 #group-badge .member-count, #group-badge .member-list { margin-top: 1em; }
 
+.credits-table { margin: 0 auto 0 auto; width: 500px; }
+.credits-table thead th { padding: 4em; }
+.credits-table tbody td, .credits-table tbody th { padding: 0.5em; width: 50%; font-size: 2em; }
+
 .ui-icon.ui-icon-loading { background-image: url(../loading.gif); }
