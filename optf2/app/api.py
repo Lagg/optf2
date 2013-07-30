@@ -200,6 +200,7 @@ def profile_search(user, greedy = False):
     try:
         prof = database.user(user).load()
         prof["exact"] = True
+        prof["id64"] = str(prof["id64"])
         resultlist.append(prof)
         if not greedy:
             return resultlist

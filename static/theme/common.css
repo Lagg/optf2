@@ -63,7 +63,7 @@ a:visited { text-decoration: none; }
 .prefix-vintage { color: #476291; }
 .prefix-rarity4, .prefix-unusual, .prefix-tournament { color: #8650ac; }
 .prefix-haunted { color: #38f3ab; }
-.prefix-rarity1 { color: #4d7455; }
+.prefix-rarity1, .prefix-genuine { color: #4d7455; }
 .prefix-strange { color: #cf6a32; }
 .prefix-giftwrapped { color: #cf2700; }
 
@@ -96,7 +96,7 @@ a:visited { text-decoration: none; }
 .cell-vintage { border-color: #476291; }
 .cell-rarity4, .cell-unusual, .cell-tournament { border-color: #8650ac; }
 .cell-haunted { border-color: #38f3ab; }
-.cell-rarity1 { border-color: #4d7455; }
+.cell-rarity1, .cell-genuine { border-color: #4d7455; }
 .cell-strange { border-color: #cf6a32; }
 
 .icon-particle { position: absolute; left: 0; top: 0; width: 100%; height: 100%; z-index: -100; }
