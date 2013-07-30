@@ -1,10 +1,12 @@
 $def with (content)
 $ defaultdesc = "View backpacks and inventories of your favorite games including Portal 2, Team Fortress 2, and DOTA 2! Find and inspect unique items and their attributes, explore advanced and hidden Steam data, and much, much more with " + project_name + ": The Grand Unified Steam Information Dumper"
+$ title = project_name
+$if "title" in content: $ title += " - " + content.title
 <?xml version="1.0" encoding="utf-8"?>
 <!DOCTYPE html>
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
-    <title>$project_name - $:content.title</title>
+    <title>$title</title>
     <meta name="description" content="$:content.get('description', defaultdesc)"/>
     <link rel="shortcut icon" type="image/png" href="${static_prefix}optf2_icon.png"/>
     $for title, url in instance.get("rss_feeds", []):

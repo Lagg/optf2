@@ -15,7 +15,7 @@ class game_root:
         # Until dedicated main homepage is done
         if not app:
             from optf2.frontend import render
-            app = render.valid_modes[0]
+            app = random.choice(render.valid_modes)
 
         app = database.app_aliases.get(app, app)
         user = web.input().get("user")

@@ -1,12 +1,10 @@
 $def with (mod, packs = [], showcase_item = None)
-$ game_label = game_modes.get(mod, "Main")
-$var title: $game_label
 $var js_extra: ${static_prefix}js/profilesearch.js ${static_prefix}js/groupbadge.js
 <div id="header"><img id="logo" src="${static_prefix}logo.png" alt="Logo"/></div>
 
 <div id="content">
   <div class="box" style="width: 500px; margin: 0 auto 0 auto;">
-    <div class="titlebar">$project_name - $game_label</div>
+    <div class="titlebar">$project_name - The Grand Unified Steam Information Dumper</div>
     <form method="get" id="rp-form" action="$markup.generate_root_url(subroot = 'inv')">
       <fieldset>
 	<input type="text" id="rp-input" name="user"/>
@@ -29,10 +27,10 @@ $var js_extra: ${static_prefix}js/profilesearch.js ${static_prefix}js/groupbadge
       </div>
   $if packs:
       <div class="box" style="width: 220px; position: absolute; right: 0;">
-	<div class="titlebar">Recent backpacks</div>
+	<div class="titlebar">Recent inventories</div>
 	<table class="recent-inv">
 	  $for p in packs:
-              <tr><td><img src="$p['avatar']" alt="a" width="16" height="16"/></td><td><a href="$markup.generate_root_url('user/{0}'.format(p['id']), mod)">$p["persona"]</a></td></tr>
+              <tr><td><img src="$p['avatar']" alt="a" width="16" height="16"/></td><td><a href="$markup.generate_root_url('user/{0}'.format(p['id']), p['app'])">$p["persona"]</a></td></tr>
 	</table>
       </div>
   </div>

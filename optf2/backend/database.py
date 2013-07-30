@@ -795,7 +795,8 @@ class user(object):
 
 class recent_inventories(object):
     def __init__(self, scope = 440):
-        self._recent_packs_key = "lastpacks-" + str(app_aliases.get(scope, scope))
+        self._recent_packs_key = "recent-inventories"
+        self._scope = app_aliases.get(scope, scope)
         self._inv_list = []
 
     def __iter__(self):
@@ -826,8 +827,8 @@ class recent_inventories(object):
                 lastpacks.remove(p)
                 break
 
-        lastpacks.insert(0, dict(id = id64, persona = userp["persona"],
-                                 avatar = userp["avatarurl"]))
+        lastpacks.insert(0, {"id": id64, "persona": userp["persona"],
+                             "avatar": userp["avatarurl"], "app": self._scope})
 
         self._inv_list = lastpacks[:maxsize]
         cache.set(lastpackskey, self._inv_list)
