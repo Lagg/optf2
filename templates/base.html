@@ -49,7 +49,7 @@ $if "title" in content: $ title += " - " + content.title
           $ extra = None
 	  $if instance.path.startswith(url): $ extra = ' class="focused"'
           <li$:extra><a href="$url">$label</a></li>
-      <li><a href="${virtual_root}about">Credits</a></li>
+      <li><a href="${virtual_root}about">About</a></li>
     </ul>
     $ motd = instance.get("motd")
     $if motd: <div class="motd">$:motd</div>
