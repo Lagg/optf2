@@ -153,15 +153,6 @@ def set_navlink(path = "", override = False):
     except:
         pass
 
-def get_top_nav_node(path = ""):
-    """ Returns the top of a given path or web.ctx.path """
-
-    path = (path or web.ctx.path)
-    nodes = path[path.find(virtual_root) + 1:].strip('/').split('/')
-
-    if nodes: return nodes[0]
-    else: return None
-
 def init_theme(theme):
     theme = str(theme)
     theme = app_aliases.get(theme, theme)

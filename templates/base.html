@@ -27,12 +27,11 @@ $if "title" in content: $ title += " - " + content.title
     <ul class="navbar">
       <li><a href="$virtual_root">$project_name</a></li>
       $ navlink = instance.get("navlink", '')
-      $ nav_node = markup.get_top_nav_node()
       $if navlink: $ navlink = '/' + navlink
       $for mid, label in game_modes.iteritems():
           $ mhome = virtual_root + mid
           $ extra = None
-          $if mid == nav_node: $ extra = ' class="focused"'
+          $if instance.path.startswith(mhome): $ extra = ' class="focused"'
           <li$:extra>
 	    <div class="dropdown-menu">
 	      <a href="${mhome + navlink}">$label</a>
@@ -48,7 +47,7 @@ $if "title" in content: $ title += " - " + content.title
       $if extralinks:
         $for label, url in extralinks:
           $ extra = None
-	  $if str(instance.path) == str(url): $ extra = ' class="focused"'
+	  $if instance.path.startswith(url): $ extra = ' class="focused"'
           <li$:extra><a href="$url">$label</a></li>
       <li><a href="${virtual_root}about">Credits</a></li>
     </ul>
@@ -56,11 +55,10 @@ $if "title" in content: $ title += " - " + content.title
     $if motd: <div class="motd">$:motd</div>
     $if not instance.get("notopsearch"):
       <div id="search-form-container">
-	<form method="get" id="search-form" action="$markup.generate_root_url(nav_node)">
+	<form method="get" id="search-form" action="$markup.generate_root_url()">
 	  <fieldset>
-	    <input type="text" id="search-field" name="user"/><button type="submit" id="search-button"><span class="ui-icon ui-icon-search"></span></button>
-	    $ formdest = conf.get("formDest")
-	    $if formdest: <input type="hidden" name="formdest" value="$formdest"/>
+            <input type="text" id="search-field" name="user"/><button type="submit" id="search-button"><span class="ui-icon ui-icon-search"></span></button>
+            <input type="hidden" name="from" value="$instance.path"/>
 	  </fieldset>
 	</form>
       </div>
