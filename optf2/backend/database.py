@@ -240,7 +240,7 @@ def dict_from_item(item, scope = 440, lang = None):
             particle_map = cache.get("particles-{0}-{1}".format(appid, language), {})
             particleid = int(theattr.value)
             default = "unknown particle ({0})".format(particleid)
-            pname = particle_map.get(particleid, default)
+            pname = particle_map.get(str(particleid), default)
 
             newitem["pid"] = particleid
             attrdesc = "Effect: " + pname
@@ -318,7 +318,7 @@ class cache(object):
         with memc.reserve() as mc:
             try:
                 val = mc.get(value)
-                if val != None: return val
+                if val != None: return json.loads(val)
                 else: return default
             except pylibmc.Error as E:
                 log.main.error(str(value) + ": " + str(E))
@@ -332,7 +332,7 @@ class cache(object):
 
         try:
             with memc.reserve() as mc:
-                mc.set(key, value, min_compress_len = CACHE_COMPRESS_LEN, **kwargs)
+                mc.set(key, json.dumps(value), min_compress_len = CACHE_COMPRESS_LEN, **kwargs)
         except pylibmc.Error as E:
             log.main.error(str(key) + ": " + str(E))
 
@@ -347,7 +347,7 @@ class assets(object):
         assetlist = steam.items.assets(self._scope, lang = self._lang)
 
         try:
-            self._assets = dict([(int(asset.name), asset.price)
+            self._assets = dict([(str(asset.name), asset.price)
                                  for asset in assetlist])
 
             cache.set(self._assets_cache, self._assets)
@@ -459,7 +459,7 @@ class schema(object):
 
         sitems = {}
         for item in (schema or []):
-            sitems[item.schema_id] = dict_from_item(item, self._scope, self._lang)
+            sitems[str(item.schema_id)] = dict_from_item(item, self._scope, self._lang)
 
         if sitems:
             json.dump(sitems, open(os.path.join(self._cdir, self._items_cache), "wb"))
@@ -479,7 +479,7 @@ class schema(object):
             if metadata and metadata.get("type") == "paint_can":
                 for attr in item:
                     if attr.name.startswith("set item tint RGB"):
-                        pmap[int(attr.value)] = item.name
+                        pmap[str(attr.value)] = item.name
         cache.set(str(self._paints_key), pmap)
 
         return pmap
@@ -491,7 +491,7 @@ class schema(object):
             schema = self._schema
 
         particles = schema.particle_systems
-        pmap = dict([(k, v["name"]) for k, v in particles.iteritems()])
+        pmap = dict([(str(k), v["name"]) for k, v in particles.iteritems()])
         cache.set(str(self._particle_key), pmap)
 
         return pmap
@@ -598,7 +598,7 @@ class inventory(object):
 
         for item in inv:
             pitem = dict_from_item(item, scope, lang)
-            pack["items"][item.id] = pitem
+            pack["items"][str(item.id)] = pitem
 
         return pack
 

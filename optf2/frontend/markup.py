@@ -248,7 +248,7 @@ def generate_item_price_string(item, stats):
     if "assets" in stats: assets = stats["assets"]
     else: assets = stats
 
-    try: return "Store price: ${0}".format(assets[item["sid"]]["USD"])
+    try: return "Store price: ${0}".format(assets[str(item["sid"])]["USD"])
     except: return None
 
 def generate_attribute_list(app, item, showlinks = False):

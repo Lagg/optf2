@@ -291,7 +291,7 @@ def get_price_stats(items, assetcache):
         if "id" in item and origin.lower() != "purchased":
             continue # Not explicit purchase
         try:
-            asset = assets[item.get("sid")]
+            asset = assets[str(item.get("sid"))]
             count += 1
         except KeyError: continue
         costs.append((item, asset))

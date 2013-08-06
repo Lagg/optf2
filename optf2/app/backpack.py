@@ -100,7 +100,7 @@ class item:
 
         try:
             sitems = database.schema(scope = app).processed_items
-            item = sitems[str(iid)]
+            item = sitems[iid]
 
             if web.input().get("contents"):
                 contents = item.get("contents")
@@ -150,7 +150,7 @@ class live_item:
 
         item = None
         try:
-            item = items["items"][long(iid)]
+            item = items["items"][iid]
         except KeyError:
             for cid, bpitem in items["items"].iteritems():
                 oid = bpitem.get("oid")
