@@ -337,6 +337,7 @@ tr.row-even { background-color: #1c1c1c; }
 .recent-inv { table-layout: fixed; text-align: left; width: 95%; border-spacing: 0; padding-left: 5px; }
 .recent-inv td:first-child { width: 24px; height: 24px; }
 .recent-inv td:last-child { word-wrap: break-word; }
+.recent-inv td img { vertical-align: middle; }
 
 #rp-results { display: none; padding-top: 1em; }
 #rp-results .sr { margin: 0.6em; }
