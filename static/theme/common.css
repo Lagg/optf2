@@ -1,4 +1,4 @@
-body { background-color: #0F0F0F; color: white; font-family: Arial, Helvetica, sans-serif; font-size: 11px; margin: 0; }
+body { background-color: #0F0F0F; background-image: url(background.png); color: white; font-family: Arial, Helvetica, sans-serif; font-size: 11px; margin: 0; }
 
 a { font-weight: bold; color: white; text-decoration: none; }
 a:hover { text-decoration: underline; }
@@ -160,8 +160,8 @@ a:visited { text-decoration: none; }
 #footer {
     text-align: center;
     width: 100%;
-    padding-top: 20px;
     clear: both;
+    padding: 1.5em 0 1.5em 0;
 }
 
 #content { height: 100%; text-align: center; }
@@ -334,9 +334,9 @@ tr.row-even { background-color: #1c1c1c; }
 
 .page-label { position: absolute; display: block; right: 98.90%; top: 30px; font-weight: bold; border-radius: 5px 0 0 5px; }
 
-.recent-inv { table-layout: fixed; text-align: left; width: 95%; border-spacing: 0; padding-left: 5px; }
+.recent-inv { text-align: left; border-spacing: 0; margin-left: 5px; }
+.recent-inv td { padding: 5px; word-wrap: break-word; }
 .recent-inv td:first-child { width: 24px; height: 24px; }
-.recent-inv td:last-child { word-wrap: break-word; }
 .recent-inv td img { vertical-align: middle; }
 
 #rp-results { display: none; padding-top: 1em; }
