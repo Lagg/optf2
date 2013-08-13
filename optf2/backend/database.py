@@ -180,7 +180,7 @@ def dict_from_item(item, scope = 440, lang = None):
                 newitem["gifter"] = account_info
 
             newitem.setdefault("accounts", {})
-            newitem["accounts"][attrid] = account_info
+            newitem["accounts"][str(attrid)] = account_info
         filtered = theattr.hidden
 
         # referenced item def

@@ -264,7 +264,7 @@ def generate_attribute_list(app, item, showlinks = False):
     for attr in item.get("attrs", []):
         desc = attr.get("desc", '').strip('\n')
         style = ""
-        acct = item.get("accounts", {}).get(attr["id"])
+        acct = item.get("accounts", {}).get(str(attr["id"]))
         color = attr.get("color")
         atype = attr.get("type", "neutral")
         aid = attr["id"]
@@ -284,7 +284,8 @@ def generate_attribute_list(app, item, showlinks = False):
             if atype != "html": desc = web.websafe(desc)
             markup += desc.replace('\n', "<br/>")
 
-        if acct: markup += morestr.format(generate_root_url("user/"  + str(acct["id64"]), app))
+        if acct:
+            markup += morestr.format(generate_root_url("user/"  + str(acct["id64"]), app))
 
         markup += '</li>'
 
