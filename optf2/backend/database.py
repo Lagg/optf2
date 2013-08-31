@@ -713,6 +713,8 @@ class sim_inventory(inventory):
             raise steam.items.InventoryError("SIM inventory not found or unavailable")
 
         output = self.build_processed(inv, self._scope, self._lang)
+        # For labeling purposes
+        output["app"] = appctx["name"]
 
         self._cache_commit(output)
 
@@ -812,7 +814,7 @@ class recent_inventories(object):
             i += 1
             yield self._inv_list[j]
 
-    def update(self, profile, maxsize = 10):
+    def update(self, profile, maxsize = 10, place_label = None):
         try:
             userp = profile.load()
         except AttributeError:
@@ -827,8 +829,11 @@ class recent_inventories(object):
                 lastpacks.remove(p)
                 break
 
-        lastpacks.insert(0, {"id": id64, "persona": userp["persona"],
-                             "avatar": userp["avatarurl"], "app": self._scope})
+        entry = {"id": id64, "persona": userp["persona"],
+                 "avatar": userp["avatarurl"], "place": str(place_label or self._scope),
+                 "app": self._scope}
+
+        lastpacks.insert(0, entry)
 
         self._inv_list = lastpacks[:maxsize]
         cache.set(lastpackskey, self._inv_list)
@@ -836,11 +841,14 @@ class recent_inventories(object):
 def load_inventory(sid, scope):
     profile = user(sid).load()
     scope = app_aliases.get(scope, scope)
+    place = None
 
     try:
         pack = inventory(profile, scope = scope).load()
+        place = app_modes.get(scope)
     except itemtools.ItemBackendUnimplemented:
         pack = sim_inventory(profile, scope = scope).load()
+        place = pack.get("app")
 
     # TODO: This is just to update the navbar if applicable, could be better
     try:
@@ -848,6 +856,7 @@ def load_inventory(sid, scope):
     except:
         pass
 
-    recent_inventories(scope).update(profile)
+    if len(pack["items"]) > 0:
+        recent_inventories(scope).update(profile, place_label = place)
 
     return profile, pack

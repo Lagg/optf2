@@ -26,11 +26,14 @@ $var js_extra: ${static_prefix}js/profilesearch.js ${static_prefix}js/groupbadge
 	</div>
       </div>
   $if packs:
-      <div class="box" style="width: 220px; position: relatiove; float: right;">
+      <div class="box" style="width: 220px; position: relative; float: right;">
 	<div class="titlebar">Recent inventories</div>
 	<table class="recent-inv">
 	  $for p in packs:
-              <tr><td><img src="$p['avatar']" alt="a" width="16" height="16"/></td><td><a href="$markup.generate_root_url('user/{0}'.format(p['id']), p['app'])">$p["persona"]</a></td></tr>
+            $ pref = markup.generate_root_url('user/{0}'.format(p['id']), p['app'])
+            $ place_trunc = p["place"][:10]
+            $if len(p["place"]) >= 10: $ place_trunc = place_trunc + "..."
+            <tr><td><img src="$p['avatar']" alt="a" width="16" height="16"/></td><td><a href="$pref">$p["persona"]</a></td><td><a title="$p['place'] - $p['app']" href="$pref">$place_trunc</a></td></tr>
 	</table>
       </div>
   </div>
