@@ -106,7 +106,6 @@ def dict_from_item(item, scope = 440, lang = None):
     styles = item.available_styles
     style = item.style
     origin = item.origin
-    gift_giver = None
 
     if iid != None: newitem["id"] = iid
     if oid != None and (oid != iid): newitem["oid"] = oid
@@ -166,6 +165,10 @@ def dict_from_item(item, scope = 440, lang = None):
     eaters = item.kill_eaters
     if eaters: newitem["eaters"] = map(linefmt.format, eaters)
 
+    if giftcontents:
+        newitem["contents"] = dict_from_item(giftcontents, scope, lang)
+        newitem["contents"]["container"] = iid
+
     for theattr in attrs:
         attrname = theattr.name
         attrid = theattr.id
@@ -176,8 +179,9 @@ def dict_from_item(item, scope = 440, lang = None):
         account_info = theattr.account_info
         if account_info:
             if attrname == "gifter account id":
-                gift_giver = account_info
                 newitem["gifter"] = account_info
+                if "contents" in newitem:
+                    newitem["contents"]["gifter"] = account_info
 
             newitem.setdefault("accounts", {})
             newitem["accounts"][str(attrid)] = account_info
@@ -190,8 +194,7 @@ def dict_from_item(item, scope = 440, lang = None):
                 giftcontents = int(theattr.value)
                 desc += "Schema item " + str(giftcontents)
             else:
-                desc += '<span class="prefix-{0}">{1}</span>'.format(giftcontents.quality[1],
-                                                                     web.websafe(giftcontents.full_name.decode("utf-8")))
+                desc += '<span class="prefix-{0[quality]}">{0[mainname]}</span>'.format(newitem["contents"])
             attrdesc = desc
             filtered = False
             contents_line_rendered = True
@@ -280,12 +283,6 @@ def dict_from_item(item, scope = 440, lang = None):
         newitem.setdefault("attrs", [])
         newitem["attrs"].append(newattr)
 
-    if giftcontents:
-        newitem["contents"] = dict_from_item(giftcontents, scope, lang)
-        newitem["contents"]["container"] = iid
-        # TODO: Redundant maybe since it's already in container dict?
-        if gift_giver: newitem["contents"]["gifter"] = gift_giver
-
     if custom_texture_hi != None and custom_texture_lo != None:
         ugcid = hilo_to_ugcid64(custom_texture_hi, custom_texture_lo)
         try:
@@ -299,12 +296,15 @@ def dict_from_item(item, scope = 440, lang = None):
         except steam.remote_storage.UGCError:
             pass
 
-    normal_item_name = web.websafe(item.full_name)
-    basename = item.name
+    normal_item_name = web.websafe(cname or item.full_name)
+    cno = newitem.get("craftno")
+
+    if cno:
+        normal_item_name += " #" + str(cno)
 
     newitem["mainname"] = _(normal_item_name).decode("utf-8")
 
-    newitem["basename"] = basename
+    newitem["basename"] = item.name
 
     return newitem
 
