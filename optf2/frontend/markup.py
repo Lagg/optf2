@@ -22,12 +22,12 @@ try: from collections import OrderedDict as odict
 except ImportError: odict = dict
 from urlparse import urljoin
 from optf2.backend import config, log
-from optf2.backend.database import app_aliases
 
 virtual_root = config.ini.get("resources", "virtual-root")
 static_prefix = config.ini.get("resources", "static-prefix")
 particles = dict(config.ini.items("particle-modes"))
 cssaliases = dict(config.ini.items("css-aliases"))
+app_aliases = dict(config.ini.items("app-aliases"))
 # TODO: Add exp for single tags like br
 htmldesc = re.compile("<(?P<tag>.+) ?.*>.+</(?P=tag)>")
 

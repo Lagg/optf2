@@ -222,7 +222,7 @@ def dict_from_item(item, scope = 440, lang = None):
                 newitem["colors"].append((colori, item_color))
                 newitem["colors"].sort()
 
-            pname = paint_map.get(raw_rgb, item_color)
+            pname = paint_map.get(str(raw_rgb), item_color)
 
             newitem["paint_name"] = pname
 
@@ -479,7 +479,7 @@ class schema(object):
             if metadata and metadata.get("type") == "paint_can":
                 for attr in item:
                     if attr.name.startswith("set item tint RGB"):
-                        pmap[str(attr.value)] = item.name
+                        pmap[str(int(attr.value))] = item.name
         cache.set(str(self._paints_key), pmap)
 
         return pmap
