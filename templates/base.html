@@ -26,7 +26,7 @@ $if "title" in content: $ title += " - " + content.title
   <body>
     <ul class="navbar">
       <li><a href="$virtual_root">$project_name</a></li>
-      $ navlink = instance.get("navlink", '')
+      $ navlink = instance.get("navlink", "items")
       $if navlink: $ navlink = '/' + navlink
       $for mid, label in game_modes.iteritems():
           $ mhome = virtual_root + mid
@@ -36,7 +36,6 @@ $if "title" in content: $ title += " - " + content.title
 	    <div class="dropdown-menu">
 	      <a href="${mhome + navlink}">$label</a>
               <ul>
-		<li><a href="$mhome"><b>Main</b></a></li>
 		<li><a href="$mhome/items">Item list</a></li>
 		<li><a href="$mhome/attributes">Attribute list</a></li>
 		<li><a href="$mhome/particles">Particle list</a></li>

@@ -22,6 +22,7 @@ def urlr(exp):
 urls = (
     virtual_root + "api", app.api.subapplication,
     urlr("inv/(?:user/)?(.+)"), app.sim.selector,
+    urlr(""), app.index.index,
     urlr("about"), app.static.about,
     urlr("(\w+)/items"), app.schema_list.items,
     urlr("(\w+)/attributes/?(\d*)"), app.schema_list.attributes,
@@ -30,8 +31,7 @@ urls = (
     urlr("(\w+)/item/(\w+)/(-?\d+)"), app.backpack.live_item,
     urlr("(\w+)/loadout/(\w+)/?(\d*)"), app.backpack.loadout,
     urlr("(\w+)/feed/(.+)"), app.backpack.feed,
-    urlr("(\w+)/(?:user/)?(.+)"), app.backpack.fetch,
-    urlr("(\w*)"), app.index.game_root
+    urlr("(\w+)/(?:user/)?(.+)"), app.backpack.fetch
     )
 
 application = web.application(urls, globals())

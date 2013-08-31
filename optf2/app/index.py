@@ -8,7 +8,7 @@ import random
 
 cache = database.cache
 
-class game_root:
+class index:
     def GET(self, app = None):
         usestale = True
 
@@ -49,4 +49,4 @@ class game_root:
         # Last packs
         packs = database.recent_inventories(scope = app)
 
-        return template.template.game_root(app, (packs or []), showcase)
+        return template.template.index(app, (packs or []), showcase)
