@@ -353,12 +353,14 @@ class assets(object):
             cache.set(self._assets_cache, self._assets)
         except Exception as E:
             log.main.error("Error loading assets: {0}".format(E))
+            # Set an empty catalog to avoid excessive reconnects
+            cache.set(self._assets_cache, {}, time = 3600)
 
         return self._assets
 
     def load(self):
         ass = cache.get(self._assets_cache)
-        if not ass:
+        if ass == None:
             ass = self.dump()
 
         self._assets = ass
