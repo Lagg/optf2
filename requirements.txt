@@ -1,4 +1,3 @@
 steamodd>=4.3
 web.py
 pylibmc
-uWSGI
