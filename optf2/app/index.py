@@ -30,18 +30,22 @@ class index:
         if profile:
             raise web.seeother(generate_root_url("user/" + str(profile[0]["id64"]), appfrom))
 
-        ckey = str("scrender-" + app + "-" + database.verify_lang()).encode("ascii")
+        ckey = "scrender"
         showcase = cache.get(ckey)
-        if not showcase:
-            try:
+        showcase_cell = None
+        try:
+            if not showcase:
                 sitems = database.schema(scope = app).processed_items.values()
                 if len(sitems) > 0:
-                    item = random.choice(sitems)
-                    showcase = generate_item_cell(app, item)
+                    showcase = random.choice(sitems)
+                    showcase["app"] = app
                     # May want to add an option for showcase expiration to config later
-                    cache.set(ckey, showcase, time = 600)
-            except:
-                pass
+                    cache.set(ckey, showcase, time=60)
+
+            app = showcase.get("app", app)
+            showcase_cell = generate_item_cell(app, showcase, user=showcase.get("user"))
+        except Exception as E:
+            pass
 
         init_theme(app)
         web.ctx.notopsearch = True
@@ -49,4 +53,4 @@ class index:
         # Last packs
         packs = database.recent_inventories(scope = app)
 
-        return template.template.index(app, (packs or []), showcase)
+        return template.template.index(app, (packs or []), showcase_cell)

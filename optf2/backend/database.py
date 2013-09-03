@@ -593,14 +593,30 @@ class inventory(object):
         cache.set(self._cache_key, inventory, time = self._cache_time)
 
     @staticmethod
-    def build_processed(inv, scope = 440, lang = None):
+    def build_processed(inv, scope = 440, lang = None, user = None):
         lang = verify_lang(lang)
         pack = {"items": {},
                 "cells": inv.cells_total}
+        specialitem = cache.get("scrender")
 
         for item in inv:
             pitem = dict_from_item(item, scope, lang)
             pack["items"][str(item.id)] = pitem
+
+            # Consider the current item too boring if it looks like a schema item
+            if not specialitem or "id" not in specialitem:
+                qual = pitem["quality"]
+
+                if ((qual == "rarity4" and "pid" in pitem) or
+                    (qual == "community") or
+                    (qual == "normal") or
+                    (qual == "developer") or
+                    (qual == "selfmade") or
+                    (qual == "unusual")):
+                    specialitem = pitem
+                    specialitem["app"] = scope
+                    specialitem["user"] = user
+                    cache.set("scrender", specialitem, time=1200)
 
         return pack
 
@@ -609,7 +625,7 @@ class inventory(object):
         item_schema = schema(self._scope, self._lang).load()
         bp = steam.items.inventory(self._scope, owner, schema = item_schema, timeout = STEAM_TIMEOUT)
 
-        inventory = self.build_processed(bp, self._scope, self._lang)
+        inventory = self.build_processed(bp, self._scope, self._lang, self.owner)
 
         self._cache_commit(inventory)
 
@@ -714,7 +730,7 @@ class sim_inventory(inventory):
         except:
             raise steam.items.InventoryError("SIM inventory not found or unavailable")
 
-        output = self.build_processed(inv, self._scope, self._lang)
+        output = self.build_processed(inv, self._scope, self._lang, self.owner)
         # For labeling purposes
         output["app"] = appctx["name"]
 
@@ -847,10 +863,10 @@ def load_inventory(sid, scope):
 
     try:
         pack = inventory(profile, scope = scope).load()
-        place = app_modes.get(scope)
     except itemtools.ItemBackendUnimplemented:
         pack = sim_inventory(profile, scope = scope).load()
-        place = pack.get("app")
+
+    place = pack.get("app", app_modes.get(scope))
 
     # TODO: This is just to update the navbar if applicable, could be better
     try:
