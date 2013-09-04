@@ -67,7 +67,7 @@ $ onlinestates = {0: "offline", 1: "online", 2: "busy", 3: "away", 4: "snooze", 
 	      $ statclass = statclass.replace(' ', '')
 	  <span id="status-$statclass">
             $if "game" in user:
-                $ gid, gname, gserver = user["game"]
+                $ gid, gserver, gname = user["game"]
                 Playing <a href="http://store.steampowered.com/app/${gid or 0}" title="$gname">${gname or "Unknown"}</a>
                 $if gserver: <a href="steam://connect/$gserver">(Connect)</a>
             $else:
