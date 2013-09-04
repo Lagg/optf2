@@ -42,7 +42,7 @@ class loadout:
                 if item["sid"] == 199 and name != "Engineer":
                     slot = "Secondary"
                 else:
-                    slot = item.get("slot") or str(slots.get(cid, ''))
+                    slot = str(item.get("slot") or slots.get(str(cid), ''))
                     slot = slot.title()
                 if slot not in sortedslots and slot not in slotlist: slotlist.append(slot)
                 if slot not in loadout[cid] or (quality != 0 and loadout[cid][slot][0]["quality"] == "normal"):

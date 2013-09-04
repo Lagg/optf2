@@ -84,7 +84,7 @@ def dict_from_item(item, scope = 440, lang = None):
     iid = item.id
     oid = item.original_id
     pos = item.position
-    equipped = item.equipped
+    equipped = dict([(str(c), s) for c, s in item.equipped.items()])
     equipable = item.equipable_classes
     slot = item.slot_name
     caps = item.capabilities
