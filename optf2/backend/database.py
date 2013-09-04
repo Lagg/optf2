@@ -609,7 +609,6 @@ class inventory(object):
 
                 if ((qual == "rarity4" and "pid" in pitem) or
                     (qual == "community") or
-                    (qual == "normal") or
                     (qual == "developer") or
                     (qual == "selfmade") or
                     (qual == "unusual")):
