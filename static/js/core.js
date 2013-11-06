@@ -247,7 +247,7 @@ function BackpackPager (container, initialpage) {
 
     this.pageCount = function() {
 	return this.activePages.length;
-    }
+    };
 
     this.setSwitcherButtonActivity = function() {
 	var cIndex = this.getCurrentPageIndex();
@@ -314,7 +314,7 @@ function ItemCells() {
 	$("#content").on("mouseenter", ".tooltip", this.hoverOutHandler);
 
 	$(document).scroll(this.hoverOutHandler);
-    }
+    };
 
     this.fitToContainer = function(container) {
 	var jContainer = $(container);
@@ -518,14 +518,14 @@ function Field(id) {
 	    if (value == text) {
 		field.val("");
 	    }
-	}
+	};
 	var focusOut = function() {
 	    var value = field.val();
 
 	    if (value.length == 0) {
 		field.val(text);
 	    }
-	}
+	};
 
 	focusOut();
 	field.focusin(focusIn);
@@ -673,7 +673,7 @@ function ItemDialog() {
 	var ticker = $("#loading-" + id);
 
 	return (ticker.length > 0);
-    }
+    };
 
     this.toggleLoadTicker = function (id) {
 	var tickerID = "loading-" + id;
@@ -727,7 +727,7 @@ var Cookie = {
 
 	return true;
     }
-}
+};
 
 var URL = {
     deserializeHashStore: function() {
@@ -763,7 +763,7 @@ var URL = {
 	    hashString += encodeURI(key);
 
 	    if (val) {
-		hashString += '-' + encodeURI(values[key])
+		hashString += '-' + encodeURI(values[key]);
 	    }
 
 	    hashString += ';';
@@ -802,4 +802,4 @@ var URL = {
 
 	return true;
     }
-}
+};

@@ -11,7 +11,7 @@ $(document).ready(function() {
 		  var boxes = $(data).filter("#content").children(".box");
 		  $("#rp-results").fadeOut("fast");
 		  $("#game-summaries").fadeIn("slow");
-		  boxes.width(350)
+		  boxes.width(350);
 		  boxes.css("margin", "1em");
 		  boxes.css("float", "left");
 		  $(".sr-slot").empty().append(resdiv.button("option", "icons", {secondary: "ui-icon-link"}));
