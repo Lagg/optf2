@@ -65,7 +65,7 @@ class CacheEmptyError(CacheError):
 def verify_lang(code = None):
     try:
         code = steam.loc.language(code).code
-    except steam.loc.LangErrorUnsupported:
+    except steam.loc.LanguageUnsupportedError:
         code = "en_US"
 
     return code
@@ -374,7 +374,7 @@ class assets(object):
 class schema(object):
     def __init__(self, scope = 440, lang = None):
         self._scope = app_aliases.get(scope, scope)
-        self._lang = verify_lang(lang)
+        self._lang = verify_lang(lang or web.ctx.get("language"))
         app = self._scope
         lang = self._lang
 

@@ -293,7 +293,7 @@ def generate_attribute_list(app, item, showlinks = False):
 
     # current style
     style = item.get("style")
-    if style: markup += '<li class="attr-neutral">Style: {0}</li>'.format(style)
+    if style: markup += u'<li class="attr-neutral">Style: {0}</li>'.format(style)
 
     # available styles
     styles = item.get("styles")
