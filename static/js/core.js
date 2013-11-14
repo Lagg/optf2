@@ -7,7 +7,7 @@ function makeToggleButton(label, id, callback, append) {
 }
 
 $(document).ready(function(){
-    $(document).on("mousedown", ".button, .ui-button", function() { return false; });
+    $(document).on("mousedown", ".button, .ui-button", function(e) { e.preventDefault(); });
     $(".page-label").button();
     $("#feed-button").button({icons: {primary: "ui-icon-signal-diag"}});
 
@@ -25,7 +25,7 @@ $(document).ready(function(){
 	hashpage = null;
     }
 
-    if ($("#backpack").has(".backpack-page").length) {
+    if ($("#backpack").has(".backpack-page[id]").length) {
 	var pager = new BackpackPager("#backpack", hashpage);
 	var paginationButton = $('<input type="checkbox" id="show-pages"/><label for="show-pages">Show Pages</label>');
 
@@ -144,7 +144,7 @@ function autosizeBoxes() {
 }
 
 function BackpackPager (container, initialpage) {
-    var pageSelector = ".backpack-page";
+    var pageSelector = ".backpack-page[id]";
     var jSwitcher = null;
     var self = this;
 
@@ -362,7 +362,14 @@ function CellDataExport() {
     $(".backpack-page").each(function() {
 	var text = [];
 	var page = $(this);
-	var title = page.attr("id").split('-')[1];
+	var title = page.attr("id");
+
+        if (title) {
+            title = title.split('-')[1];
+        } else {
+            title = page.find(".page-label").text();
+        }
+
 	$(page.find(".item_cell").filter(":visible")).each(function() {
 	    var cell = $(this);
 	    var tt = cell.find(".tooltip");

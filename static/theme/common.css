@@ -13,6 +13,9 @@ a:visited { text-decoration: none; }
     visibility: hidden;
 }
 .backpack-page { position: relative; margin-bottom: 20px; }
+.backpack-page .item_cell { margin-left: 0; margin-right: 6px; }
+.backpack-page.displaced-page { padding: 6px; border-radius: 10px; margin-top: 20px; border: 2px solid #454545; background-color: #1a1a1a; }
+.backpack-page.displaced-page .page-label { border-right: 2px solid #454545; }
 
 .box {
     border-radius: 10px;
@@ -332,7 +335,9 @@ tr.row-even { background-color: #1c1c1c; }
 .ui-dialog { padding: 0; }
 .ui-button { margin: 0 3px 0 3px; }
 
-.page-label { position: absolute; display: block; right: 98.90%; top: 30px; font-weight: bold; border-radius: 5px 0 0 5px; }
+.page-label { text-align: left; position: absolute; display: block; right: 100%; top: 30px; font-weight: bold; border-radius: 5px 0 0 5px; }
+.page-label .ui-button-text { padding-left: 6px; }
+.page-label { margin: 0; border: 0; }
 
 .recent-inv { text-align: left; border-spacing: 0; margin-left: 5px; }
 .recent-inv td { padding: 5px; word-wrap: break-word; }

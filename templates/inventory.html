@@ -104,10 +104,10 @@ $ onlinestates = {0: "offline", 1: "online", 2: "busy", 3: "away", 4: "snooze", 
 	  </table>
     </div>
     $if baditems:
-        <div class="autosize box" style="max-width: 1040px; margin: 15px auto 15px auto;">
-	  <div class="titlebar">Displaced items</div>
+        <div class="backpack-page displaced-page">
+            <a class="page-label" href="#">Displaced</a>
             $for item in baditems:
-                <div class="slot-item">$:markup.generate_item_cell(app, item, invalid = True, user = user)</div>
+                $:markup.generate_item_cell(app, item, invalid = True, user = user)
         </div>
     $ pagekeys = items.keys()
     $ pagekeys.sort()
