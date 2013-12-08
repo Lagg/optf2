@@ -6,7 +6,7 @@ $if "title" in content: $ title += " - " + content.title
 <!DOCTYPE html>
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
-    <title>$title</title>
+    <title>$:title</title>
     <meta name="description" content="$:content.get('description', defaultdesc)"/>
     <link rel="shortcut icon" type="image/png" href="${static_prefix}optf2_icon.png"/>
     $for title, url in instance.get("rss_feeds", []):
