@@ -209,7 +209,7 @@ def get_stats(items):
     merged = {
         "weapons": ["primary", "secondary", "melee", "weapon"],
         "hats": ["hat", "head"],
-        "misc": ["misc"],
+        "cosmetic": ["misc"],
         "pda": ["pda", "pda2"],
         "other": ["none"]
         }
