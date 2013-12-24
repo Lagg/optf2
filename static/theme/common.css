@@ -70,6 +70,9 @@ a:visited { text-decoration: none; }
 .prefix-strange { color: #cf6a32; }
 .prefix-collectors { color: #aa0000; }
 .prefix-giftwrapped { color: #cf2700; }
+.prefix-frozen { color: #4682B4; }
+.prefix-exalted { color: #CCCCCC; }
+.prefix-corrupted { color: #A52A2A; }
 
 .item_cell {
     border: 2px solid black;
@@ -103,6 +106,9 @@ a:visited { text-decoration: none; }
 .cell-rarity1, .cell-genuine { border-color: #4d7455; }
 .cell-strange { border-color: #cf6a32; }
 .cell-collectors { border-color: #aa0000; }
+.cell-frozen { border-color: #4682B4; }
+.cell-exalted { border-color: #CCCCCC; }
+.cell-corrupted { border-color: #A52A2A; }
 
 .icon-particle { position: absolute; left: 0; top: 0; width: 100%; height: 100%; z-index: -100; }
 
