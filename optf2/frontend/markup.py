@@ -432,6 +432,9 @@ def generate_class_sprite_img(c, ident, styleextra = ""):
         ident = aliasmap.get(ident, ident)
         spriteindex, name = get_class_for_id(c, ident)
 
+        if spriteindex >= 1000:
+            spriteindex = 0
+
         spriteindex *= spritesize
         row, x = divmod(spriteindex, sheetwidth)
         row *= spritesize
