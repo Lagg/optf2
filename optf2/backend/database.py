@@ -70,13 +70,11 @@ def verify_lang(code = None):
 
     return code
 
-def dict_from_item(item, scope = 440, lang = None, client_extensions = {}):
+def dict_from_item(item, scope = 440, lang = None):
     if not item:
         return None
 
     scope = app_aliases.get(scope, scope)
-
-    client_schema_item = client_extensions.get(str(item.schema_id), {})
 
     default_cell_image = STATIC_PREFIX + "item_icons/Invalid_icon.png";
     newitem = dict(sid = item.schema_id)
@@ -87,9 +85,8 @@ def dict_from_item(item, scope = 440, lang = None, client_extensions = {}):
     oid = item.original_id
     pos = item.position
     equipped = dict([(str(c), s) for c, s in item.equipped.items()])
-    #equipable = client_schema_item.get("used_by", item.equipable_classes)
     equipable = item.equipable_classes
-    slot = client_schema_item.get("slot", item.slot_name)
+    slot = item.slot_name
     caps = item.capabilities
     rank = (item.rank or {}).get("name")
     itype = item.type
@@ -140,25 +137,15 @@ def dict_from_item(item, scope = 440, lang = None, client_extensions = {}):
         if styles: newitem["styles"] = styles
         if caps: newitem["caps"] = caps
 
-    if "rarity" in client_schema_item:
-        newitem["rarity"] = client_schema_item["rarity"]
-
     custom_texture_lo = None
     custom_texture_hi = None
 
     attrs = item.attributes
-
-    # First check if there's a schema color
-    namecolor = client_schema_item.get("rarity_color")
-
     try:
         namecolor = item.name_color
-    except AttributeError:
-        pass
-
-    if namecolor:
-        newitem["namergb"] = namecolor
-
+        if namecolor:
+            newitem["namergb"] = namecolor
+    except AttributeError: pass
     min_level = item.min_level
     max_level = item.max_level
     pb_level = item.level
@@ -179,7 +166,7 @@ def dict_from_item(item, scope = 440, lang = None, client_extensions = {}):
     if eaters: newitem["eaters"] = map(linefmt.format, eaters)
 
     if giftcontents:
-        newitem["contents"] = dict_from_item(giftcontents, scope, lang, client_extensions)
+        newitem["contents"] = dict_from_item(giftcontents, scope, lang)
         newitem["contents"]["container"] = iid
 
     for theattr in attrs:
@@ -309,12 +296,7 @@ def dict_from_item(item, scope = 440, lang = None, client_extensions = {}):
         except steam.remote_storage.UGCError:
             pass
 
-    if "rarity" in newitem:
-        fname = newitem["rarity"].title() + ' ' + item.name
-    else:
-        fname = item.full_name
-
-    normal_item_name = web.websafe(cname or fname)
+    normal_item_name = web.websafe(cname or item.full_name)
     cno = newitem.get("craftno")
 
     if cno:
@@ -405,8 +387,8 @@ class schema(object):
         self._paints_key = "paints-{0}-{1}".format(app, lang)
         self._schema = None
 
-    def dump_client(self):
-        schema = self.load(skip_client=True)
+    def _build_client_schema_specials(self):
+        schema = self.load()
 
         cs = schema.client_url
         special = {}
@@ -453,11 +435,7 @@ class schema(object):
 
             usedby = item.get("used_by_heroes", item.get("used_by_classes", {}))
             if usedby and not sitem.equipable_classes:
-                try:
-                    clientstuff["used_by"] = usedby.keys()
-                except AttributeError:
-                    # Weird "all heroes" shorthand. Don't bother
-                    pass
+                clientstuff["used_by"] = usedby.keys()
 
             if clientstuff:
                 special[sid] = clientstuff
@@ -465,11 +443,13 @@ class schema(object):
         json.dump(special, open(os.path.join(self._cdir, self._client_schema_cache), "w"))
         return special
 
-    def load_client(self):
+    @property
+    def client_schema_specials(self):
+        """ TODO: Temporary, because ugly """
         try:
             specials = json.load(open(os.path.join(self._cdir, self._client_schema_cache), "r"))
         except IOError:
-            specials = self.dump_client()
+            specials = self._build_client_schema_specials()
 
         return specials
 
@@ -481,7 +461,7 @@ class schema(object):
 
         sitems = {}
         for item in (schema or []):
-            sitems[str(item.schema_id)] = dict_from_item(item, self._scope, self._lang, schema.client_extensions)
+            sitems[str(item.schema_id)] = dict_from_item(item, self._scope, self._lang)
 
         if sitems:
             json.dump(sitems, open(os.path.join(self._cdir, self._items_cache), "wb"))
@@ -530,14 +510,9 @@ class schema(object):
 
         return qmap
 
-    def dump(self, skip_client=False):
+    def dump(self):
         schema = steam.items.schema(self._scope, lang = self._lang, timeout = STEAM_TIMEOUT)
         self._schema = schema
-
-        if not skip_client:
-            schema.client_extensions = self.load_client()
-        else:
-            schema.client_extensions = {}
 
         try:
             self._build_paint_store()
@@ -557,11 +532,11 @@ class schema(object):
 
         return schema
 
-    def load(self, skip_client=False):
+    def load(self):
         try:
             schema = pickle.load(open(os.path.join(self._cdir, self._schema_cache)))
         except:
-            schema = self.dump(skip_client=skip_client)
+            schema = self.dump()
 
         self._schema = schema
 
@@ -618,14 +593,14 @@ class inventory(object):
         cache.set(self._cache_key, inventory, time = self._cache_time)
 
     @staticmethod
-    def build_processed(inv, scope = 440, lang = None, user = None, client_extensions = {}):
+    def build_processed(inv, scope = 440, lang = None, user = None):
         lang = verify_lang(lang)
         pack = {"items": {},
                 "cells": inv.cells_total}
         specialitem = cache.get("scrender")
 
         for item in inv:
-            pitem = dict_from_item(item, scope, lang, client_extensions)
+            pitem = dict_from_item(item, scope, lang)
             pack["items"][str(item.id)] = pitem
 
             # Consider the current item too boring if it looks like a schema item
@@ -649,7 +624,7 @@ class inventory(object):
         item_schema = schema(self._scope, self._lang).load()
         bp = steam.items.inventory(self._scope, owner, schema = item_schema, timeout = STEAM_TIMEOUT)
 
-        inventory = self.build_processed(bp, self._scope, self._lang, self.owner, item_schema.client_extensions)
+        inventory = self.build_processed(bp, self._scope, self._lang, self.owner)
 
         self._cache_commit(inventory)
 
@@ -902,21 +877,3 @@ def load_inventory(sid, scope):
         recent_inventories(scope).update(profile, place_label = place)
 
     return profile, pack
-
-def load_heroes():
-    ckey = "heroes-{0}-{1}".format(self._scope, self._lang)
-    hero_map = cache.get(ckey)
-
-    if not hero_map:
-        hero_map = {}
-
-        try:
-            heroes = steam.api.interface("IEconDOTA2_" + str(self._scope)).GetHeroes(language=self._lang, itemizedonly=1)
-            for hero in heroes["result"]["heroes"]:
-                hero_map[hero["name"]] = hero
-        except steam.api.APIError:
-            pass
-
-        cache.set(ckey, hero_map)
-
-    return hero_map
