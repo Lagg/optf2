@@ -38,6 +38,11 @@ class DumpThread(threading.Thread):
         schema = database.schema(scope = self.scope, lang = self.language)
 
         schema.dump()
+
+        # For the moment there is no differences between client schemas as they only have loc tokens
+        if self.language.lower() == "en_us":
+            schema.dump_client()
+
         print("{0}-{1}: Finished".format(self.scope, self.language))
 
 if __name__ == "__main__":
