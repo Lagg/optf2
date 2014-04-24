@@ -6,13 +6,13 @@ $var description: List of $persona's inventories
 <div id="content">
   $for ctx in context:
     <div class="box" style="width: 500px; margin: 0 auto 2em auto;">
-      <div class="titlebar" style="height: 28px;">
-	<img style="width: 24px; height: 24px; vertical-align: middle;" src="$ctx['icon']" alt="icon"/>
-	$ctx["name"] - $ctx["asset_count"] items
-      </div>
       $ appid = str(ctx['appid'])
       $ url = markup.generate_root_url('user/{0}'.format(user['id64']), appid)
-      <a href="$url"><img src="$ctx['inventory_logo']" alt="logo"/></a><br/>
+      <div class="titlebar" style="height: 28px;">
+	<img style="width: 24px; height: 24px; vertical-align: middle;" src="$ctx['icon']" alt="icon"/>
+        <a href="$url">$ctx["name"] - $ctx["asset_count"] items</a>
+      </div>
+      <a href="$url"><img style="max-width: 90%;" src="$ctx['inventory_logo']" alt="logo"/></a><br/>
       <table style="text-align: left; margin: 0 auto 0 auto;" cellpadding="4" cellspacing="4">
 	$for id, cat in ctx["rgContexts"].iteritems():
 	  <tr><th><a href="${url + '#page-' + cat['name']}">$cat["name"]:</a></th><td>$cat["asset_count"]</td></tr>
