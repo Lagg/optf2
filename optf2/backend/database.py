@@ -39,11 +39,7 @@ def hilo_to_ugcid64(hi, lo):
 virtual_root = config.ini.get("resources", "virtual-root")
 app_modes = dict(config.ini.items("modes"))
 app_aliases = dict(config.ini.items("app-aliases"))
-
-if config.ini.has_option("steam", "sim-only-apps"):
-    sim_only_apps = [app.strip() for app in config.ini.get("steam", "sim-only-apps").split(',')]
-else:
-    sim_only_apps = []
+sim_only_apps = config.ini.getlist("steam", "sim-only-apps")
 
 memcached = pylibmc.Client([config.ini.get("cache", "memcached-address")], binary = True,
                            behaviors = {"tcp_nodelay": True,

@@ -12,7 +12,10 @@ class OPConfig(ConfigParser.SafeConfigParser):
         ConfigParser.SafeConfigParser.__init__(self, *args, **kwargs)
 
     def getlist(self, section, option):
-        listval = self.get(section, option)
+        if self.has_option(section, option):
+            listval = self.get(section, option)
+        else:
+            return []
 
         return map(str.strip, listval.split(','))
 
