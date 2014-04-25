@@ -40,6 +40,11 @@ virtual_root = config.ini.get("resources", "virtual-root")
 app_modes = dict(config.ini.items("modes"))
 app_aliases = dict(config.ini.items("app-aliases"))
 
+if config.ini.has_option("steam", "sim-only-apps"):
+    sim_only_apps = [app.strip() for app in config.ini.get("steam", "sim-only-apps").split(',')]
+else:
+    sim_only_apps = []
+
 memcached = pylibmc.Client([config.ini.get("cache", "memcached-address")], binary = True,
                            behaviors = {"tcp_nodelay": True,
                                         "ketama": True})
@@ -859,10 +864,15 @@ def load_inventory(sid, scope):
     profile = user(sid).load()
     scope = app_aliases.get(scope, scope)
     place = None
+    pack = None
 
     try:
-        pack = inventory(profile, scope = scope).load()
+        if str(scope) not in sim_only_apps:
+            pack = inventory(profile, scope = scope).load()
     except itemtools.ItemBackendUnimplemented:
+        pass
+
+    if not pack:
         pack = sim_inventory(profile, scope = scope).load()
 
     place = pack.get("app", app_modes.get(scope))
