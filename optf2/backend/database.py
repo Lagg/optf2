@@ -40,6 +40,7 @@ virtual_root = config.ini.get("resources", "virtual-root")
 app_modes = dict(config.ini.items("modes"))
 app_aliases = dict(config.ini.items("app-aliases"))
 sim_only_apps = config.ini.getlist("steam", "sim-only-apps")
+color_override_exceptions = config.ini.getlist("misc", "color-override-exceptions")
 
 memcached = pylibmc.Client([config.ini.get("cache", "memcached-address")], binary = True,
                            behaviors = {"tcp_nodelay": True,
@@ -143,9 +144,10 @@ def dict_from_item(item, scope = 440, lang = None):
 
     attrs = item.attributes
     try:
-        namecolor = item.name_color
-        if namecolor:
-            newitem["namergb"] = namecolor
+        if str(scope) not in color_override_exceptions:
+            namecolor = item.name_color
+            if namecolor:
+                newitem["namergb"] = namecolor
     except AttributeError: pass
     min_level = item.min_level
     max_level = item.max_level
