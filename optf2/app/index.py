@@ -1,6 +1,8 @@
+import operator
 import web
 from optf2.backend import database
 from optf2.backend import items as itemtools
+from optf2.backend import config
 from optf2.frontend.markup import generate_root_url, generate_item_cell, init_theme, virtual_root
 import api
 import template
@@ -8,12 +10,13 @@ import random
 
 cache = database.cache
 
+valid_modes = map(operator.itemgetter(0), config.ini.items("modes"))
+
 class index:
     def GET(self, app = None):
         usestale = True
 
         # Until dedicated main homepage is done
-        from optf2.frontend.render import valid_modes
         if not app:
             app = random.choice(valid_modes)
 
