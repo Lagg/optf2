@@ -3,7 +3,7 @@ import web
 from optf2.backend import database
 from optf2.backend import items as itemtools
 from optf2.backend import config
-from optf2.frontend.markup import generate_root_url, generate_item_cell, init_theme, virtual_root
+from optf2.markup import generate_root_url, generate_item_cell, init_theme, virtual_root
 import api
 import template
 import random

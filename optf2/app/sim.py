@@ -3,7 +3,7 @@ import steam
 import template
 from optf2.backend import database
 from optf2.backend import items as itemtools
-from optf2.frontend.markup import generate_root_url
+from optf2.markup import generate_root_url
 import api
 
 templates = template.template

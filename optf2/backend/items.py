@@ -18,7 +18,7 @@ import web
 import re
 import time
 import operator
-from optf2.frontend.markup import get_class_for_id
+from optf2.markup import get_class_for_id
 from optf2.backend import config
 from optf2.backend import log
 

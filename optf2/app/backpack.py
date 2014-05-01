@@ -5,7 +5,7 @@ from optf2.backend import database
 from optf2.backend import items as itemtools
 from optf2.backend import config
 from optf2.backend import log
-from optf2.frontend import markup
+from optf2 import markup
 
 templates = template.template
 error_page = templates.errors

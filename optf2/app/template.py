@@ -3,7 +3,7 @@ import json
 import os
 from optf2.backend import items as itemtools
 from optf2.backend.config import ini as config
-from optf2.frontend import markup as markuptools
+from optf2 import markup as markuptools
 
 wikimap = {}
 for mode, wiki in config.items("wiki"):
