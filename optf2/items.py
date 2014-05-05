@@ -19,8 +19,8 @@ import re
 import time
 import operator
 from optf2.markup import get_class_for_id
-from optf2.backend import config
-from optf2.backend import log
+from optf2 import config
+from optf2 import log
 
 # Russia, for the sake of OPTF2. Give real symbol.
 currencysymbols = {"USD": "$",

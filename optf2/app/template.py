@@ -1,8 +1,8 @@
 import web
 import json
 import os
-from optf2.backend import items as itemtools
-from optf2.backend.config import ini as config
+from optf2 import items as itemtools
+from optf2.config import ini as config
 from optf2 import markup as markuptools
 
 wikimap = {}

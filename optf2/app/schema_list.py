@@ -17,8 +17,8 @@ OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 import web
 import template
 import operator
-from optf2.backend import items as itemtools
-from optf2.backend import database
+from optf2 import items as itemtools
+from optf2 import models
 from optf2 import markup
 
 templates = template.template
@@ -29,7 +29,7 @@ class items:
 
     def GET(self, app):
         query = web.input()
-        schema = database.schema(scope = app)
+        schema = models.schema(scope = app)
 
         markup.init_theme(app)
         markup.set_navlink()
@@ -37,7 +37,7 @@ class items:
         try:
             sitems = schema.processed_items
             items = sitems.values()
-        except (database.CacheEmptyError, itemtools.ItemBackendUnimplemented) as E:
+        except (models.CacheEmptyError, itemtools.ItemBackendUnimplemented) as E:
             raise web.NotFound(error_page.generic(E))
 
         filters = itemtools.filtering(items)
@@ -66,7 +66,7 @@ class items:
             pass
 
         stats = itemtools.get_stats(items)
-        price_stats = itemtools.get_price_stats(items, database.assets(scope = app))
+        price_stats = itemtools.get_price_stats(items, models.assets(scope = app))
 
         return templates.schema_items(app, items,
                                       sorter.get_sort_methods(),
@@ -84,9 +84,9 @@ class attributes:
         markup.set_navlink()
 
         try:
-            schema = database.schema(scope = app)
+            schema = models.schema(scope = app)
             attribs = schema.attributes
-        except (database.CacheEmptyError, itemtools.ItemBackendUnimplemented) as E:
+        except (models.CacheEmptyError, itemtools.ItemBackendUnimplemented) as E:
             raise web.NotFound(error_page.generic(E))
 
         attribute = None
@@ -114,9 +114,9 @@ class particles:
         markup.init_theme(app)
         markup.set_navlink()
         try:
-            schema = database.schema(scope = app)
+            schema = models.schema(scope = app)
             particles = schema.particle_systems
 
             return templates.schema_particles(app, particles)
-        except (database.CacheEmptyError, itemtools.ItemBackendUnimplemented) as E:
+        except (models.CacheEmptyError, itemtools.ItemBackendUnimplemented) as E:
             raise web.NotFound(error_page.generic(E))

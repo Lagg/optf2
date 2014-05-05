@@ -4,9 +4,9 @@ import os
 import steam
 import re
 from HTMLParser import HTMLParser
-from optf2.backend import database
-from optf2.backend import config
-cache = database.cache
+from optf2 import models
+from optf2 import config
+cache = models.cache
 
 # Subapplication and URLs defined after classes
 # TODO: Well defined error objects for when this is
@@ -198,7 +198,7 @@ def profile_search(user, greedy = False):
 
     prof = None
     try:
-        prof = database.user(user).load()
+        prof = models.user(user).load()
         prof["exact"] = True
         prof["id64"] = str(prof["id64"])
         resultlist.append(prof)
@@ -233,7 +233,7 @@ class persona:
         callback = web.input().get("jsonp")
 
         try:
-            user = database.user(uid).load()
+            user = models.user(uid).load()
             # JS is bad at numbers
             user["id64"] = str(user["id64"])
         except: pass

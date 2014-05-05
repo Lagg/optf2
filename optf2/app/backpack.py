@@ -1,10 +1,10 @@
 import web
 import template
 import steam
-from optf2.backend import database
-from optf2.backend import items as itemtools
-from optf2.backend import config
-from optf2.backend import log
+from optf2 import models
+from optf2 import items as itemtools
+from optf2 import config
+from optf2 import log
 from optf2 import markup
 
 templates = template.template
@@ -52,12 +52,12 @@ class loadout:
         return loadout, slotlist, classmap
 
     def GET(self, app, user, cid = None):
-        app = database.app_aliases.get(app, app)
+        app = models.app_aliases.get(app, app)
         self._cid = cid
         markup.init_theme(app)
         try:
-            userp = database.user(user).load()
-            pack = database.inventory(userp, scope = app).load()
+            userp = models.user(user).load()
+            pack = models.inventory(userp, scope = app).load()
             items = pack["items"].values()
             equippeditems = {}
             classmap = set()
@@ -68,10 +68,10 @@ class loadout:
 
             # initial normal items
             try:
-                sitems = database.schema(scope = app).processed_items.values()
+                sitems = models.schema(scope = app).processed_items.values()
                 normalitems = itemtools.filtering(sitems).byQuality("normal")
                 equippeditems, slotlist, classmap = self.build_loadout(normalitems, equippeditems, slotlist, classmap)
-            except database.CacheEmptyError:
+            except models.CacheEmptyError:
                 pass
 
             # Real equipped items
@@ -99,7 +99,7 @@ class item:
         markup.init_theme(app)
 
         try:
-            sitems = database.schema(scope = app).processed_items
+            sitems = models.schema(scope = app).processed_items
             item = sitems[iid]
 
             if web.input().get("contents"):
@@ -112,7 +112,7 @@ class item:
             raise web.NotFound(error_page.generic("Couldn't open schema: {0}".format(E)))
         except KeyError:
             raise web.NotFound(templates.item_error_notfound(iid))
-        except database.CacheEmptyError as E:
+        except models.CacheEmptyError as E:
             raise web.NotFound(error_page.generic(E))
         except itemtools.ItemBackendUnimplemented:
             raise web.NotFound(error_page.generic("No backend found to handle the given item, this could mean that the item has no available associated schema (yet)"))
@@ -120,9 +120,9 @@ class item:
         caps = markup.get_capability_strings(itemtools.get_present_capabilities([item]))
 
         try:
-            assets = database.assets(scope = app).price_map
+            assets = models.assets(scope = app).price_map
             price = markup.generate_item_price_string(item, assets)
-        except database.CacheEmptyError:
+        except models.CacheEmptyError:
             price = None
 
         # Strip off quality prefix for possessive name
@@ -140,7 +140,7 @@ class live_item:
         markup.init_theme(app)
 
         try:
-            user, items = database.load_inventory(user, scope = app)
+            user, items = models.load_inventory(user, scope = app)
         except steam.api.HTTPError as E:
             raise web.NotFound(error_page.generic("Couldn't connect to Steam (HTTP {0})".format(E)))
         except steam.user.ProfileError as E:
@@ -176,7 +176,7 @@ class live_item:
 
 class fetch:
     def GET(self, app, sid):
-        app = database.app_aliases.get(app, app)
+        app = models.app_aliases.get(app, app)
         sid = sid.strip('/').split('/')
         if len(sid) > 0: sid = sid[-1]
 
@@ -197,11 +197,11 @@ class fetch:
         markup.set_navlink()
 
         try:
-            user, pack = database.load_inventory(sid, app)
+            user, pack = models.load_inventory(sid, app)
             schema = None
 
             try:
-                schema = database.schema(scope = app)
+                schema = models.schema(scope = app)
             except itemtools.ItemBackendUnimplemented:
                 pass
 
@@ -227,7 +227,7 @@ class fetch:
             baditems = []
             (items, baditems) = itemtools.build_page_object(sorted_items, pagesize = pagesize, ignore_position = sortby)
 
-            price_stats = itemtools.get_price_stats(sorted_items, database.assets(scope = app))
+            price_stats = itemtools.get_price_stats(sorted_items, models.assets(scope = app))
 
         except steam.items.InventoryError as E:
             raise web.NotFound(error_page.generic("Failed to load backpack ({0})".format(E)))
@@ -235,7 +235,7 @@ class fetch:
             raise web.NotFound(error_page.generic("Failed to load profile ({0})".format(E)))
         except steam.api.HTTPError as E:
             raise web.NotFound(error_page.generic("Couldn't connect to Steam (HTTP {0})".format(E)))
-        except database.CacheEmptyError as E:
+        except models.CacheEmptyError as E:
             raise web.NotFound(error_page.generic(E))
 
         web.ctx.rss_feeds = [("{0}'s Backpack".format(user["persona"].encode("utf-8")),
@@ -251,7 +251,7 @@ class feed:
                                        globals = template.globals)
 
         try:
-            user, pack = database.load_inventory(sid, scope = app)
+            user, pack = models.load_inventory(sid, scope = app)
             items = pack["items"].values()
             sorter = itemtools.sorting(items)
             items = sorter.sort(web.input().get("sort", sorter.byTime))

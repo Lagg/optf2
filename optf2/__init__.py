@@ -7,8 +7,8 @@ import web
 import steam
 
 from optf2 import app
-from optf2.backend import log
-from optf2.backend import config
+from optf2 import log
+from optf2 import config
 
 virtual_root = config.ini.get("resources", "virtual-root")
 static_prefix = config.ini.get("resources", "static-prefix")

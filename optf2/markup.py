@@ -21,7 +21,7 @@ from os.path import join as pathjoin
 try: from collections import OrderedDict as odict
 except ImportError: odict = dict
 from urlparse import urljoin
-from optf2.backend import config, log
+from optf2 import config, log
 
 virtual_root = config.ini.get("resources", "virtual-root")
 static_prefix = config.ini.get("resources", "static-prefix")

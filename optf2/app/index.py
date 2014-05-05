@@ -1,14 +1,14 @@
 import operator
 import web
-from optf2.backend import database
-from optf2.backend import items as itemtools
-from optf2.backend import config
+from optf2 import models
+from optf2 import items as itemtools
+from optf2 import config
 from optf2.markup import generate_root_url, generate_item_cell, init_theme, virtual_root
 import api
 import template
 import random
 
-cache = database.cache
+cache = models.cache
 
 valid_modes = map(operator.itemgetter(0), config.ini.items("modes"))
 
@@ -20,7 +20,7 @@ class index:
         if not app:
             app = random.choice(valid_modes)
 
-        app = database.app_aliases.get(app, app)
+        app = models.app_aliases.get(app, app)
         query = web.input()
         user = query.get("user")
 
@@ -38,7 +38,7 @@ class index:
         showcase_cell = None
         try:
             if not showcase:
-                sitems = database.schema(scope = app).processed_items.values()
+                sitems = models.schema(scope = app).processed_items.values()
                 if len(sitems) > 0:
                     showcase = random.choice(sitems)
                     showcase["app"] = app
@@ -54,6 +54,6 @@ class index:
         web.ctx.notopsearch = True
 
         # Last packs
-        packs = database.recent_inventories(scope = app)
+        packs = models.recent_inventories(scope = app)
 
         return template.template.index(app, (packs or []), showcase_cell)
