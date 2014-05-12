@@ -1,1 +1,1 @@
-import schema_list, index, static, api, backpack, template, sim
+import schema_list, index, static, api, backpack, template

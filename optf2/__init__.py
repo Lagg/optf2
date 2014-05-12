@@ -71,7 +71,7 @@ def main():
 
     urls = (
         virtual_root + "api", app.api.subapplication,
-        urlr("inv/(?:user/)?(.+)"), app.sim.selector,
+        urlr("inv/(?:user/)?(.+)"), app.backpack.sim_selector,
         urlr(""), app.index.index,
         urlr("about"), app.static.about,
         urlr("(\w+)/items"), app.schema_list.items,
