@@ -57,3 +57,7 @@ class index:
         packs = models.recent_inventories(scope = app)
 
         return template.template.index(app, (packs or []), showcase_cell)
+
+class about:
+    def GET(self):
+        return template.template.about()
