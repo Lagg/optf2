@@ -15,14 +15,13 @@ OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 """
 
 import web
-import template
 import operator
+
+import optf2
 from optf2 import items as itemtools
 from optf2 import models
 from optf2 import markup
-
-templates = template.template
-error_page = templates.errors
+from optf2.views import template
 
 class items:
     """ Dumps every item in the schema in a pretty way """
@@ -38,7 +37,7 @@ class items:
             sitems = schema.processed_items
             items = sitems.values()
         except (models.CacheEmptyError, itemtools.ItemBackendUnimplemented) as E:
-            raise web.NotFound(error_page.generic(E))
+            raise web.NotFound(template.errors.generic(E))
 
         filters = itemtools.filtering(items)
         try:
@@ -68,7 +67,7 @@ class items:
         stats = itemtools.get_stats(items)
         price_stats = itemtools.get_price_stats(items, models.assets(scope = app))
 
-        return templates.schema_items(app, items,
+        return template.schema_items(app, items,
                                       sorter.get_sort_methods(),
                                       filter_classes,
                                       filter_qualities,
@@ -87,7 +86,7 @@ class attributes:
             schema = models.schema(scope = app)
             attribs = schema.attributes
         except (models.CacheEmptyError, itemtools.ItemBackendUnimplemented) as E:
-            raise web.NotFound(error_page.generic(E))
+            raise web.NotFound(template.errors.generic(E))
 
         attribute = None
 
@@ -99,15 +98,15 @@ class attributes:
                     attribute = attr
                     break
             if not attribute:
-                raise web.NotFound(error_page.generic(attachment_check + ": No such attribute"))
+                raise web.NotFound(template.errors.generic(attachment_check + ": No such attribute"))
 
             for item in schema.processed_items.values():
                 if attr.id in map(operator.itemgetter("id"), item.get("attrs", [])):
                     attached_items.append(item)
 
-            return templates.attribute_attachments(app, attached_items, attribute)
+            return template.attribute_attachments(app, attached_items, attribute)
         else:
-            return templates.schema_attributes(attribs)
+            return template.schema_attributes(attribs)
 
 class particles:
     def GET(self, app):
@@ -117,6 +116,6 @@ class particles:
             schema = models.schema(scope = app)
             particles = schema.particle_systems
 
-            return templates.schema_particles(app, particles)
+            return template.schema_particles(app, particles)
         except (models.CacheEmptyError, itemtools.ItemBackendUnimplemented) as E:
-            raise web.NotFound(error_page.generic(E))
+            raise web.NotFound(template.errors.generic(E))

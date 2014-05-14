@@ -9,6 +9,7 @@ import steam
 from optf2 import app
 from optf2 import log
 from optf2 import config
+from optf2.views import template
 
 virtual_root = config.ini.get("resources", "virtual-root")
 static_prefix = config.ini.get("resources", "static-prefix")
@@ -39,10 +40,10 @@ def internalerror():
     fmt = "{0[0]}:{0[1]} ({0[2]}) -> {0[3]}"
     logstr = " | ".join(map(fmt.format, traceback.extract_tb(etb))) + " - " + etype.__name__ + ': "' + str(evalue) + '"'
     log.main.error(logstr)
-    return web.internalerror(app.template.template.errors.generic("A problem related to a '" + etype.__name__ + "' error has been logged. Nudge Lagg to fix it."))
+    return web.internalerror(template.errors.generic("A problem related to a '" + etype.__name__ + "' error has been logged. Nudge Lagg to fix it."))
 
 def notfound():
-    return web.notfound(app.template.template.errors.generic("The page you were looking for couldn't be found."))
+    return web.notfound(template.errors.generic("The page you were looking for couldn't be found."))
 
 def main():
     """ Main setup function """

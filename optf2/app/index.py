@@ -4,8 +4,8 @@ from optf2 import models
 from optf2 import items as itemtools
 from optf2 import config
 from optf2.markup import generate_root_url, generate_item_cell, init_theme, virtual_root
+from optf2.views import template
 import api
-import template
 import random
 
 cache = models.cache
@@ -56,8 +56,8 @@ class index:
         # Last packs
         packs = models.recent_inventories(scope = app)
 
-        return template.template.index(app, (packs or []), showcase_cell)
+        return template.index(app, (packs or []), showcase_cell)
 
 class about:
     def GET(self):
-        return template.template.about()
+        return template.about()
