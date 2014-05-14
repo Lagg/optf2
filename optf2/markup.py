@@ -21,7 +21,7 @@ from os.path import join as pathjoin
 try: from collections import OrderedDict as odict
 except ImportError: odict = dict
 from urlparse import urljoin
-from optf2.backend import config, log
+from optf2 import config, log
 
 virtual_root = config.ini.get("resources", "virtual-root")
 static_prefix = config.ini.get("resources", "static-prefix")
@@ -253,13 +253,14 @@ def generate_item_price_string(item, stats):
 
 def generate_attribute_list(app, item, showlinks = False):
     contents = item.get("contents")
-    markup = u''
-    list_open = '<ul class="attribute-list">'
-    list_close = '</ul>'
+    markup = []
+    list_open = u'<ul class="attribute-list">'
+    list_close = u'</ul>'
     eater_fmt = u'<li class="attr-positive">{0}</li>'
+    morestr = ''
 
-    morestr = ""
-    if showlinks: morestr = ' <a href="{0}">(more)</a>'
+    if showlinks:
+        morestr = ' <a href="{0}">(more)</a>'
 
     for attr in item.get("attrs", []):
         desc = attr.get("desc", '').strip('\n')
@@ -269,50 +270,60 @@ def generate_attribute_list(app, item, showlinks = False):
         atype = attr.get("type", "neutral")
         aid = attr["id"]
 
-        if not desc: continue
+        if not desc:
+            continue
 
-        if color: style = ' style="color: #{0};"'.format(color)
-        markup += '<li class="attr-{0}"{1}>'.format(atype, style)
+        if color:
+            style = ' style="color: #{0};"'.format(color)
+
+        markup.append('<li class="attr-{0}"{1}>'.format(atype, style))
 
         # TODO: This is getting increasingly ugly
         # 194 == referenced item def
         # 192 == referenced item id low
         # 193 == referenced item id high
         if contents and (aid == 194 or aid == 192 or aid == 193):
-            markup += desc + morestr.format(web.http.changequery(contents = 1))
+            markup.append(desc + morestr.format(web.http.changequery(contents = 1)))
         else:
             if atype != "html": desc = web.websafe(desc)
-            markup += desc.replace('\n', "<br/>")
+            markup.append(desc.replace('\n', "<br/>"))
 
         if acct:
-            markup += morestr.format(generate_root_url("user/"  + str(acct["id64"]), app))
+            markup.append(morestr.format(generate_root_url("user/"  + str(acct["id64"]), app)))
 
-        markup += '</li>'
+        markup.append('</li>')
 
-    markup += u''.join(map(eater_fmt.format, item.get("eaters", [])))
+    markup += map(eater_fmt.format, item.get("eaters", []))
 
     # current style
     style = item.get("style")
-    if style: markup += u'<li class="attr-neutral">Style: {0}</li>'.format(style)
+    if style:
+        markup.append('<li class="attr-neutral">Style: {0}</li>'.format(style))
 
     # available styles
     styles = item.get("styles")
-    if styles: markup += u'<li class="attr-neutral">Styles: {0}</li>'.format(', '.join(styles))
+    if styles:
+        markup.append(u'<li class="attr-neutral">Styles: {0}</li>'.format(', '.join(styles)))
 
     quantity = item.get("qty")
-    if quantity: markup += '<li class="attr-neutral">Quantity: {0}</li>'.format(quantity)
+    if quantity:
+        markup.append('<li class="attr-neutral">Quantity: {0}</li>'.format(quantity))
 
-    if not item.get("tradable"): markup += '<li class="attr-negative">Untradable</li>'
-    if not item.get("craftable"): markup += '<li class="attr-negative">Uncraftable</li>'
+    if not item.get("tradable"):
+        markup.append('<li class="attr-negative">Untradable</li>')
+
+    if not item.get("craftable"):
+        markup.append('<li class="attr-negative">Uncraftable</li>')
 
     if not markup:
-        return ''
+        return u''
     else:
-        return (list_open + markup + list_close)
+        return (list_open + u''.join(markup) + list_close)
 
 
 def generate_item_cell(app, item, invalid = False, show_equipped = True, user = None, pricestats = None):
-    if not item: return '<div class="item_cell"></div>'
+    if not item:
+        return u'<div class="item_cell"></div>'
 
     itemid = item.get("id")
     schema_item = False
@@ -326,82 +337,107 @@ def generate_item_cell(app, item, invalid = False, show_equipped = True, user = 
     quality = item.get("quality", "normal")
     equippedstr = ""
     quantity = item.get("qty")
-
     cell_class = "item_cell"
-    if not schema_item and item.get("pos", -1) <= -1: cell_class += " undropped"
+
+    if not schema_item and item.get("pos", -1) <= -1:
+        cell_class += " undropped"
 
     style = ""
     coloroverride = item.get("namergb")
+
     if coloroverride:
         style = 'border-color: #{0};'.format(coloroverride)
 
     pid = item.get("pid")
+
     if pid != None:
         pid = ",url('{0}')".format(generate_particle_icon_url(pid, app))
     else:
         pid = ''
 
-    markup = (u'<div class="{0} cell-{1}" id="s{2}" style="background-image: url(\'{6[image]}\'){5};{4}">' +
-              '<a class="item-link" href="{3}">' +
-              '</a>'
-              ).format(cell_class, quality, itemid, item_link, style, pid, item)
+    markup = [(u'<div class="{0} cell-{1}" id="s{2}" style="background-image: url(\'{6[image]}\'){5};{4}">' +
+               '<a class="item-link" href="{3}">' +
+               '</a>'
+              ).format(cell_class, quality, itemid, item_link, style, pid, item)]
 
     contents = item.get("contents")
     series = item.get("series")
     craftno = item.get("craftno")
     texture = item.get("texture")
-    if contents:
-        markup += '<img src="' + contents["image"] + '" alt="0" class="item-image gift-preview"/>'
 
-    ctop = ''
+    if contents:
+        markup.append('<img src="' + contents["image"] + '" alt="0" class="item-image gift-preview"/>')
+
+    ctop = []
+
     if item.get("cname"):
-        ctop += '<img src="' + static_prefix + 'name_tag.png" alt="Named"/>'
+        ctop.append('<img src="' + static_prefix + 'name_tag.png" alt="Named"/>')
+
     if item.get("cdesc"):
-        ctop += '<img src="' + static_prefix + 'desc_tag.png" alt="Described"/>'
+        ctop.append('<img src="' + static_prefix + 'desc_tag.png" alt="Described"/>')
+
     if "gifter" in item:
-        ctop += '<img src="' + static_prefix + 'gift_icon.png" alt="Gift"/>'
-    if ctop: markup += '<div class="cell-top">' + ctop + '</div>'
+        ctop.append('<img src="' + static_prefix + 'gift_icon.png" alt="Gift"/>')
+
+    if ctop:
+        markup.append('<div class="cell-top">')
+        markup += ctop
+        markup.append('</div>')
 
     for cid, color in item.get("colors", []):
         sec = ''
         if cid != 0: sec = " secondary"
-        markup += '<span class="paint_splotch{0}" style="background-color: {1};">&nbsp;</span>'.format(sec, color)
+        markup.append('<span class="paint_splotch{0}" style="background-color: {1};">&nbsp;</span>'.format(sec, color))
+
     if series:
-        markup += '<span class="crate-series-icon">{0}</span>'.format(series)
+        markup.append('<span class="crate-series-icon">{0}</span>'.format(series))
+
     if craftno:
-        markup += '<div class="craft-number-icon">{0}</div>'.format(craftno)
+        markup.append('<div class="craft-number-icon">{0}</div>'.format(craftno))
+
     if texture:
-        markup += '<img class="icon-custom-texture"  src="' + texture + '" alt="texture"/>'
+        markup.append('<img class="icon-custom-texture"  src="' + texture + '" alt="texture"/>')
 
-    cbottom = ''
+    cbottom = []
+
     if equipped:
-        cbottom += '<span class="ui-icon ui-icon-suitcase"></span>'
+        cbottom.append('<span class="ui-icon ui-icon-suitcase"></span>')
+
     if quantity:
-        cbottom += '<span class="cell-quantity">' + str(quantity) + '</span>'
-    if cbottom: markup += '<div class="cell-bot">' + cbottom + '</div>'
+        cbottom.append('<span class="cell-quantity">' + str(quantity) + '</span>')
 
-    if coloroverride: style = ' style="color: #{0};"'.format(coloroverride)
+    if cbottom:
+        markup.append('<div class="cell-bot">')
+        markup += cbottom
+        markup.append('</div>')
+
+    if coloroverride:
+        style = ' style="color: #{0};"'.format(coloroverride)
+
     quality = item.get("quality", "normal")
-    markup += u'<div class="tooltip"><div class="prefix-{0} item-name"{1}>{2[mainname]}</div>'.format(quality, style, item)
 
-    markup += generate_item_type_line(item)
+    markup.append(u'<div class="tooltip"><div class="prefix-{0} item-name"{1}>{2[mainname]}</div>'.format(quality, style, item))
 
-    markup += generate_item_description(item)
+    markup.append(generate_item_type_line(item))
 
-    markup += generate_attribute_list(app, item, showlinks = False)
+    markup.append(generate_item_description(item))
 
-    markup += generate_item_paint_line(item)
+    markup.append(generate_attribute_list(app, item, showlinks = False))
+
+    markup.append(generate_item_paint_line(item))
 
     pricestr = generate_item_price_string(item, pricestats)
-    if pricestr: markup += '<div class="attr-neutral">{0}</div>'.format(pricestr)
 
-    markup += '</div></div>\n'
+    if pricestr:
+        markup.append('<div class="attr-neutral">{0}</div>'.format(pricestr))
 
-    return markup
+    markup.append('</div></div>\n')
+
+    return u''.join(markup)
 
 def generate_class_icon_links(classes, ident, user = None, wiki_url = None):
     classlink = '#'
-    markup = ''
+    markup = []
     classi = classes
 
     try: classi = classes.keys()
@@ -414,9 +450,9 @@ def generate_class_icon_links(classes, ident, user = None, wiki_url = None):
         else:
             if wiki_url:
                 classlink = wiki_url + str(label)
-        markup += '<a href="' + classlink + '">' + generate_class_sprite_img(ec, ident) + '</a>&nbsp;'
+        markup.append('<a href="' + classlink + '">' + generate_class_sprite_img(ec, ident) + '</a>&nbsp;')
 
-    return markup
+    return u''.join(markup)
 
 def generate_class_sprite_img(c, ident, styleextra = ""):
     ident = str(ident)

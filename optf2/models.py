@@ -25,8 +25,8 @@ import os
 import json
 
 import steam
-from optf2.backend import config
-from optf2.backend import log
+from optf2 import config
+from optf2 import log
 import items as itemtools
 from urlparse import urljoin
 

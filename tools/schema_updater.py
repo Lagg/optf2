@@ -24,7 +24,7 @@ except IndexError:
     pass
 
 import steam
-from optf2.backend import database, config
+from optf2 import models, config
 
 steam.api.key.set(config.ini.get("steam", "api-key"))
 
@@ -35,7 +35,7 @@ class DumpThread(threading.Thread):
         self.language = language
 
     def run(self):
-        schema = database.schema(scope = self.scope, lang = self.language)
+        schema = models.schema(scope = self.scope, lang = self.language)
 
         schema.dump()
         print("{0}-{1}: Finished".format(self.scope, self.language))
@@ -44,7 +44,7 @@ if __name__ == "__main__":
     updatepairs = set()
 
     # Iterate cache dir and gather names to dump (not a perfect method, I know)
-    for cachefile in os.listdir(database.CACHE_DIR):
+    for cachefile in os.listdir(models.CACHE_DIR):
         if not cachefile.startswith("schema-"):
             continue
 

@@ -15,21 +15,20 @@ OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 """
 
 import web
-import template
 import operator
-from optf2.backend import items as itemtools
-from optf2.backend import database
-from optf2.frontend import markup
 
-templates = template.template
-error_page = templates.errors
+import optf2
+from optf2 import items as itemtools
+from optf2 import models
+from optf2 import markup
+from optf2.views import template
 
 class items:
     """ Dumps every item in the schema in a pretty way """
 
     def GET(self, app):
         query = web.input()
-        schema = database.schema(scope = app)
+        schema = models.schema(scope = app)
 
         markup.init_theme(app)
         markup.set_navlink()
@@ -37,8 +36,8 @@ class items:
         try:
             sitems = schema.processed_items
             items = sitems.values()
-        except (database.CacheEmptyError, itemtools.ItemBackendUnimplemented) as E:
-            raise web.NotFound(error_page.generic(E))
+        except (models.CacheEmptyError, itemtools.ItemBackendUnimplemented) as E:
+            raise web.NotFound(template.errors.generic(E))
 
         filters = itemtools.filtering(items)
         try:
@@ -66,9 +65,9 @@ class items:
             pass
 
         stats = itemtools.get_stats(items)
-        price_stats = itemtools.get_price_stats(items, database.assets(scope = app))
+        price_stats = itemtools.get_price_stats(items, models.assets(scope = app))
 
-        return templates.schema_items(app, items,
+        return template.schema_items(app, items,
                                       sorter.get_sort_methods(),
                                       filter_classes,
                                       filter_qualities,
@@ -84,10 +83,10 @@ class attributes:
         markup.set_navlink()
 
         try:
-            schema = database.schema(scope = app)
+            schema = models.schema(scope = app)
             attribs = schema.attributes
-        except (database.CacheEmptyError, itemtools.ItemBackendUnimplemented) as E:
-            raise web.NotFound(error_page.generic(E))
+        except (models.CacheEmptyError, itemtools.ItemBackendUnimplemented) as E:
+            raise web.NotFound(template.errors.generic(E))
 
         attribute = None
 
@@ -99,24 +98,24 @@ class attributes:
                     attribute = attr
                     break
             if not attribute:
-                raise web.NotFound(error_page.generic(attachment_check + ": No such attribute"))
+                raise web.NotFound(template.errors.generic(attachment_check + ": No such attribute"))
 
             for item in schema.processed_items.values():
                 if attr.id in map(operator.itemgetter("id"), item.get("attrs", [])):
                     attached_items.append(item)
 
-            return templates.attribute_attachments(app, attached_items, attribute)
+            return template.attribute_attachments(app, attached_items, attribute)
         else:
-            return templates.schema_attributes(attribs)
+            return template.schema_attributes(attribs)
 
 class particles:
     def GET(self, app):
         markup.init_theme(app)
         markup.set_navlink()
         try:
-            schema = database.schema(scope = app)
+            schema = models.schema(scope = app)
             particles = schema.particle_systems
 
-            return templates.schema_particles(app, particles)
-        except (database.CacheEmptyError, itemtools.ItemBackendUnimplemented) as E:
-            raise web.NotFound(error_page.generic(E))
+            return template.schema_particles(app, particles)
+        except (models.CacheEmptyError, itemtools.ItemBackendUnimplemented) as E:
+            raise web.NotFound(template.errors.generic(E))
