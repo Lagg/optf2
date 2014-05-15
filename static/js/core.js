@@ -478,7 +478,7 @@ function CellFilter(data) {
 	    attribs.each(function() {
 		if (this.innerHTML.toLowerCase().search(text.toLowerCase()) != -1) {
 		    if (!unfade) {
-			var fadeBox = $('<div class="fade-overlay ' + text + '">&nbsp;</div>');
+			var fadeBox = $('<div class="fade-overlay ' + text + '"></div>');
 			var b = parseInt(cell.css("border-width"));
 			fadeBox.width(cell.width());
 			fadeBox.height(cell.height());

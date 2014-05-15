@@ -387,7 +387,7 @@ def generate_item_cell(app, item, invalid = False, show_equipped = True, user = 
     for cid, color in item.get("colors", []):
         sec = ''
         if cid != 0: sec = " secondary"
-        markup.append('<span class="paint_splotch{0}" style="background-color: {1};">&nbsp;</span>'.format(sec, color))
+        markup.append('<span class="paint_splotch{0}" style="background-color: {1};"></span>'.format(sec, color))
 
     if series:
         markup.append('<span class="crate-series-icon">{0}</span>'.format(series))
@@ -450,7 +450,7 @@ def generate_class_icon_links(classes, ident, user = None, wiki_url = None):
         else:
             if wiki_url:
                 classlink = wiki_url + str(label)
-        markup.append('<a href="' + classlink + '">' + generate_class_sprite_img(ec, ident) + '</a>&nbsp;')
+        markup.append('<a href="' + classlink + '">' + generate_class_sprite_img(ec, ident) + '</a> ')
 
     return u''.join(markup)
 
