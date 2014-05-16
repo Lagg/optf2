@@ -73,8 +73,8 @@ def main():
     urls = (
         virtual_root + "api", app.api.subapplication,
         urlr("inv/(?:user/)?(.+)"), app.backpack.sim_selector,
-        urlr(""), app.index.index,
-        urlr("about"), app.index.about,
+        urlr(""), "optf2.views.index",
+        urlr("about"), "optf2.views.about",
         urlr("(\w+)/items"), app.schema_list.items,
         urlr("(\w+)/attributes/?(\d*)"), app.schema_list.attributes,
         urlr("(\w+)/particles"), app.schema_list.particles,
