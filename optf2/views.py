@@ -8,7 +8,7 @@ import web
 from optf2 import markup
 from optf2 import config
 from optf2 import models
-from optf2.app import api
+from optf2.api_views import profile_search
 
 valid_modes = map(operator.itemgetter(0), config.ini.items("modes"))
 
@@ -69,7 +69,7 @@ class index:
         if appfrom not in valid_modes:
             appfrom = valid_modes[0]
 
-        profile = api.profile_search(user)
+        profile = profile_search(user)
         if profile:
             raise web.seeother(markup.generate_root_url("user/" + str(profile[0]["id64"]), appfrom))
 

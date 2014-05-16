@@ -6,10 +6,10 @@ import sys
 import web
 import steam
 
-from optf2 import app
 from optf2 import log
 from optf2 import config
 from optf2.views import template
+from optf2 import api_views
 
 virtual_root = config.ini.get("resources", "virtual-root")
 static_prefix = config.ini.get("resources", "static-prefix")
@@ -71,18 +71,18 @@ def main():
         os.makedirs(cache_dir)
 
     urls = (
-        virtual_root + "api", app.api.subapplication,
-        urlr("inv/(?:user/)?(.+)"), app.backpack.sim_selector,
+        virtual_root + "api", api_views.subapplication,
+        urlr("inv/(?:user/)?(.+)"), "optf2.inventory_views.sim_selector",
         urlr(""), "optf2.views.index",
         urlr("about"), "optf2.views.about",
-        urlr("(\w+)/items"), app.schema_list.items,
-        urlr("(\w+)/attributes/?(\d*)"), app.schema_list.attributes,
-        urlr("(\w+)/particles"), app.schema_list.particles,
-        urlr("(\w+)/item/(-?\d+)"), app.backpack.item,
-        urlr("(\w+)/item/(\w+)/(-?\d+)"), app.backpack.live_item,
-        urlr("(\w+)/loadout/(\w+)/?(\d*)"), app.backpack.loadout,
-        urlr("(\w+)/feed/(.+)"), app.backpack.feed,
-        urlr("(\w+)/(?:user/)?(.+)"), app.backpack.fetch
+        urlr("(\w+)/items"), "optf2.schema_views.items",
+        urlr("(\w+)/attributes/?(\d*)"), "optf2.schema_views.attributes",
+        urlr("(\w+)/particles"), "optf2.schema_views.particles",
+        urlr("(\w+)/item/(-?\d+)"), "optf2.inventory_views.item",
+        urlr("(\w+)/item/(\w+)/(-?\d+)"), "optf2.inventory_views.live_item",
+        urlr("(\w+)/loadout/(\w+)/?(\d*)"), "optf2.inventory_views.loadout",
+        urlr("(\w+)/feed/(.+)"), "optf2.inventory_views.feed",
+        urlr("(\w+)/(?:user/)?(.+)"), "optf2.inventory_views.fetch"
         )
 
     application = web.application(urls, globals())
