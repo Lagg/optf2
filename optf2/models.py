@@ -390,6 +390,15 @@ class schema(object):
         self._paints_key = "paints-{0}-{1}".format(app, lang)
         self._schema = None
 
+    def _dump_atomically(self, name, data):
+        fname = os.path.join(self._cdir, name)
+        new_fname = fname + ".new"
+
+        with open(new_fname, "wb") as newf:
+            newf.write(data)
+
+        os.rename(new_fname, fname)
+
     def _build_client_schema_specials(self):
         schema = self.load()
 
@@ -443,7 +452,7 @@ class schema(object):
             if clientstuff:
                 special[sid] = clientstuff
 
-        json.dump(special, open(os.path.join(self._cdir, self._client_schema_cache), "w"))
+        self._dump_atomically(self._client_schema_cache, json.dumps(special))
         return special
 
     @property
@@ -467,7 +476,7 @@ class schema(object):
             sitems[str(item.schema_id)] = dict_from_item(item, self._scope, self._lang)
 
         if sitems:
-            json.dump(sitems, open(os.path.join(self._cdir, self._items_cache), "wb"))
+            self._dump_atomically(self._items_cache, json.dumps(sitems))
 
         return sitems
 
@@ -531,7 +540,7 @@ class schema(object):
             schema = None
 
         if schema:
-            pickle.dump(schema, open(os.path.join(self._cdir, self._schema_cache), "wb"), pickle.HIGHEST_PROTOCOL)
+            self._dump_atomically(self._schema_cache, pickle.dumps(schema, pickle.HIGHEST_PROTOCOL))
 
         return schema
 
