@@ -17,10 +17,9 @@ OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 import web
 import operator
 
-import optf2
-from optf2 import items as itemtools
 from optf2 import models
 from optf2 import markup
+from optf2 import views
 from optf2.views import template
 
 class items:
@@ -39,12 +38,12 @@ class items:
         except (models.CacheEmptyError, models.ItemBackendUnimplemented) as E:
             raise web.NotFound(template.errors.generic(E))
 
-        dropdowns = itemtools.build_dropdowns(items)
+        dropdowns = views.build_dropdowns(items)
         filter_classes = markup.sorted_class_list(dropdowns["equipable_classes"], app)
         filter_qualities = markup.get_quality_strings(dropdowns["qualities"], schema)
         filter_capabilities = markup.get_capability_strings(dropdowns["capabilities"])
 
-        filters = itemtools.filtering(items)
+        filters = views.filtering(items)
         try:
             items = filters.byClass(markup.get_class_for_id(query["cls"], app)[0])
         except KeyError:
@@ -60,13 +59,13 @@ class items:
         except KeyError:
             pass
 
-        sorter = itemtools.sorting(items)
+        sorter = views.sorting(items)
         try:
             items = sorter.sort(query.get("sort", "SchemaID"))
         except KeyError:
             pass
 
-        item_page = itemtools.item_page(items)
+        item_page = views.item_page(items)
         stats = item_page.summary
         price_stats = item_page.build_price_summary(models.assets(scope = app))
 

@@ -1,10 +1,10 @@
 import web
 import steam
 from optf2 import models
-from optf2 import items as itemtools
 from optf2 import config
 from optf2 import log
 from optf2 import markup
+from optf2 import views
 from optf2.views import template, template_setup
 
 _feed_renderer = template_setup(config.ini.get("resources", "template-dir"))
@@ -68,7 +68,7 @@ class loadout:
             # initial normal items
             try:
                 sitems = models.schema(scope = app).processed_items.values()
-                normalitems = itemtools.filtering(sitems).byQuality("normal")
+                normalitems = views.filtering(sitems).byQuality("normal")
                 equippeditems, slotlist, classmap = self.build_loadout(normalitems, equippeditems, slotlist, classmap)
             except models.CacheEmptyError:
                 pass
@@ -207,8 +207,8 @@ class fetch:
             cell_count = pack["cells"]
             items = pack["items"].values()
 
-            filters = itemtools.filtering(items)
-            dropdowns = itemtools.build_dropdowns(items)
+            filters = views.filtering(items)
+            dropdowns = views.build_dropdowns(items)
             filter_classes = markup.sorted_class_list(dropdowns["equipable_classes"], app)
             filter_qualities = markup.get_quality_strings(dropdowns["qualities"], schema)
             if len(filter_classes) <= 1: filter_classes = None
@@ -220,10 +220,10 @@ class fetch:
             if filter_quality:
                 items = filters.byQuality(filter_quality)
 
-            sorter = itemtools.sorting(items)
+            sorter = views.sorting(items)
             sorted_items = sorter.sort(sortby)
 
-            item_page = itemtools.item_page(items)
+            item_page = views.item_page(items)
             stats = item_page.summary
 
             baditems = []
@@ -252,7 +252,7 @@ class feed:
         try:
             user, pack = models.load_inventory(sid, scope = app)
             items = pack["items"].values()
-            sorter = itemtools.sorting(items)
+            sorter = views.sorting(items)
             items = sorter.sort(web.input().get("sort", sorter.byTime))
             cap = config.ini.getint("rss", "inventory-max-items")
 
