@@ -22,12 +22,6 @@ from optf2.markup import get_class_for_id
 from optf2 import config
 from optf2 import log
 
-# Russia, for the sake of OPTF2. Give real symbol.
-currencysymbols = {"USD": "$",
-                   "RUB": "",
-                   "GBP": unichr(0x00A3),
-                   "EUR": unichr(0x20AC)}
-
 class filtering:
     """ item list filtering, note that these are their own
     sets of filters which do different things and take different
@@ -115,6 +109,14 @@ class sorting:
 
 
 class item_page(object):
+    """ Class for building pages of items suitable for display """
+
+    # Russia, for the sake of OPTF2. Give real symbol.
+    currencysymbols = {"USD": "$",
+                       "RUB": "",
+                       "GBP": unichr(0x00A3),
+                       "EUR": unichr(0x20AC)}
+
     def __init__(self, items):
         self._items = items
 
@@ -210,7 +212,7 @@ class item_page(object):
         except:
             assets = {}
 
-        stats = {"assets": assets, "sym": currencysymbols, "worth": {}, "most-expensive": [], "avg": {}}
+        stats = {"assets": assets, "sym": self.currencysymbols, "worth": {}, "most-expensive": [], "avg": {}}
 
         if not assets:
             return stats
@@ -231,7 +233,7 @@ class item_page(object):
             except KeyError: continue
             costs.append((item, asset))
             for k, v in asset.iteritems():
-                currencysymbols.setdefault(k, '')
+                self.currencysymbols.setdefault(k, '')
                 if k not in worth:
                     worth[k] = v
                 else:
