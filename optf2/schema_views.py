@@ -36,24 +36,26 @@ class items:
         try:
             sitems = schema.processed_items
             items = sitems.values()
-        except (models.CacheEmptyError, itemtools.ItemBackendUnimplemented) as E:
+        except (models.CacheEmptyError, models.ItemBackendUnimplemented) as E:
             raise web.NotFound(template.errors.generic(E))
+
+        dropdowns = itemtools.build_dropdowns(items)
+        filter_classes = markup.sorted_class_list(dropdowns["equipable_classes"], app)
+        filter_qualities = markup.get_quality_strings(dropdowns["qualities"], schema)
+        filter_capabilities = markup.get_capability_strings(dropdowns["capabilities"])
 
         filters = itemtools.filtering(items)
         try:
-            filter_classes = markup.sorted_class_list(itemtools.get_equippable_classes(items), app)
             items = filters.byClass(markup.get_class_for_id(query["cls"], app)[0])
         except KeyError:
             pass
 
         try:
-            filter_qualities = markup.get_quality_strings(itemtools.get_present_qualities(items), schema)
             items = filters.byQuality(query["quality"])
         except KeyError:
             pass
 
         try:
-            filter_capabilities = markup.get_capability_strings(itemtools.get_present_capabilities(items))
             items = filters.byCapability(query["capability"])
         except KeyError:
             pass
@@ -64,8 +66,9 @@ class items:
         except KeyError:
             pass
 
-        stats = itemtools.get_stats(items)
-        price_stats = itemtools.get_price_stats(items, models.assets(scope = app))
+        item_page = itemtools.item_page(items)
+        stats = item_page.summary
+        price_stats = item_page.build_price_summary(models.assets(scope = app))
 
         return template.schema_items(app, items,
                                       sorter.get_sort_methods(),
@@ -85,7 +88,7 @@ class attributes:
         try:
             schema = models.schema(scope = app)
             attribs = schema.attributes
-        except (models.CacheEmptyError, itemtools.ItemBackendUnimplemented) as E:
+        except (models.CacheEmptyError, models.ItemBackendUnimplemented) as E:
             raise web.NotFound(template.errors.generic(E))
 
         attribute = None
@@ -117,5 +120,5 @@ class particles:
             particles = schema.particle_systems
 
             return template.schema_particles(app, particles)
-        except (models.CacheEmptyError, itemtools.ItemBackendUnimplemented) as E:
+        except (models.CacheEmptyError, models.ItemBackendUnimplemented) as E:
             raise web.NotFound(template.errors.generic(E))

@@ -28,18 +28,6 @@ currencysymbols = {"USD": "$",
                    "GBP": unichr(0x00A3),
                    "EUR": unichr(0x20AC)}
 
-class ItemError(Exception):
-    def __init__(self, msg):
-        Exception.__init__(self)
-        self.msg = msg
-
-    def __str__(self):
-        return str(self.msg)
-
-class ItemBackendUnimplemented(ItemError):
-    def __init__(self, msg):
-        ItemError.__init__(self, msg)
-
 class filtering:
     """ item list filtering, note that these are their own
     sets of filters which do different things and take different
@@ -50,13 +38,17 @@ class filtering:
         self._items = items
 
     def byCapability(self, capability):
-        return [item for item in self._items if item and capability in item.get("caps", [])]
+        self._items = [item for item in self._items if item and capability in item.get("caps", [])]
+        return self._items
 
     def byClass(self, cls):
-        return [item for item in self._items if item and cls in item.get("equipable", [])]
+        # TODO: Figure out happy medium for showing items that are all-class
+        self._items = [item for item in self._items if item and cls in item.get("equipable", [])]
+        return self._items
 
     def byQuality(self, quality):
-        return [item for item in self._items if item and str(item.get("quality")) == str(quality)]
+        self._items = [item for item in self._items if item and str(item.get("quality")) == str(quality)]
+        return self._items
 
 class sorting:
     """ Item list sorting """
@@ -121,191 +113,190 @@ class sorting:
     def __init__(self, items):
         self._items = items
 
-def condensed_to_id64(value):
-    return "7656" + str(int(value) + 1197960265728)
 
-def build_page_object_unpositioned(items, pagesize = None):
-    """ Returns the same thing build_page_object does, but
-    ignores positioning info and places cells in the order
-    items are listed, pagesize is the number of items per page """
+class item_page(object):
+    def __init__(self, items):
+        self._items = items
 
-    if not pagesize: pagesize = 50
+    def build_page(self, pagesize=None, ignore_pos=False):
+        """ Build a page map containing null elements as needed to represent
+        empty cells. Obeys positioning info. Returns a touple containing the page dict
+        and displaced items. The dict key is the page name and the value is the padded item list
+        """
 
-    fitems = filter(None, items)
-    ilen = len(fitems)
-    pagecount = (ilen + (pagesize - (ilen % pagesize))) / pagesize
-    imap = {}
+        imap = {}
+        displaced = []
 
-    for page in xrange(1, pagecount + 1):
-        offset = page * pagesize
-        itemslice = fitems[offset - pagesize:offset]
-        imap[page] = itemslice + ([None] * (pagesize - len(itemslice)))
+        if not pagesize:
+            pagesize = 50
 
-    return imap
+        if ignore_pos:
+            return self.build_page_unpositioned(pagesize), displaced
 
-def build_page_object(items, pagesize = None, ignore_position = False):
-    """ Returns a dict of items mapped to their sections and positions, or a default integer
-    map if not implemented. Pagesize is the default minimum number of cells to a page
-    if ignoreposition is true ignore any positioning info and build pages as items are given
-    in the list """
+        for item in self._items:
+            if not item: continue
 
-    imap = {}
-    displaced = []
+            itempos = item.get("pos")
 
-    if not pagesize: pagesize = 50
-
-    if ignore_position:
-        return build_page_object_unpositioned(items, pagesize), displaced
-
-    for item in items:
-        if not item: continue
-
-        itempos = item.get("pos")
-
-        if not itempos:
-            displaced.append(item)
-            continue
-
-        # Will use page names before
-        # numbered if available
-        pagename = item.get("cat")
-        posrem = itempos % pagesize
-        if posrem > 0: posrem += pagesize - posrem
-        pageno = (itempos + posrem) / pagesize
-        page = pageno
-        roundedsize = pageno * pagesize
-        realsize = pagesize
-
-        if pagename:
-            page = pagename
-            realsize = roundedsize
-        else:
-            itempos -= roundedsize + 1
-
-        imap.setdefault(page, [])
-        pagelen = len(imap[page])
-        if realsize > pagelen:
-            imap[page] += [None] * ((realsize - pagelen) + 1)
-
-        if imap[page][itempos] == None:
-            imap[page][itempos] = item
-        else:
-            overlapped = imap[page][itempos]
-            if overlapped.get("id") > item.get("id"):
-                imap[page][itempos] = item
-                displaced.append(overlapped)
-            else:
+            if not itempos:
                 displaced.append(item)
+                continue
 
-    mkeys = sorted(imap.keys())
-    mapkeys = set(mkeys)
-    for key in mapkeys: del imap[key][0]
+            # Will use page names before
+            # numbered if available
+            pagename = item.get("cat")
+            posrem = itempos % pagesize
+            if posrem > 0: posrem += pagesize - posrem
+            pageno = (itempos + posrem) / pagesize
+            page = pageno
+            roundedsize = pageno * pagesize
+            realsize = pagesize
 
-    return imap, displaced
+            if pagename:
+                page = pagename
+                realsize = roundedsize
+            else:
+                itempos -= roundedsize + 1
 
-def get_stats(items):
-    """ Returns a dict of various backpack stats """
-    stats = {"total": 0}
-    merged = {
-        "weapons": ["primary", "secondary", "melee", "weapon"],
-        "hats": ["hat", "head"],
-        "cosmetic": ["misc"],
-        "pda": ["pda", "pda2"],
-        "other": ["none"]
-        }
+            imap.setdefault(page, [])
+            pagelen = len(imap[page])
+            if realsize > pagelen:
+                imap[page] += [None] * ((realsize - pagelen) + 1)
 
-    for item in items:
-        if not item: continue
-        slot = item.get("slot", "none")
+            if imap[page][itempos] == None:
+                imap[page][itempos] = item
+            else:
+                overlapped = imap[page][itempos]
+                if overlapped.get("id") > item.get("id"):
+                    imap[page][itempos] = item
+                    displaced.append(overlapped)
+                else:
+                    displaced.append(item)
 
-        stats["total"] += 1
+        mkeys = sorted(imap.keys())
+        mapkeys = set(mkeys)
+        for key in mapkeys: del imap[key][0]
 
-        ismerged = False
+        return imap, displaced
 
-        for label, slots in merged.iteritems():
-            if slot.lower() in slots:
-                stats.setdefault(label, 0)
-                stats[label] += 1
-                ismerged = True
+    def build_page_unpositioned(self, pagesize=None):
+        """ Do the same thing build page does but without using positioning info and using
+        item order as listed. Returns only item map without displaced items since
+        there aren't any.
+        """
 
-        if not ismerged:
-            stats.setdefault(slot, 0)
-            stats[slot] += 1
+        if not pagesize:
+            pagesize = 50
 
-    # Redundancy check
-    othercount = stats.get("other")
-    if othercount and othercount == stats["total"]:
-        del stats["other"]
+        fitems = filter(None, self._items)
+        ilen = len(fitems)
+        pagecount = (ilen + (pagesize - (ilen % pagesize))) / pagesize
+        imap = {}
 
-    return stats
+        for page in xrange(1, pagecount + 1):
+            offset = page * pagesize
+            itemslice = fitems[offset - pagesize:offset]
+            imap[page] = itemslice + ([None] * (pagesize - len(itemslice)))
 
-def get_equippable_classes(items):
-    """ Returns a set of classes that can equip the listed items """
-    if not items: return []
-    classes = set()
+        return imap
 
-    for item in items:
-        if not item: continue
-        classes |= set(item.get("equipable", []))
+    def build_price_summary(self, assetcatalog):
+        """ Builds a summary dict containing a rought estimate of prices for the items on the
+        page according to the given asset catalog.
+        """
 
-    return classes
+        try:
+            assets = assetcatalog.price_map
+        except:
+            assets = {}
 
-def get_present_capabilities(items):
-    """ Returns a sorted list of capabilities in this set of items,
-    uses the capabilitydict """
+        stats = {"assets": assets, "sym": currencysymbols, "worth": {}, "most-expensive": [], "avg": {}}
 
-    caps = set()
-    for item in items:
-        if not item: continue
-        caps |= set(item.get("caps", []))
+        if not assets:
+            return stats
 
-    return sorted(caps)
+        worth = stats["worth"]
+        costs = []
+        count = 0
 
-def get_present_qualities(items):
-    """ Returns a sorted list of qualities that are in this set
-    of items """
+        for item in self._items:
+            if not item: continue
+            # TODO? Checking origin string directly may cause problems for non-english origins
+            origin = item.get("origin", '')
+            if "id" in item and origin.lower() != "purchased":
+                continue # Not explicit purchase
+            try:
+                asset = assets[str(item.get("sid"))]
+                count += 1
+            except KeyError: continue
+            costs.append((item, asset))
+            for k, v in asset.iteritems():
+                currencysymbols.setdefault(k, '')
+                if k not in worth:
+                    worth[k] = v
+                else:
+                    worth[k] += v
 
-    qualities = set(map(operator.itemgetter("quality"), items))
+        stats["most-expensive"] = [item for item in sorted(costs, reverse = True, key = operator.itemgetter(1))[:10]]
 
-    return sorted(qualities)
+        if count != 0:
+            for k, v in worth.iteritems():
+                stats["avg"][k] = round((v / count), 2)
 
-def get_price_stats(items, assetcache):
-    try:
-        assets = assetcache.price_map
-    except:
-        assets = {}
-
-    stats = {"assets": assets, "sym": currencysymbols, "worth": {}, "most-expensive": [], "avg": {}}
-
-    if not assets:
         return stats
 
-    worth = stats["worth"]
-    costs = []
-    count = 0
+    @property
+    def summary(self):
+        """ A dict containing a summary of the items in the page """
+
+        stats = {"total": 0}
+        merged = {
+            "weapons": ["primary", "secondary", "melee", "weapon"],
+            "hats": ["hat", "head"],
+            "cosmetic": ["misc"],
+            "pda": ["pda", "pda2"],
+            "other": ["none"]
+            }
+
+        for item in self._items:
+            if not item:
+                continue
+
+            slot = item.get("slot", "none")
+
+            stats["total"] += 1
+
+            ismerged = False
+
+            for label, slots in merged.iteritems():
+                if slot.lower() in slots:
+                    stats.setdefault(label, 0)
+                    stats[label] += 1
+                    ismerged = True
+
+            if not ismerged:
+                stats.setdefault(slot, 0)
+                stats[slot] += 1
+
+        # Redundancy check
+        othercount = stats.get("other")
+        if othercount and othercount == stats["total"]:
+            del stats["other"]
+
+        return stats
+
+def build_dropdowns(items):
+    """ Builds a list of dropdown operands based on the items given. """
+    classes = set()
+    qualities = set()
+    caps = set()
 
     for item in items:
-        if not item: continue
-        # TODO? Checking origin string directly may cause problems for non-english origins
-        origin = item.get("origin", '')
-        if "id" in item and origin.lower() != "purchased":
-            continue # Not explicit purchase
-        try:
-            asset = assets[str(item.get("sid"))]
-            count += 1
-        except KeyError: continue
-        costs.append((item, asset))
-        for k, v in asset.iteritems():
-            currencysymbols.setdefault(k, '')
-            if k not in worth:
-                worth[k] = v
-            else:
-                worth[k] += v
+        if not item:
+            continue
 
-    stats["most-expensive"] = [item for item in sorted(costs, reverse = True, key = operator.itemgetter(1))[:10]]
+        classes |= set(item.get("equipable", []))
+        caps |= set(item.get("caps", []))
+        qualities.add(item.get("quality"))
 
-    if count != 0:
-        for k, v in worth.iteritems():
-            stats["avg"][k] = round((v / count), 2)
-
-    return stats
+    return {"capabilities": sorted(caps), "equipable_classes": sorted(classes), "qualities": sorted(qualities)}

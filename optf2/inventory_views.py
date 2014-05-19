@@ -83,7 +83,7 @@ class loadout:
             raise web.NotFound(template.errors.generic("Profile error: {0}".format(E)))
         except steam.api.HTTPError as E:
             raise web.NotFound(template.errors.generic("Couldn't connect to Steam (HTTP {0})".format(E)))
-        except itemtools.ItemBackendUnimplemented:
+        except models.ItemBackendUnimplemented:
             raise web.NotFound(template.errors.generic("No backend found to handle loadouts for these items"))
 
     def __init__(self):
@@ -113,10 +113,10 @@ class item:
             raise web.NotFound(template.item_error_notfound(iid))
         except models.CacheEmptyError as E:
             raise web.NotFound(template.errors.generic(E))
-        except itemtools.ItemBackendUnimplemented:
+        except models.ItemBackendUnimplemented:
             raise web.NotFound(template.errors.generic("No backend found to handle the given item, this could mean that the item has no available associated schema (yet)"))
 
-        caps = markup.get_capability_strings(itemtools.get_present_capabilities([item]))
+        caps = markup.get_capability_strings(item.get("caps", []))
 
         try:
             assets = models.assets(scope = app).price_map
@@ -201,32 +201,35 @@ class fetch:
 
             try:
                 schema = models.schema(scope = app)
-            except itemtools.ItemBackendUnimplemented:
+            except models.ItemBackendUnimplemented:
                 pass
 
             cell_count = pack["cells"]
             items = pack["items"].values()
 
             filters = itemtools.filtering(items)
-            filter_classes = markup.sorted_class_list(itemtools.get_equippable_classes(items), app)
-            filter_qualities = markup.get_quality_strings(itemtools.get_present_qualities(items), schema)
+            dropdowns = itemtools.build_dropdowns(items)
+            filter_classes = markup.sorted_class_list(dropdowns["equipable_classes"], app)
+            filter_qualities = markup.get_quality_strings(dropdowns["qualities"], schema)
             if len(filter_classes) <= 1: filter_classes = None
             if len(filter_qualities) <= 1: filter_qualities = None
 
             if filter_class:
                 items = filters.byClass(markup.get_class_for_id(filter_class, app)[0])
+
             if filter_quality:
                 items = filters.byQuality(filter_quality)
-
-            stats = itemtools.get_stats(items)
 
             sorter = itemtools.sorting(items)
             sorted_items = sorter.sort(sortby)
 
-            baditems = []
-            (items, baditems) = itemtools.build_page_object(sorted_items, pagesize = pagesize, ignore_position = sortby)
+            item_page = itemtools.item_page(items)
+            stats = item_page.summary
 
-            price_stats = itemtools.get_price_stats(sorted_items, models.assets(scope = app))
+            baditems = []
+            items, baditems = item_page.build_page(pagesize=pagesize, ignore_pos=sortby)
+
+            price_stats = item_page.build_price_summary(models.assets(scope = app))
 
         except steam.items.InventoryError as E:
             raise web.NotFound(template.errors.generic("Failed to load backpack ({0})".format(E)))

@@ -64,6 +64,18 @@ class CacheEmptyError(CacheError):
     def __init__(self, msg):
         CacheError.__init__(self, msg)
 
+class ItemError(Exception):
+    def __init__(self, msg):
+        Exception.__init__(self)
+        self.msg = msg
+
+    def __str__(self):
+        return str(self.msg)
+
+class ItemBackendUnimplemented(ItemError):
+    def __init__(self, msg):
+        ItemError.__init__(self, msg)
+
 def verify_lang(code = None):
     try:
         code = steam.loc.language(code).code
@@ -553,7 +565,7 @@ class schema(object):
         self._schema = schema
 
         if not schema:
-            raise itemtools.ItemBackendUnimplemented(self._scope)
+            raise ItemBackendUnimplemented(self._scope)
 
         return schema
 
@@ -876,7 +888,7 @@ def load_inventory(sid, scope):
     try:
         if str(scope) not in sim_only_apps:
             pack = inventory(profile, scope = scope).load()
-    except itemtools.ItemBackendUnimplemented:
+    except ItemBackendUnimplemented:
         pass
 
     if not pack:
