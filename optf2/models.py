@@ -27,7 +27,7 @@ import json
 import steam
 from optf2 import config
 from optf2 import log
-import items as itemtools
+from optf2 import markup
 from urlparse import urljoin
 
 def _(thestring):
