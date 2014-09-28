@@ -136,7 +136,7 @@ def dict_from_item(item, scope = 440, lang = None):
     if qty > 1: newitem["qty"] = qty
     if quality_str: newitem["quality"] = quality_str
     # May need string->ID swapper
-    if equipable: newitem["equipable"] = [itemtools.get_class_for_id(c, appid)[0] for c in equipable]
+    if equipable: newitem["equipable"] = [markup.get_class_for_id(c, appid)[0] for c in equipable]
     # Certain items will be part of a category system, this is used for advanced paging
     if category: newitem["cat"] = category
     newitem["image"] = imgsmall or default_cell_image
@@ -280,6 +280,11 @@ def dict_from_item(item, scope = 440, lang = None):
 
         elif attrname == "custom texture hi":
             custom_texture_hi = theattr.value
+
+        elif attrname == "limited quantity item":
+            attrdesc = "Limited quantity"
+            newitem["limited"] = True
+            filtered = False
 
         if attrvaluetype == "account_id" and account_info:
             attrdesc = _(theattr.description.replace("%s1", account_info["persona"]))

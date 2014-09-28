@@ -191,9 +191,13 @@ def generate_item_type_line(item, classic = True):
     itemorigin = item.get("origin")
     level = item.get("level")
     itype = item.get("type", "")
+    limited = item.get("limited")
 
     if classic and level:
         levelprefix = "Level {0}".format(level)
+
+    if limited:
+        levelprefix = "Limited " + levelprefix
 
     if itemorigin:
         origin_name = " - " + itemorigin
