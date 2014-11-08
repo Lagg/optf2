@@ -214,8 +214,14 @@ def dict_from_item(item, scope = 440, lang = None):
             filtered = False
             contents_line_rendered = True
 
-        elif attrname.startswith("set item tint RGB"):
-            raw_rgb = int(theattr.value)
+        elif attrname.find("set item tint RGB") != -1:
+            # Getting so tired of valve making lying attribute value types. WORKAROUND.
+            # 1004 == SPELL: set item tint RGB
+            if attrid == 1004:
+                raw_rgb = int(theattr.value_int)
+            else:
+                raw_rgb = int(theattr.value)
+
             newitem.setdefault("colors", [])
             nthcolor = attrname[attrname.rfind(' ') + 1:]
             paint_map = cache.get("paints-{0}-{1}".format(appid, language), {})
@@ -239,7 +245,7 @@ def dict_from_item(item, scope = 440, lang = None):
 
             pname = paint_map.get(str(raw_rgb), item_color)
 
-            newitem["paint_name"] = pname
+            newitem.setdefault("paint_name", pname)
 
             # Workaround until the icons for colored paint cans are correct
             if ((colori == 0) and
@@ -507,7 +513,7 @@ class schema(object):
         for item in schema:
             # Look at tool metadata to determine if this is a paint can
             metadata = item.tool_metadata
-            if metadata and metadata.get("type") == "paint_can":
+            if metadata and metadata.get("type") == "paint_can" or item.type == "TF_SpellTool":
                 for attr in item:
                     if attr.name.startswith("set item tint RGB"):
                         pmap[str(int(attr.value))] = item.name
