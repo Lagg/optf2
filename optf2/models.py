@@ -260,7 +260,7 @@ def dict_from_item(item, scope = 440, lang = None):
 
             filtered = True
 
-        elif attrname.startswith("attach particle effect"):
+        elif attrname.startswith("attach particle effect") or attrname.startswith("on taunt attach particle"):
             particle_map = cache.get("particles-{0}-{1}".format(appid, language), {})
             particleid = int(theattr.value)
             default = "unknown particle ({0})".format(particleid)
