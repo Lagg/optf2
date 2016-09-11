@@ -239,6 +239,8 @@ class fetch:
             raise web.NotFound(template.errors.generic("Couldn't connect to Steam (HTTP {0})".format(E)))
         except models.CacheEmptyError as E:
             raise web.NotFound(template.errors.generic(E))
+        except:
+            raise web.NotFound(template.errors.generic("Couldn't load feed"))
 
         web.ctx.rss_feeds = [("{0}'s Backpack".format(user["persona"].encode("utf-8")),
                               markup.generate_root_url("feed/" + str(user["id64"]), app))]

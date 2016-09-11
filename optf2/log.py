@@ -20,4 +20,5 @@ try:
 except OSError:
     pass
 
-main = logging.getLogger(config.ini.get("misc", "project-name")).addHandler(logging.NullHandler())
+main = logging.getLogger(config.ini.get("misc", "project-name"))
+main.addHandler(logging.NullHandler())
