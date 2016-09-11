@@ -546,10 +546,10 @@ class schema(object):
         return qmap
 
     def dump(self):
-        schema = steam.items.schema(self._scope, lang = self._lang, timeout = STEAM_TIMEOUT)
-        self._schema = schema
-
         try:
+            schema = steam.items.schema(self._scope, lang = self._lang, timeout = STEAM_TIMEOUT)
+            self._schema = schema
+
             self._build_paint_store()
             self._build_particle_store()
             self._build_quality_store()
@@ -558,7 +558,6 @@ class schema(object):
             self._schema = None
             schema = None
         except Exception as E:
-            log.main.error("Error loading schema: {0}".format(E))
             self._schema = None
             schema = None
 

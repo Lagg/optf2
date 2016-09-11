@@ -40,7 +40,7 @@ def internalerror():
     fmt = "{0[0]}:{0[1]} ({0[2]}) -> {0[3]}"
     logstr = " | ".join(map(fmt.format, traceback.extract_tb(etb))) + " - " + etype.__name__ + ': "' + str(evalue) + '"'
     log.main.error(logstr)
-    return web.internalerror(template.errors.generic("A problem related to a '" + etype.__name__ + "' error has been logged. Nudge Lagg to fix it."))
+    return web.internalerror(template.errors.generic("Something didn't load here and I logged it. Sorry for the inconvenience."))
 
 def notfound():
     return web.notfound(template.errors.generic("The page you were looking for couldn't be found."))

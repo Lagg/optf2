@@ -207,12 +207,6 @@ def profile_search(user, greedy = False):
     except:
         pass
 
-    try:
-        parser = search_page_parser(user, prof)
-        resultlist += parser.get_results()
-    except:
-        pass
-
     return resultlist
 
 class search_profile:
