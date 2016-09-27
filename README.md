@@ -6,5 +6,5 @@ inventories to schemas and more.
 
 ## INSTALLATION
 
-* Run pip -r requirements.txt
-* Run python dispatch.py for local usage or via wsgi on your server of choice (use dispatch as the entry module)
+* Run `pip install -r requirements.txt` (Note: pylibmc requires libmemcached)
+* Run `python dispatch.py` for local usage or via wsgi on your server of choice (use dispatch as the entry module)
