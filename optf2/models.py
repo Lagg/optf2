@@ -298,8 +298,6 @@ def dict_from_item(item, scope = 440, lang = None):
 
         if not filtered:
             if attrdesc: newattr["desc"] = attrdesc
-        else:
-            continue
 
         try:
             attrcolor = theattr.description_color
