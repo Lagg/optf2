@@ -2,6 +2,9 @@ $def with (attribs)
 $var title: Item Attributes
 $var description: List of all attributes for a given title, including those that are unused or hidden.
 
+$def add_newline(last):
+  $if not last: <font color=grey>\n</font>
+
 <div id="header">
   <h2>All item attributes</h2>
   <h5>Click on an attribute name to see the items it is attached to.</h5>
@@ -26,7 +29,8 @@ $var description: List of all attributes for a given title, including those that
           <td>
             $if desc:
               $ mmstr = "<{0}>".format(valtype)
-              $desc.replace("\n", "\\n").replace("%s1", mmstr)
+              $ desclines = desc.replace("%s1", mmstr).split('\n')
+              $for line in desclines:$line$:add_newline(loop.last)
           </td>
 	  <td>
 	    $if attr.hidden: Yes
