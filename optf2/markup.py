@@ -274,7 +274,7 @@ def generate_attribute_list(app, item, showlinks = False):
         atype = attr.get("type", "neutral")
         aid = attr["id"]
         name = attr["name"]
-        val = attr["val"]
+        val = "{0:.3g}".format(attr["val_raw"])
         debug = int(web.input(debug=0).debug)
 
         if not desc and not debug:
@@ -284,9 +284,6 @@ def generate_attribute_list(app, item, showlinks = False):
             style = ' style="color: #{0};"'.format(color)
 
         markup.append('<li class="attr-{0}"{1}>'.format(atype, style))
-
-        if name and aid and debug:
-            markup.append('{} ({}): {}<br/>'.format(web.websafe(name), aid, val))
 
         # TODO: This is getting increasingly ugly
         # 194 == referenced item def
@@ -298,6 +295,11 @@ def generate_attribute_list(app, item, showlinks = False):
             else:
                 if atype != "html": desc = web.websafe(desc)
                 markup.append(desc.replace('\n', "<br/>"))
+
+        if name and aid and debug:
+            if desc:
+                markup.append('<br/>')
+            markup.append('{} ({}): {}'.format(web.websafe(name), aid, val))
 
         if acct:
             markup.append(morestr.format(generate_root_url("user/"  + str(acct["id64"]), app)))
