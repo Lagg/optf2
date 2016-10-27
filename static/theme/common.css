@@ -375,3 +375,5 @@ tr.row-even { background-color: #1c1c1c; }
 .credits-table tbody td, .credits-table tbody th { padding: 0.5em; width: 50%; font-size: 2em; }
 
 .ui-icon.ui-icon-loading { background-image: url(../loading.gif); }
+
+.inventory-logo { max-height: 70px; max-width: 90%; }
