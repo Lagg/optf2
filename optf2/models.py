@@ -190,7 +190,7 @@ def dict_from_item(item, scope = 440, lang = None):
         attrvaluetype = theattr.value_type
         attrdesc = theattr.formatted_description
         attrvalue = theattr.formatted_value
-        newattr = {"id": attrid, "val": attrvalue, "type": theattr.type}
+        newattr = {"id": attrid, "val": attrvalue, "type": theattr.type, "name": attrname, "val_raw": theattr.value}
         account_info = theattr.account_info
         if account_info:
             if attrname == "gifter account id":

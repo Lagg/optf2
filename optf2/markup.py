@@ -273,8 +273,11 @@ def generate_attribute_list(app, item, showlinks = False):
         color = attr.get("color")
         atype = attr.get("type", "neutral")
         aid = attr["id"]
+        name = attr["name"]
+        val = "{0:.3g}".format(attr["val_raw"])
+        debug = int(web.input(debug=0).debug)
 
-        if not desc:
+        if not desc and not debug:
             continue
 
         if color:
@@ -286,11 +289,17 @@ def generate_attribute_list(app, item, showlinks = False):
         # 194 == referenced item def
         # 192 == referenced item id low
         # 193 == referenced item id high
-        if contents and (aid == 194 or aid == 192 or aid == 193):
-            markup.append(desc + morestr.format(web.http.changequery(contents = 1)))
-        else:
-            if atype != "html": desc = web.websafe(desc)
-            markup.append(desc.replace('\n', "<br/>"))
+        if desc:
+            if contents and (aid == 194 or aid == 192 or aid == 193):
+                markup.append(desc + morestr.format(web.http.changequery(contents = 1)))
+            else:
+                if atype != "html": desc = web.websafe(desc)
+                markup.append(desc.replace('\n', "<br/>"))
+
+        if name and aid and debug:
+            if desc:
+                markup.append('<br/>')
+            markup.append('{} ({}): {}'.format(web.websafe(name), aid, val))
 
         if acct:
             markup.append(morestr.format(generate_root_url("user/"  + str(acct["id64"]), app)))
