@@ -1,5 +1,5 @@
 $(document).ready(function() {
-    $("#rp-results").on("click", ".sr", function(e) {
+	$("#rp-results").on("click", ".sr", function(e) {
 	e.preventDefault();
 	var resdiv = $(this).button();
 	var url = resdiv.attr("href");
@@ -7,16 +7,26 @@ $(document).ready(function() {
 	if (resdiv.button("option", "icons").secondary == "ui-icon-loading") return;
 	resdiv.button("option", "icons", {secondary: "ui-icon-loading"});
 	$.get(url,
-	      function(data) {
+		  function(data) {
+		  var gSum = $("#game-summaries")
 		  var boxes = $(data).filter("#content").children(".box");
 		  $("#rp-results").fadeOut("fast");
-		  $("#game-summaries").fadeIn("slow");
 		  boxes.width(350);
 		  boxes.css("margin", "1em");
-		  boxes.css("float", "left");
 		  $(".sr-slot").empty().append(resdiv.button("option", "icons", {secondary: "ui-icon-link"}));
 		  resdiv.removeClass("ui-state-hover ui-state-focus");
 		  boxes.appendTo("#game-summaries");
+		  var totalHeight = 0;
+		  var maxHeight = 0;
+		  gSum.css("display", "flex");
+		  boxes.each(function() {
+		  	var height = $(this).outerHeight(true);
+		  	totalHeight += height;
+		  	maxHeight = Math.max(height, maxHeight);
+		  });
+		  gSum.hide();
+		  if (totalHeight) gSum.css("max-height", (totalHeight+maxHeight)/2);
+		  gSum.fadeIn("slow").css("display", "flex");
 	      })
 	.error(function() {
 	    resdiv.button("option", {icons: {secondary: null }, disabled: true});

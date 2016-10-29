@@ -281,6 +281,8 @@ class sim_selector:
         try:
             prof = models.user(user).load()
             ctx = models.sim_context(prof).load()
+            for ct in (ctx or []):
+                ct.setdefault("inventory_logo", '/static/pixel.png')
 
             return template.sim_selector(prof, ctx)
         except steam.items.InventoryError as E:
