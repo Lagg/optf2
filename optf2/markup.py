@@ -275,10 +275,13 @@ def generate_attribute_list(app, item, showlinks = False):
         aid = attr["id"]
         name = attr["name"]
         val = attr["val_raw"]
-        if (float(val).is_integer()):
-            val = "{0:d}".format(int(val))
-        else:
-            val = "{0:.3g}".format(val)
+        try:
+            if (float(val).is_integer()):
+                val = "{0:d}".format(int(val))
+            else:
+                val = "{0:.3g}".format(val)
+        except ValueError:
+            pass
 
         debug = int(web.input(debug=0).debug)
 
