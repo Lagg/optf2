@@ -9,14 +9,18 @@ $var description: List of $persona's inventories
       $ appid = str(ctx['appid'])
       $ url = markup.generate_root_url('user/{0}'.format(user['id64']), appid)
       <div class="titlebar" style="height: 28px;">
-	<img style="width: 24px; height: 24px; vertical-align: middle;" src="$ctx['icon']" alt="icon"/>
+        <img style="width: 24px; height: 24px; vertical-align: middle;" src="$ctx['icon']" alt="icon"/>
         <a href="$url">$ctx["name"] - $ctx["asset_count"] items</a>
       </div>
-      <a href="$url"><img class="inventory-logo" src="$ctx['inventory_logo']" alt="logo"/></a><br/>
+      <a href="$url">
+        <object class="inventory-logo" data="$ctx['inventory_logo']" type="image/png" alt="logo">
+          <img class="inventory-logo" src="${static_prefix}pixel.png" alt="logo"/>
+        </object>
+      </a><br/>
       <table style="text-align: left; margin: 0 auto 0 auto;" cellpadding="4" cellspacing="4">
-	$for id, cat in ctx["rgContexts"].iteritems():
-	  <tr><th><a href="${url + '#page-' + cat['name']}">$cat["name"]:</a></th><td>$cat["asset_count"]</td></tr>
-	<tr><th>Trade permissions:</th><td>$ctx["trade_permissions"]</td></tr>
+        $for id, cat in ctx["rgContexts"].iteritems():
+          <tr><th><a href="${url + '#page-' + cat['name']}">$cat["name"]:</a></th><td>$cat["asset_count"]</td></tr>
+        <tr><th>Trade permissions:</th><td>$ctx["trade_permissions"]</td></tr>
       </table>
       <a href="$ctx['link']" style="position: absolute; right: 5px; bottom: 10px;" target="_blank">Store</a>
     </div>
