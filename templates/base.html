@@ -50,16 +50,20 @@ $if "title" in content: $ title += " - " + content.title
           <li$:extra><a href="$url">$label</a></li>
       <li><a href="${virtual_root}about">About</a></li>
     </ul>
+    $ notopsearch = instance.get("notopsearch")
     $ motd = instance.get("motd")
-    $if motd: <div class="motd">$:motd</div>
-    $if not instance.get("notopsearch"):
+    $ motdclass = "motd"
+    $if notopsearch:
+      $ motdclass = "motd nosearch"
+    $if motd: <div class="$motdclass">$:motd</div>
+    $if not notopsearch:
       <div id="search-form-container">
-	<form method="get" id="search-form" action="$markup.generate_root_url()">
-	  <fieldset>
+        <form method="get" id="search-form" action="$markup.generate_root_url()">
+          <fieldset>
             <input type="text" id="search-field" name="user"/><button type="submit" id="search-button"><span class="ui-icon ui-icon-search"></span></button>
             <input type="hidden" name="from" value="$instance.path"/>
-	  </fieldset>
-	</form>
+          </fieldset>
+        </form>
       </div>
     $:content
   </body>
