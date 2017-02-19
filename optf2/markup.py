@@ -272,6 +272,10 @@ def generate_attribute_list(app, item, showlinks = False):
         acct = item.get("accounts", {}).get(str(attr["id"]))
         color = attr.get("color")
         atype = attr.get("type", "neutral")
+
+        if "name" not in attr:
+            continue
+
         aid = attr["id"]
         name = attr["name"]
         val = attr["val_raw"]
