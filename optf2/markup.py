@@ -273,11 +273,8 @@ def generate_attribute_list(app, item, showlinks = False):
         color = attr.get("color")
         atype = attr.get("type", "neutral")
 
-        if "name" not in attr:
-            continue
-
         aid = attr["id"]
-        name = attr["name"]
+        name = attr.get("name")
         val = attr["val_raw"]
         try:
             if (float(val).is_integer()):
