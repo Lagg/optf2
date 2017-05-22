@@ -275,7 +275,7 @@ def generate_attribute_list(app, item, showlinks = False):
 
         aid = attr["id"]
         name = attr.get("name")
-        val = attr["val_raw"]
+        val = attr["val"]
         try:
             if (float(val).is_integer()):
                 val = "{0:d}".format(int(val))
