@@ -1,4 +1,6 @@
 *.pyc
 build
 CACHE
+motd
+tmp
 /env
