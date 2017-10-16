@@ -5,9 +5,11 @@ $(document).ready(function() {
     var url = resdiv.attr("href");
 
     if (resdiv.button("option", "icons").secondary == "ui-icon-loading") return;
+
     resdiv.button("option", "icons", {
       secondary: "ui-icon-loading"
     });
+
     $.get(url,
         function(data) {
           var gSum = $("#game-summaries")
@@ -18,9 +20,8 @@ $(document).ready(function() {
           }));
           resdiv.removeClass("ui-state-hover ui-state-focus");
           boxes.appendTo("#game-summaries");
-          gSum.hide();
           gSum.waterfall({gridWidth:[0,350]});
-          gSum.fadeIn("slow");
+          gSum.show();
         })
       .error(function() {
         resdiv.button("option", {
@@ -64,7 +65,7 @@ $(document).ready(function() {
       user: val
     }, function(data) {
       output.empty();
-      $("#game-summaries").empty();
+      $("#game-summaries").empty().css("height", "auto");
       $.each(data, function() {
         var row = $('<a class="sr" href="/inv/' + this.id64 + '"><img class="avatar" src="' + this.avatarurl + '"/>' + this.persona + '</a>').button();
         if (this.exact)
