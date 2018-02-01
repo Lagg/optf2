@@ -21,8 +21,10 @@ $def add_newline(last):
         $ name = attr.name
         $ desc = attr.description
         $ aid = attr.id
-        <tr class="row-$loop.parity">
-          <td>$aid</td>
+        <tr id="att-row-$aid" class="row-$loop.parity">
+          <td>
+            <a href="#att-row-$aid">$aid</a>
+          </td>
           <td>
             <a id="att-$aid" class="attr-${type}" href="$instance.path/$aid">$name</a>
           </td>
